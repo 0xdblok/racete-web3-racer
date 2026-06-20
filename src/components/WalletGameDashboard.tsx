@@ -512,9 +512,15 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
               </p>
             </div>
             {connected && selectedCarId ? (
-              <Link href="/race" className="rounded-full bg-fuchsia-400 px-6 py-3 text-sm font-black text-black hover:bg-fuchsia-300 text-center">
-                Play Race
-              </Link>
+              <>
+                <Link href="/race" className="rounded-full bg-fuchsia-400 px-6 py-3 text-sm font-black text-black hover:bg-fuchsia-300 text-center">
+                  Play Race
+                </Link>
+                <Link href="/race/multiplayer" className="rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 px-6 py-3 text-sm font-black text-black hover:from-purple-400 hover:to-cyan-300 text-center relative">
+                  Find Match
+                  <span className="absolute -right-2 -top-2 rounded-full bg-lime-300 px-1.5 py-0.5 text-[9px] font-black text-black shadow shadow-lime-300/50">2-6P</span>
+                </Link>
+              </>
             ) : connected ? (
               <span className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/35 text-center">
                 Select a car to race

@@ -448,9 +448,15 @@ export function GaragePageClient() {
         <nav className="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
           <Link href="/" className="text-xl font-black tracking-[0.35em] text-fuchsia-300">RACETE</Link>
           <div className="flex items-center gap-3">
-            <Link className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10" href="/race">Race</Link>
+            <Link className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10" href="/race">Solo</Link>
             {selectedCarId ? (
-              <Link className="rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300" href="/race">Play</Link>
+              <>
+                <Link className="rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300" href="/race">Play</Link>
+                <Link className="rounded-full bg-gradient-to-r from-purple-500 to-cyan-400 px-4 py-2 text-sm font-black text-black hover:from-purple-400 hover:to-cyan-300 relative" href="/race/multiplayer">
+                  Find Match
+                  <span className="absolute -top-2 -right-2 rounded-full bg-lime-300 px-1.5 py-0.5 text-[9px] font-black text-black shadow shadow-lime-300/50">2-6P</span>
+                </Link>
+              </>
             ) : (
               <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/35">Select car to play</span>
             )}
