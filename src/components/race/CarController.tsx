@@ -23,11 +23,11 @@ type CarControllerProps = {
 };
 
 /* ── Tuning constants (tweak these for feel) ── */
-const STEER_RISE_SPEED = 3;       // how fast steering ramps up (per second) — was 6
-const STEER_RETURN_SPEED = 3;     // how fast steering returns to center — was 4
-const MAX_YAW_RATE = 1.3;         // max radians/second the car can rotate — was 2.5
-const CORNERING_DRAG = 1.2;       // speed loss multiplier when turning (steerAngle × speedRatio × this)
-const DRIFT_CORNERING_MULT = 0.5; // drifting loses less speed in corners (multiplied against CORNERING_DRAG)
+const STEER_RISE_SPEED = 2;       // was 6, then 3 — slower ramp-up
+const STEER_RETURN_SPEED = 2.5;   // was 4, then 3 — slower return-to-center
+const MAX_YAW_RATE = 0.7;         // was 2.5, then 1.3 — heavy feel
+const CORNERING_DRAG = 1.2;       // speed loss multiplier when turning
+const DRIFT_CORNERING_MULT = 0.5; // drifting loses less speed in corners
 const DRIFT_LERP_SPEED = 3;       // how fast drift factor lerps in/out
 const DRIFT_STEER_BONUS = 1.4;    // extra steering angle during drift
 const DRIFT_LATERAL_SPEED = 1.2;  // how fast drift angle builds laterally
