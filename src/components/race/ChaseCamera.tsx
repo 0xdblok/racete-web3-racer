@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 /* ------------------------------------------------------------------ */
 /*  Chase camera — follows car, smooth lerp, speed FOV, nitro shake    */
+/*  Mouse wheel / +/- keys zoom support                                */
 /* ------------------------------------------------------------------ */
 
 type CarState = {
@@ -18,12 +19,17 @@ type CarState = {
 
 type ChaseCameraProps = {
   carState: React.MutableRefObject<CarState>;
-  /** Distance behind car (base) */
+  /** Base distance behind car */
   distance?: number;
   /** Height above car */
   height?: number;
   /** How fast the camera catches up (higher = snappier) */
   smoothness?: number;
+  /** Zoom limits */
+  minDistance?: number;
+  maxDistance?: number;
+  /** Zoom speed (wheel sensitivity) */
+  zoomSpeed?: number;
 };
 
 export function ChaseCamera({
@@ -31,29 +37,57 @@ export function ChaseCamera({
   distance = 7,
   height = 3.5,
   smoothness = 3,
+  minDistance = 3,
+  maxDistance = 25,
+  zoomSpeed = 0.5,
 }: ChaseCameraProps) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
-  const targetPos = useRef(new THREE.Vector3(0, height, distance));
   const currentLookAt = useRef(new THREE.Vector3(0, 1, 0));
   const shakeOffset = useRef(new THREE.Vector3());
-
-  // Store initial FOV
   const baseFov = useRef(cam.fov);
+  const zoomDistance = useRef(distance);
 
-  // eslint-disable-next-line
+  // Mouse wheel zoom
+  useEffect(() => {
+    const dom = gl.domElement;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      zoomDistance.current -= e.deltaY * 0.01 * zoomSpeed;
+      zoomDistance.current = THREE.MathUtils.clamp(zoomDistance.current, minDistance, maxDistance);
+    };
+    dom.addEventListener("wheel", onWheel, { passive: false });
+    return () => dom.removeEventListener("wheel", onWheel);
+  }, [gl, minDistance, maxDistance, zoomSpeed]);
+
+  // Keyboard zoom (+/- keys)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "=" || e.key === "+") {
+        zoomDistance.current -= 1 * zoomSpeed;
+        zoomDistance.current = THREE.MathUtils.clamp(zoomDistance.current, minDistance, maxDistance);
+      }
+      if (e.key === "-" || e.key === "_") {
+        zoomDistance.current += 1 * zoomSpeed;
+        zoomDistance.current = THREE.MathUtils.clamp(zoomDistance.current, minDistance, maxDistance);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [minDistance, maxDistance, zoomSpeed]);
+
+  // eslint-disable-next-line react-hooks/immutability
   useFrame((_, delta) => {
     const car = carState.current;
     const dt = Math.min(delta, 0.1);
 
-    // Compute desired camera target + position
     const desiredLookAt = new THREE.Vector3(0, 1, 0);
-    const desiredPos = new THREE.Vector3(0, height, distance);
+    const desiredPos = new THREE.Vector3(0, height, zoomDistance.current);
 
     if (car) {
       const carForward = new THREE.Vector3(0, 0, 1).applyEuler(car.rotation);
       const speedFactor = THREE.MathUtils.clamp(Math.abs(car.speed) / 200, 0, 1);
-      const dynamicDist = distance + speedFactor * 3;
+      const dynamicDist = zoomDistance.current + speedFactor * 3;
       const behindCar = carForward.clone().multiplyScalar(-dynamicDist);
 
       desiredPos.copy(car.position).add(behindCar).add(new THREE.Vector3(0, height, 0));
@@ -83,13 +117,13 @@ export function ChaseCamera({
       cam.fov += (targetFov - cam.fov) * 4 * dt;
     }
 
-    // Smooth lerp
+    // Smooth lerp (frame-rate independent)
     const t = 1 - Math.exp(-smoothness * dt);
     currentLookAt.current.lerp(desiredLookAt, t);
-
     camera.position.lerp(desiredPos, t);
     camera.lookAt(currentLookAt.current);
   });
 
+  // Inline zoom indicator — zoom state is managed internally via ref
   return null;
 }

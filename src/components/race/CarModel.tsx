@@ -14,19 +14,19 @@ type CarModelProps = {
   isDriving?: boolean;
 };
 
-export function CarModel({ car, selectedCar }: CarModelProps) {
+export function CarModel({ car, selectedCar, isDriving }: CarModelProps) {
   return (
-    <Suspense fallback={<FallbackCar car={car} selectedCar={selectedCar} loading />}>
-      <ModelOrFallback car={car} selectedCar={selectedCar} />
+    <Suspense fallback={<FallbackCar car={car} selectedCar={selectedCar} isDriving={isDriving} loading />}>
+      <ModelOrFallback car={car} selectedCar={selectedCar} isDriving={isDriving} />
     </Suspense>
   );
 }
 
-function ModelOrFallback({ car, selectedCar }: CarModelProps) {
-  if (!car.modelUrl) return <FallbackCar car={car} selectedCar={selectedCar} />;
+function ModelOrFallback({ car, selectedCar, isDriving }: CarModelProps) {
+  if (!car.modelUrl) return <FallbackCar car={car} selectedCar={selectedCar} isDriving={isDriving} />;
   return (
-    <GltfCarBoundary fallback={<FallbackCar car={car} selectedCar={selectedCar} />}>
-      <LoadedGltfCar car={car} selectedCar={selectedCar} />
+    <GltfCarBoundary fallback={<FallbackCar car={car} selectedCar={selectedCar} isDriving={isDriving} />}>
+      <LoadedGltfCar car={car} selectedCar={selectedCar} isDriving={isDriving} />
     </GltfCarBoundary>
   );
 }
@@ -34,7 +34,9 @@ function ModelOrFallback({ car, selectedCar }: CarModelProps) {
 function LoadedGltfCar({ car, selectedCar, isDriving }: CarModelProps) {
   const gltf = useGLTF(car.modelUrl);
   const scale = getModelScale(car.id);
-  const rotationY = getModelRotationY(car.id);
+  // In driving mode, model faces +Z (controller forward direction)
+  // In showroom mode, model faces -Z (toward camera)
+  const rotationY = isDriving ? getRaceRotationY(car.id) : getModelRotationY(car.id);
   const basePos: [number, number, number] = isDriving ? [0, 0, 0] : [0, 0.18, -5.8];
 
   return (
@@ -48,8 +50,10 @@ function LoadedGltfCar({ car, selectedCar, isDriving }: CarModelProps) {
 function FallbackCar({ car, selectedCar, loading = false, isDriving }: CarModelProps & { loading?: boolean }) {
   const accent = car.class === "S" || car.class === "A" ? "#f97316" : car.class.startsWith("B") ? "#d946ef" : "#84cc16";
   const basePos: [number, number, number] = isDriving ? [0, 0.55, 0] : [0, 0.55, -5.8];
+  // In driving mode, no rotation — model faces +Z (controller forward)
+  const rotationY = isDriving ? 0 : Math.PI;
   return (
-    <group position={basePos} rotation-y={Math.PI}>
+    <group position={basePos} rotation-y={rotationY}>
       <mesh castShadow>
         <boxGeometry args={[2.3, 0.55, 4.2]} />
         <meshStandardMaterial color="#18181b" roughness={0.35} metalness={0.65} />
@@ -97,7 +101,7 @@ function PowerBar({ car, selectedCar, gameplayStats }: CarModelProps) {
             { label: "◉", level: gameplayStats.tiresLevel, color: "#60a5fa" },
             { label: "⚡", level: gameplayStats.nitroLevel, color: "#facc15" },
             { label: "↺", level: gameplayStats.handlingLevel, color: "#a78bfa" },
-          ].map(({ label, level, color }, i) => (
+          ].map(({ label, color }, i) => (
             <mesh key={label} position={[-1.2 + i * 0.8, 0, 0]}>
               <boxGeometry args={[0.18, 0.04, 0.04]} />
               <meshBasicMaterial color={color} />
@@ -120,6 +124,19 @@ function getModelRotationY(carId: string) {
   if (carId === "toro-x") return Math.PI;
   if (carId === "aurox-v10") return Math.PI;
   return Math.PI;
+}
+
+/**
+ * Rotation offset in race/driving mode.
+ * Controller forward is +Z. Model's natural forward should face +Z.
+ * If a model naturally faces -Z, add Math.PI here to flip it.
+ * Most GLTF models from Sketchfab face +Z naturally — override per car if needed.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getRaceRotationY(_carId: string) {
+  // Most models: natural forward = +Z → no offset needed
+  // Add per-car overrides below if a model faces wrong direction in driving mode
+  return 0;
 }
 
 class GltfCarBoundary extends React.Component<{ fallback: React.ReactNode; children: React.ReactNode }, { failed: boolean }> {

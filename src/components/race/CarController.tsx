@@ -154,9 +154,9 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     );
     worldPos.current.add(forward.clone().multiplyScalar(speed.current * dt));
 
-    // Clamp to track bounds (simple: keep within 30x20 area)
-    worldPos.current.x = THREE.MathUtils.clamp(worldPos.current.x, -15, 15);
-    worldPos.current.z = THREE.MathUtils.clamp(worldPos.current.z, -10, 10);
+    // Clamp to track bounds (large test area: 150x150)
+    worldPos.current.x = THREE.MathUtils.clamp(worldPos.current.x, -75, 75);
+    worldPos.current.z = THREE.MathUtils.clamp(worldPos.current.z, -75, 75);
 
     // --- Update group transform ---
     if (groupRef.current) {

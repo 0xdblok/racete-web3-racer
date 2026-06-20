@@ -106,6 +106,7 @@ export function RaceHud({
             <span>← → Steer</span><span>Space Nitro</span>
             <span>Shift Drift</span><span>R Reset</span>
             <span className="text-white/25">WASD</span><span className="text-white/25">backup</span>
+            <span>Wheel / +-</span><span>Camera zoom</span>
           </div>
         </div>
       </div>
