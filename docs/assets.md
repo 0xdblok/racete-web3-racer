@@ -1,33 +1,98 @@
 # Racete Asset Sources
 
-## Sketchfab car pass — selected candidates
-
 Source scope for this pass: Sketchfab cars only.
 
-### Toro X candidate
-- Sketchfab URL: https://sketchfab.com/3d-models/low-poly-lamborghini-revuelto-2023-a5ccfea90e894404a822d9d3d9043c16
-- Sketchfab model name: Low Poly Lamborghini Revuelto 2023
-- Author: Himanshu (`rohithimanshu545`)
-- Author URL: https://sketchfab.com/rohithimanshu545
+Important UI rule: public game UI keeps fictional Racete names only. Brand/model names below are attribution/source records, not in-game names.
+
+## Selected Sketchfab car list from founder
+
+### Street Rat — candidate source
+- Sketchfab URL: https://sketchfab.com/3d-models/tesla-cybertruck-f12e67159f75486bb21213e573520612
+- Sketchfab model name: Tesla Cybertruck
+- Author: Lexyc16 (`Lexyc16`)
+- Author URL: https://sketchfab.com/Lexyc16
 - License: Creative Commons Attribution 4.0 (`CC BY 4.0`)
 - License summary: attribution required; commercial use allowed.
-- In-game assignment: Toro X
+- Downloadable: yes
+- Vertices/faces: ~4.4k / ~8.0k
+- Intended downloaded path: `public/models/cars/street-rat.glb`
+- Notes: very browser-friendly. Good temporary starter/utility placeholder if founder approves this mapping.
+
+### Bavaro Coupe — selected source
+- Sketchfab URL: https://sketchfab.com/3d-models/bmw-m4-competition-6b4d1393bd7c437eb6fc37bf937d96b2
+- Sketchfab model name: Bmw m4 competition
+- Author: RES1N (`Resinnnn`)
+- Author URL: https://sketchfab.com/Resinnnn
+- License: Creative Commons Attribution 4.0 (`CC BY 4.0`)
+- License summary: attribution required; commercial use allowed.
+- Downloadable: yes
+- Vertices/faces: ~160.5k / ~275.9k
+- Intended downloaded path: `public/models/cars/bavaro-coupe.glb`
+- Notes: realistic, but should be optimized after download if textures/polycount are heavy.
+
+### Aurox V10 — blocked source from founder list
+- Sketchfab URL: https://sketchfab.com/3d-models/audi-e-tron-gt-quattro-2022-ccb4d9d6980b4ab9b7909c16221ee806
+- Sketchfab model name: Audi e-tron GT quattro 2022
+- Author: SQUIR3D (`SQUIR3D`)
+- Author URL: https://sketchfab.com/SQUIR3D
+- License: Editorial
+- License summary: use only in connection with newsworthy/public-interest events; not suitable for this game.
+- Downloadable: no
+- Vertices/faces: ~895.2k / ~1.7M
+- Intended downloaded path if replaced by a usable asset: `public/models/cars/aurox-v10.glb`
+- Notes: do not use this asset in the game. Need a downloadable CC/commercial-allowed Audi-style replacement.
+
+### Sturm RS — open slot
+- Current intended path: `public/models/cars/sturm-rs.glb`
+- Notes: founder has not provided a Porsche-style usable Sketchfab asset yet. Keep fallback mesh until a downloadable CC/commercial-allowed source is provided.
+
+### Furia GT — selected source
+- Sketchfab URL: https://sketchfab.com/3d-models/2021-ferrari-sf90-spider-8f8ef613e39746668b4f0268a3176dde
+- Sketchfab model name: 2021 Ferrari SF90 Spider
+- Author: Ddiaz Design (`ddiaz-design`)
+- Author URL: https://sketchfab.com/ddiaz-design
+- License: Creative Commons Attribution 4.0 (`CC BY 4.0`)
+- License summary: attribution required; commercial use allowed.
+- Downloadable: yes
+- Vertices/faces: ~157.7k / ~245.3k
+- Intended downloaded path: `public/models/cars/furia-gt.glb`
+- Notes: realistic, but should be optimized after download if textures/polycount are heavy.
+
+### Toro X — selected source
+- Sketchfab URL: https://sketchfab.com/3d-models/free-lamborghini-urus-sdc-carbone-edition-647849f2b10e42a39365a0f572968f5e
+- Sketchfab model name: ( FREE ) Lamborghini Urus - SDC Carbone Edition
+- Author: SDC PERFORMANCE™️ (`Lambo_SC04`)
+- Author URL: https://sketchfab.com/Lambo_SC04
+- License: Creative Commons Attribution 4.0 (`CC BY 4.0`)
+- License summary: attribution required; commercial use allowed.
+- Downloadable: yes
+- Vertices/faces: ~198.6k / ~365.0k
 - Intended downloaded path: `public/models/cars/toro-x.glb`
-- Weight notes: ~5.6k vertices / ~8.5k faces from Sketchfab API; good browser candidate.
-- Status: selected, but not committed yet because Sketchfab's official generated GLB download endpoint requires authenticated OAuth access.
+- Notes: realistic, but likely needs browser optimization after download.
 
-### Aurox V10 candidate
-- Sketchfab URL: https://sketchfab.com/3d-models/1997-audi-s4-b5-8bdf52403bef4129a4ce4f5bd1341379
-- Sketchfab model name: 1997 Audi S4 B5
-- Author: tonielpro520
-- Author URL: https://sketchfab.com/tonielpro520
-- License: Creative Commons Attribution 4.0 (`CC BY 4.0`)
-- License summary: attribution required; commercial use allowed.
-- In-game assignment: Aurox V10
-- Intended downloaded path: `public/models/cars/aurox-v10.glb`
-- Weight notes: ~103k vertices / ~171k faces from Sketchfab API; acceptable only if optimized or if textures are not too large.
-- Status: selected backup/candidate, but not committed yet because Sketchfab's official generated GLB download endpoint requires authenticated OAuth access.
+### Extra founder-provided asset — blocked
+- Sketchfab URL: https://sketchfab.com/3d-models/bugatti-chiron-pur-sport-2021-dbba6981d9fc4394a58ef7dcae62ad4d
+- Sketchfab model name: Bugatti Chiron Pur Sport 2021
+- Author: SQUIR3D (`SQUIR3D`)
+- Author URL: https://sketchfab.com/SQUIR3D
+- License: Editorial
+- License summary: use only in connection with newsworthy/public-interest events; not suitable for this game.
+- Downloadable: no
+- Vertices/faces: ~933.2k / ~1.7M
+- Notes: do not use this asset in the game. Also too heavy for browser MVP as-is.
 
-## Implementation note
+## Download status
 
-The race scene now uses `CarModel` with `@react-three/drei` `useGLTF` and keeps a fallback car mesh if the GLB is missing or fails to load. Once a Sketchfab OAuth token/account download is available, place the downloaded GLB at the intended path above and the selected in-game car will render it automatically without renaming the public UI car names.
+The race scene already uses `CarModel` with `@react-three/drei` `useGLTF` and a fallback mesh if a GLB is missing or fails to load.
+
+Official Sketchfab generated GLB downloads require authenticated Sketchfab OAuth/account access. No Sketchfab token exists in local env/secrets, so the real GLB files are not committed yet.
+
+Once downloaded, place files here:
+- `public/models/cars/street-rat.glb`
+- `public/models/cars/bavaro-coupe.glb`
+- `public/models/cars/furia-gt.glb`
+- `public/models/cars/toro-x.glb`
+
+Blocked/replacement-needed files:
+- `public/models/cars/aurox-v10.glb` — current founder-provided Audi link is Editorial + not downloadable.
+- `public/models/cars/sturm-rs.glb` — needs a usable Porsche-style Sketchfab URL.

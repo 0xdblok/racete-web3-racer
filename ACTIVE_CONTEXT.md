@@ -1,22 +1,25 @@
 # Active Context
 
-Current milestone: Sketchfab realistic car asset pass
+Current milestone: Sketchfab realistic car asset list
 
 Completed:
-- Selected Sketchfab-only candidate assets for Toro X and Aurox V10 with CC BY 4.0 license metadata.
-- Added `docs/assets.md` attribution/download notes.
-- Added `CarModel` component using `@react-three/drei` `useGLTF` with fallback mesh when local GLB files are missing or fail to load.
-- Wired `/race` scene to load selected car model URL from car config.
-- Added `public/models/cars/README.md` with expected downloaded file names.
+- Verified founder-provided Sketchfab car metadata via Sketchfab API.
+- Updated `docs/assets.md` with source URL, author, license, downloadability, weights, intended path, and in-game mapping.
+- Updated `public/models/cars/README.md` with expected downloaded files and blocked replacements.
 
-Blocked:
-- Actual Sketchfab GLB download requires authenticated Sketchfab OAuth/account access. No Sketchfab token exists in local env/secrets, so no real GLB asset was committed in this pass.
+Usable/downloadable CC BY 4.0 assets from founder list:
+- Street Rat candidate: Tesla Cybertruck — low-poly/browser-friendly.
+- Bavaro Coupe: BMW M4 Competition.
+- Furia GT: Ferrari SF90 Spider.
+- Toro X: Lamborghini Urus SDC Carbone Edition.
+
+Blocked assets:
+- Audi e-tron GT quattro 2022: Editorial license, not downloadable, very heavy.
+- Bugatti Chiron Pur Sport 2021: Editorial license, not downloadable, very heavy.
 
 Next task:
-- Provide a Sketchfab OAuth token or manually download the selected GLBs, then place them at `public/models/cars/toro-x.glb` and `public/models/cars/aurox-v10.glb`.
+- Download usable GLBs with authenticated Sketchfab account/OAuth and place them in `public/models/cars/`, or provide direct GLB files.
 
 Important files:
 - `docs/assets.md`
 - `public/models/cars/README.md`
-- `src/components/race/CarModel.tsx`
-- `src/components/race/RaceScene.tsx`
