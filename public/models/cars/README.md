@@ -1,21 +1,21 @@
 Place downloaded Sketchfab GLB/GLTF car models in this directory.
 
-Current expected files:
-- street-rat.glb
-- bavaro-coupe.glb
-- aurox-v10.glb
-- sturm-rs.glb
-- furia-gt.glb
-- toro-x.glb
+Prototype/test-mode expected files with real asset names:
+- street-rat.glb — Tesla Cybertruck
+- bavaro-coupe.glb — BMW M4 Competition
+- aurox-v10.glb — Audi e-tron GT quattro 2022
+- sturm-rs.glb — Bugatti Chiron Pur Sport 2021
+- furia-gt.glb — Ferrari SF90 Spider 2021
+- toro-x.glb — Lamborghini Urus SDC Carbone Edition
 
-Founder-provided usable CC BY 4.0/downloadable sources are documented in `docs/assets.md` for:
-- street-rat.glb
-- bavaro-coupe.glb
-- furia-gt.glb
-- toro-x.glb
+Downloadable via Sketchfab account/OAuth:
+- Tesla Cybertruck
+- BMW M4 Competition
+- Ferrari SF90 Spider 2021
+- Lamborghini Urus SDC Carbone Edition
 
-Replacement still needed:
-- aurox-v10.glb: provided Audi link is Editorial and not downloadable.
-- sturm-rs.glb: no Porsche-style usable Sketchfab link provided yet.
+Missing/not directly downloadable from Sketchfab metadata:
+- Audi e-tron GT quattro 2022
+- Bugatti Chiron Pur Sport 2021
 
 The race scene falls back to a procedural mesh when a model file is missing or fails to load.

@@ -1,24 +1,29 @@
 # Active Context
 
-Current milestone: Sketchfab realistic car asset list
+Current milestone: Prototype Sketchfab real-name asset mapping
 
 Completed:
-- Verified founder-provided Sketchfab car metadata via Sketchfab API.
-- Updated `docs/assets.md` with source URL, author, license, downloadability, weights, intended path, and in-game mapping.
-- Updated `public/models/cars/README.md` with expected downloaded files and blocked replacements.
+- Updated asset docs to keep real Sketchfab model/brand names in prototype/test mode.
+- Final prototype mapping:
+  - Street Rat → Tesla Cybertruck
+  - Bavaro Coupe → BMW M4 Competition
+  - Aurox V10 → Audi e-tron GT quattro 2022
+  - Sturm RS → Bugatti Chiron Pur Sport 2021
+  - Furia GT → Ferrari SF90 Spider 2021
+  - Toro X → Lamborghini Urus SDC Carbone Edition
+- Kept existing fictional DB/UI car names unchanged for now.
+- Kept fallback mesh path unchanged for missing GLB files.
 
-Usable/downloadable CC BY 4.0 assets from founder list:
-- Street Rat candidate: Tesla Cybertruck — low-poly/browser-friendly.
-- Bavaro Coupe: BMW M4 Competition.
-- Furia GT: Ferrari SF90 Spider.
-- Toro X: Lamborghini Urus SDC Carbone Edition.
-
-Blocked assets:
-- Audi e-tron GT quattro 2022: Editorial license, not downloadable, very heavy.
-- Bugatti Chiron Pur Sport 2021: Editorial license, not downloadable, very heavy.
+Missing GLB files:
+- `public/models/cars/street-rat.glb`
+- `public/models/cars/bavaro-coupe.glb`
+- `public/models/cars/aurox-v10.glb`
+- `public/models/cars/sturm-rs.glb`
+- `public/models/cars/furia-gt.glb`
+- `public/models/cars/toro-x.glb`
 
 Next task:
-- Download usable GLBs with authenticated Sketchfab account/OAuth and place them in `public/models/cars/`, or provide direct GLB files.
+- Add actual GLB files once downloaded/provided, then run race scene smoke test with real models.
 
 Important files:
 - `docs/assets.md`
