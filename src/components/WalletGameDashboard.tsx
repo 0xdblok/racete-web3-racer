@@ -26,6 +26,8 @@ type CreateIntentResponse = {
   treasuryWallet: string;
   raceCashAmount: number;
   packName: string;
+  carName?: string;
+  carId?: string;
 };
 
 function tokenAmountToRaw(amount: number, decimals: number) {
@@ -44,9 +46,12 @@ export function WalletGameDashboard() {
   const [tokenBalanceStatus, setTokenBalanceStatus] = useState("idle");
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(null);
   const [activePackId, setActivePackId] = useState<string | null>(null);
+  const [activeCarId, setActiveCarId] = useState<string | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
   const ownedCarIds = useMemo(() => new Set(state?.ownedCars.map((car) => car.car_id) || []), [state]);
+  const selectedCarId = state?.selectedCar?.car_id || null;
+  const totalRaceCash = Number(state?.player.earned_race_cash || 0) + Number(state?.player.purchased_race_cash || 0);
 
   const refreshTokenBalance = useCallback(async () => {
     if (!publicKey || !publicEnv.tokenMint) {
@@ -181,6 +186,117 @@ export function WalletGameDashboard() {
     [connection, initPlayer, publicKey, sendTransaction, tokenBalance, walletAddress],
   );
 
+  const buyCar = useCallback(
+    async (carId: string) => {
+      if (!publicKey || !walletAddress) return;
+      const car = CARS.find((item) => item.id === carId);
+      if (!car) return;
+
+      setActiveCarId(car.id);
+      setPaymentStatus({ tone: "normal", message: `Buying ${car.name}...` });
+
+      try {
+        if (car.priceToken <= 0) {
+          const res = await fetch("/api/cars/buy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ walletAddress, carId: car.id }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Car purchase failed");
+          setState(data);
+          setPaymentStatus({ tone: "success", message: `${car.name} added to your garage.` });
+          return;
+        }
+
+        if (!publicEnv.mockTokenMode && (!publicEnv.tokenMint || !publicEnv.treasuryWallet)) {
+          throw new Error("Token mint or treasury wallet is not configured.");
+        }
+        if (!publicEnv.mockTokenMode && tokenBalance < car.priceToken) {
+          throw new Error(`Not enough token balance for ${car.name}.`);
+        }
+
+        const intentRes = await fetch("/api/payments/create-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress, actionType: "buy_car", carId: car.id }),
+        });
+        const intent = (await intentRes.json()) as CreateIntentResponse & { error?: string };
+        if (!intentRes.ok) throw new Error(intent.error || "Create car payment intent failed");
+
+        if (publicEnv.mockTokenMode) {
+          setPaymentStatus({ tone: "normal", message: "Dev mock payment mode: confirming premium car without wallet transaction..." });
+          const confirmRes = await fetch("/api/payments/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentIntentId: intent.paymentIntentId,
+              mockConfirmation: { type: "RACETE_MOCK_TOKEN_PAYMENT", walletAddress },
+            }),
+          });
+          const confirmation = await confirmRes.json();
+          if (!confirmRes.ok) throw new Error(confirmation.error || "Mock premium car payment failed");
+          setState({ player: confirmation.player, ownedCars: confirmation.ownedCars, selectedCar: confirmation.selectedCar });
+          setPaymentStatus({ tone: "success", message: `${car.name} bought with dev mock token payment.` });
+          return;
+        }
+
+        setPaymentStatus({ tone: "normal", message: `Open your wallet to approve ${car.name} token payment...` });
+        const mint = new PublicKey(intent.tokenMint);
+        const treasury = new PublicKey(intent.treasuryWallet);
+        const sourceAta = getAssociatedTokenAddressSync(mint, publicKey);
+        const treasuryAta = getAssociatedTokenAddressSync(mint, treasury);
+        const rawAmount = tokenAmountToRaw(intent.tokenAmount, publicEnv.tokenDecimals);
+        const transaction = new Transaction().add(
+          createAssociatedTokenAccountIdempotentInstruction(publicKey, treasuryAta, treasury, mint),
+          createTransferCheckedInstruction(sourceAta, mint, treasuryAta, publicKey, rawAmount, publicEnv.tokenDecimals),
+        );
+        const signature = await sendTransaction(transaction, connection);
+        const latestBlockhash = await connection.getLatestBlockhash("confirmed");
+        await connection.confirmTransaction({ signature, ...latestBlockhash }, "confirmed");
+        const confirmRes = await fetch("/api/payments/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId: intent.paymentIntentId, signature }),
+        });
+        const confirmation = await confirmRes.json();
+        if (!confirmRes.ok) throw new Error(confirmation.error || "Premium car payment failed");
+        setState({ player: confirmation.player, ownedCars: confirmation.ownedCars, selectedCar: confirmation.selectedCar });
+        setPaymentStatus({ tone: "success", message: `${car.name} added to your garage.` });
+        await refreshTokenBalance();
+      } catch (err) {
+        setPaymentStatus({ tone: "error", message: err instanceof Error ? err.message : "Car purchase failed" });
+      } finally {
+        setActiveCarId(null);
+      }
+    },
+    [connection, publicKey, refreshTokenBalance, sendTransaction, tokenBalance, walletAddress],
+  );
+
+  const selectCar = useCallback(
+    async (carId: string) => {
+      if (!walletAddress) return;
+      setActiveCarId(carId);
+      setPaymentStatus({ tone: "normal", message: "Selecting car..." });
+      try {
+        const res = await fetch("/api/cars/select", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress, carId }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Car select failed");
+        setState(data);
+        setPaymentStatus({ tone: "success", message: "Selected car updated." });
+      } catch (err) {
+        setPaymentStatus({ tone: "error", message: err instanceof Error ? err.message : "Car select failed" });
+      } finally {
+        setActiveCarId(null);
+      }
+    },
+    [walletAddress],
+  );
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (connected && walletAddress) void initPlayer();
@@ -273,8 +389,12 @@ export function WalletGameDashboard() {
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {CARS.map((car) => {
             const owned = ownedCarIds.has(car.id);
+            const selected = selectedCarId === car.id;
+            const insufficientRaceCash = !owned && totalRaceCash < car.priceRaceCash;
+            const insufficientToken = !owned && !publicEnv.mockTokenMode && car.priceToken > 0 && tokenBalance < car.priceToken;
+            const busy = activeCarId === car.id;
             return (
-              <article key={car.id} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-lg shadow-black/30">
+              <article key={car.id} className={`rounded-3xl border p-5 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
                 <div className="mb-4 flex h-40 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black">
                   <div className="h-16 w-32 rounded-[45%_55%_35%_35%] border border-fuchsia-300/60 bg-fuchsia-400/15 shadow-[0_0_60px_rgba(217,70,239,0.35)]" />
                 </div>
@@ -283,12 +403,33 @@ export function WalletGameDashboard() {
                     <h2 className="text-2xl font-black">{car.name}</h2>
                     <p className="text-sm text-white/55">Class {car.class} · PR {car.basePowerRating}</p>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${owned ? "bg-lime-300 text-black" : "bg-white/10 text-white/70"}`}>{owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}</span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>{selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}</span>
                 </div>
                 <p className="mt-3 text-sm text-white/65">{car.vibe}</p>
                 <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70">
                   <span>Race Cash: {formatNumber(car.priceRaceCash)}</span>
                   <span>Token: {formatNumber(car.priceToken)}</span>
+                </div>
+                {!owned && insufficientRaceCash && <p className="mt-3 text-sm text-red-200">Insufficient Race Cash.</p>}
+                {!owned && insufficientToken && <p className="mt-3 text-sm text-red-200">Insufficient token balance.</p>}
+                <div className="mt-5 flex gap-2">
+                  {owned ? (
+                    <button
+                      onClick={() => void selectCar(car.id)}
+                      disabled={selected || activeCarId !== null || status !== "ready"}
+                      className="w-full rounded-full bg-lime-300 px-4 py-2 text-sm font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => void buyCar(car.id)}
+                      disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
+                      className="w-full rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {busy ? "Buying..." : car.priceToken > 0 ? "Buy with Race Cash + token" : "Buy with Race Cash"}
+                    </button>
+                  )}
                 </div>
               </article>
             );

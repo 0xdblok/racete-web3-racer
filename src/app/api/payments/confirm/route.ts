@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRaceCashPack } from "@/config/economy";
+import { getCarPrice, purchaseCarWithRaceCash } from "@/lib/car-purchases";
 import { serverEnv } from "@/lib/server-env";
 import { verifyTokenTransferSignature } from "@/lib/solana-payments";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
@@ -9,6 +10,7 @@ type PaymentIntentRow = {
   wallet_address: string;
   action_type: string;
   item_id: string;
+  car_id: string | null;
   token_amount: number | string;
   token_mint: string;
   treasury_wallet: string;
@@ -17,9 +19,7 @@ type PaymentIntentRow = {
   expires_at: string;
 };
 
-type PlayerRow = {
-  earned_race_cash: number | string;
-  purchased_race_cash: number | string;
+type PlayerTokenRow = {
   total_token_spent: number | string;
   season_token_spent: number | string;
 };
@@ -65,13 +65,41 @@ export async function POST(request: NextRequest) {
     if (new Date(intent.expires_at).getTime() < Date.now()) {
       return NextResponse.json({ error: "Payment intent expired" }, { status: 410 });
     }
-    if (intent.action_type !== "buy_race_cash") {
+    if (!["buy_race_cash", "buy_car"].includes(intent.action_type)) {
       return NextResponse.json({ error: "Unsupported payment action" }, { status: 400 });
     }
 
-    const pack = getRaceCashPack(intent.item_id);
-    if (!pack || Number(intent.token_amount) !== pack.tokenAmount) {
+    const pack = intent.action_type === "buy_race_cash" ? getRaceCashPack(intent.item_id) : null;
+    const car = intent.action_type === "buy_car" ? await getCarPrice(supabase, intent.car_id || intent.item_id) : null;
+
+    if (intent.action_type === "buy_race_cash" && (!pack || Number(intent.token_amount) !== pack.tokenAmount)) {
       return NextResponse.json({ error: "Payment intent price mismatch" }, { status: 400 });
+    }
+    if (intent.action_type === "buy_car" && (!car || Number(intent.token_amount) !== car.priceToken || car.priceToken <= 0)) {
+      return NextResponse.json({ error: "Payment intent car price mismatch" }, { status: 400 });
+    }
+
+    if (intent.action_type === "buy_car" && car) {
+      const [{ data: existingCar, error: existingError }, { data: balancePlayer, error: balanceError }] = await Promise.all([
+        supabase
+          .from("player_cars")
+          .select("id")
+          .eq("wallet_address", intent.wallet_address)
+          .eq("car_id", car.id)
+          .maybeSingle(),
+        supabase
+          .from("players")
+          .select("earned_race_cash,purchased_race_cash")
+          .eq("wallet_address", intent.wallet_address)
+          .single<{ earned_race_cash: number | string; purchased_race_cash: number | string }>(),
+      ]);
+      if (existingError) throw existingError;
+      if (balanceError) throw balanceError;
+      if (existingCar) return NextResponse.json({ error: "Car already owned" }, { status: 409 });
+      const raceCashBalance = Number(balancePlayer.purchased_race_cash || 0) + Number(balancePlayer.earned_race_cash || 0);
+      if (raceCashBalance < car.priceRaceCash) {
+        return NextResponse.json({ error: "Insufficient Race Cash" }, { status: 402 });
+      }
     }
 
     const finalSignature = isMockConfirmation ? `mock:${intent.id}` : signature;
@@ -131,50 +159,88 @@ export async function POST(request: NextRequest) {
 
     if (transactionError) throw transactionError;
 
-    const { data: player, error: playerError } = await supabase
+    const { data: tokenPlayer, error: tokenPlayerError } = await supabase
       .from("players")
-      .select("earned_race_cash,purchased_race_cash,total_token_spent,season_token_spent")
+      .select("total_token_spent,season_token_spent")
       .eq("wallet_address", intent.wallet_address)
-      .single<PlayerRow>();
+      .single<PlayerTokenRow>();
 
-    if (playerError) throw playerError;
+    if (tokenPlayerError) throw tokenPlayerError;
 
-    const earnedRaceCash = Number(player.earned_race_cash || 0);
-    const purchasedRaceCash = Number(player.purchased_race_cash || 0) + pack.raceCashAmount;
-    const totalTokenSpent = Number(player.total_token_spent || 0) + pack.tokenAmount;
-    const seasonTokenSpent = Number(player.season_token_spent || 0) + pack.tokenAmount;
-
-    const { error: playerUpdateError } = await supabase
+    const { error: tokenSpendError } = await supabase
       .from("players")
       .update({
-        purchased_race_cash: purchasedRaceCash,
-        total_token_spent: totalTokenSpent,
-        season_token_spent: seasonTokenSpent,
+        total_token_spent: Number(tokenPlayer.total_token_spent || 0) + Number(intent.token_amount),
+        season_token_spent: Number(tokenPlayer.season_token_spent || 0) + Number(intent.token_amount),
       })
       .eq("wallet_address", intent.wallet_address);
 
-    if (playerUpdateError) throw playerUpdateError;
+    if (tokenSpendError) throw tokenSpendError;
 
-    const { error: ledgerError } = await supabase.from("race_cash_ledger").insert({
-      wallet_address: intent.wallet_address,
-      amount: pack.raceCashAmount,
-      source: isMockConfirmation ? "mock_token_purchase" : "token_purchase",
-      cash_type: "purchased",
-      reason: `${isMockConfirmation ? "Mock bought" : "Bought"} ${pack.name}`,
-    });
+    if (intent.action_type === "buy_race_cash" && pack) {
+      const { data: player, error: playerError } = await supabase
+        .from("players")
+        .select("earned_race_cash,purchased_race_cash")
+        .eq("wallet_address", intent.wallet_address)
+        .single<{ earned_race_cash: number | string; purchased_race_cash: number | string }>();
 
-    if (ledgerError) throw ledgerError;
+      if (playerError) throw playerError;
 
-    return NextResponse.json({
-      status: isMockConfirmation ? "mock_confirmed" : "confirmed",
-      purchasedRaceCashAdded: pack.raceCashAmount,
-      tokenSpent: pack.tokenAmount,
-      earnedRaceCash,
-      purchasedRaceCash,
-      signature: finalSignature,
-    });
+      const earnedRaceCash = Number(player.earned_race_cash || 0);
+      const purchasedRaceCash = Number(player.purchased_race_cash || 0) + pack.raceCashAmount;
+
+      const { error: playerUpdateError } = await supabase
+        .from("players")
+        .update({ purchased_race_cash: purchasedRaceCash })
+        .eq("wallet_address", intent.wallet_address);
+
+      if (playerUpdateError) throw playerUpdateError;
+
+      const { error: ledgerError } = await supabase.from("race_cash_ledger").insert({
+        wallet_address: intent.wallet_address,
+        amount: pack.raceCashAmount,
+        source: isMockConfirmation ? "mock_token_purchase" : "token_purchase",
+        cash_type: "purchased",
+        reason: `${isMockConfirmation ? "Mock bought" : "Bought"} ${pack.name}`,
+      });
+
+      if (ledgerError) throw ledgerError;
+
+      return NextResponse.json({
+        status: isMockConfirmation ? "mock_confirmed" : "confirmed",
+        purchasedRaceCashAdded: pack.raceCashAmount,
+        tokenSpent: Number(intent.token_amount),
+        earnedRaceCash,
+        purchasedRaceCash,
+        signature: finalSignature,
+      });
+    }
+
+    if (intent.action_type === "buy_car" && car) {
+      const purchase = await purchaseCarWithRaceCash({
+        supabase,
+        walletAddress: intent.wallet_address,
+        car,
+        requireTokenPaid: true,
+      });
+
+      return NextResponse.json({
+        status: isMockConfirmation ? "mock_confirmed" : "confirmed",
+        carId: car.id,
+        carName: car.name,
+        tokenSpent: Number(intent.token_amount),
+        raceCashSpent: purchase.raceCashSpent,
+        signature: finalSignature,
+        player: purchase.player,
+        ownedCars: purchase.ownedCars,
+        selectedCar: purchase.selectedCar,
+      });
+    }
+
+    return NextResponse.json({ error: "Unsupported payment action" }, { status: 400 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Confirm payment failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "Car already owned" ? 409 : message === "Insufficient Race Cash" ? 402 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CARS, STARTER_CAR_ID } from "@/config/cars";
+import { getPlayerState } from "@/lib/player-state";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
@@ -64,23 +65,7 @@ export async function POST(request: NextRequest) {
       if (selectError) throw selectError;
     }
 
-    const [{ data: player, error: playerError }, { data: ownedCars, error: carsError }] = await Promise.all([
-      supabase.from("players").select("*").eq("wallet_address", walletAddress).single(),
-      supabase
-        .from("player_cars")
-        .select("*")
-        .eq("wallet_address", walletAddress)
-        .order("acquired_at", { ascending: true }),
-    ]);
-
-    if (playerError) throw playerError;
-    if (carsError) throw carsError;
-
-    return NextResponse.json({
-      player,
-      ownedCars: ownedCars || [],
-      selectedCar: ownedCars?.find((car) => car.is_selected) || ownedCars?.[0] || null,
-    });
+    return NextResponse.json(await getPlayerState(supabase, walletAddress));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Player init failed";
     return NextResponse.json({ error: message }, { status: 500 });
