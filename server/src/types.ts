@@ -14,6 +14,16 @@ export type LobbyPlayer = {
   powerRating: number;
   ready: boolean;
   joinedAt: number;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  speed: number;
+  isNitro: boolean;
+  isDrifting: boolean;
+  raceStatus: "lobby" | "racing" | "disconnected";
+  laneIndex: number;
+  lastUpdate: number;
 };
 
 export type RaceRoomState = {
@@ -38,6 +48,17 @@ export type ClientJoinMessage = {
 
 export type ClientReadyMessage = {
   ready: boolean;
+};
+
+export type ClientMovementMessage = {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  speed: number;
+  isNitro: boolean;
+  isDrifting: boolean;
+  sentAt?: number;
 };
 
 export const ROOM_NAMES = {

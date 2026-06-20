@@ -21,6 +21,8 @@ type CarControllerProps = {
     drifting: boolean;
     nitroActive: boolean;
   } | null>;
+  initialPosition?: THREE.Vector3;
+  initialRotationY?: number;
 };
 
 /* ── Tuning constants (tweak these for feel) ── */
@@ -33,14 +35,20 @@ const DRIFT_LERP_SPEED = 3;       // how fast drift factor lerps in/out
 const DRIFT_STEER_BONUS = 1.4;    // extra steering angle during drift
 const DRIFT_LATERAL_SPEED = 1.2;  // how fast drift angle builds laterally
 
-export function CarController({ stats, children, carRef }: CarControllerProps) {
+export function CarController({
+  stats,
+  children,
+  carRef,
+  initialPosition = SPAWN_POSITION,
+  initialRotationY = SPAWN_ROTATION_Y,
+}: CarControllerProps) {
   const groupRef = useRef<THREE.Group>(null);
   const keys = useKeyboard();
 
   // Physics state
   const speed = useRef(0);
-  const rotation = useRef(0);       // y-rotation (radians)
-  const worldPos = useRef(SPAWN_POSITION.clone()); // track start line
+  const rotation = useRef(initialRotationY);       // y-rotation (radians)
+  const worldPos = useRef(initialPosition.clone()); // track start line
 
   // Smoothed steering
   const currentSteer = useRef(0);   // lerped steering (-1..1)
@@ -75,14 +83,14 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     // --- Reset ---
     if (resetKey) {
       speed.current = 0;
-      rotation.current = SPAWN_ROTATION_Y;
+      rotation.current = initialRotationY;
       currentSteer.current = 0;
       driftAngle.current = 0;
       driftFactor.current = 0;
       collisionTimer.current = 0;
       escapeAssistTimer.current = 0;
       lastCollisionNormal.current.set(0, 0);
-      worldPos.current.copy(SPAWN_POSITION);
+      worldPos.current.copy(initialPosition);
       nitroFuel.current = stats.nitroDuration;
       nitroOnCooldown.current = false;
       nitroCooldownRemaining.current = 0;

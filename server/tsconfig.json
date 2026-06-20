@@ -13,6 +13,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "useDefineForClassFields": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },

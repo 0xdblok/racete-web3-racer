@@ -10,7 +10,7 @@ import { RaceHud } from "@/components/race/RaceHud";
 import { RaceScene } from "@/components/race/RaceScene";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
-import { getState, type MatchmakingState } from "@/lib/multiplayer/client";
+import { getState, sendMovement, subscribe, type MatchmakingState } from "@/lib/multiplayer/client";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 
@@ -31,8 +31,22 @@ export function MultiplayerRaceClient() {
   const [error, setError] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
   const [view, setView] = useState<View>("matchmaking");
+  const [multiplayerState, setMultiplayerState] = useState<MatchmakingState>(() => getState());
   const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
+
+  useEffect(() => {
+    return subscribe(() => {
+      const state = getState();
+      setMultiplayerState(state);
+      if (state.room?.status === "racing") {
+        setView("racing");
+      }
+      if (state.status === "idle" || state.status === "error" || state.status === "disconnected") {
+        setView("matchmaking");
+      }
+    });
+  }, []);
 
   // Bridge: poll carStateRef for telemetry
   useEffect(() => {
@@ -47,6 +61,27 @@ export function MultiplayerRaceClient() {
     raf = requestAnimationFrame(poll);
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  // Network sync: send local car transform at 15Hz (not every frame)
+  useEffect(() => {
+    if (view !== "racing") return;
+
+    const interval = window.setInterval(() => {
+      const cs = carStateRef.current;
+      if (!cs) return;
+      sendMovement({
+        x: cs.position.x,
+        y: cs.position.y,
+        z: cs.position.z,
+        yaw: cs.rotation.y,
+        speed: cs.speed,
+        isNitro: cs.nitroActive,
+        isDrifting: cs.drifting,
+      });
+    }, 1000 / 15);
+
+    return () => window.clearInterval(interval);
+  }, [view]);
 
   const selectedCatalogCar = useMemo(() => {
     if (!playerState?.selectedCar) return null;
@@ -161,6 +196,15 @@ export function MultiplayerRaceClient() {
 
   // Racing view
   if (view === "racing" && selectedCatalogCar && playerState?.selectedCar) {
+    const room = multiplayerState.room;
+    const sessionId = multiplayerState.sessionId;
+    const players = room?.players ?? [];
+    const localPlayer = players.find((p) => p.sessionId === sessionId);
+    const remotePlayers = players.filter((p) => p.sessionId !== sessionId && p.raceStatus !== "disconnected");
+    const localSpawn = localPlayer
+      ? { x: localPlayer.x, y: localPlayer.y, z: localPlayer.z, yaw: localPlayer.yaw }
+      : undefined;
+
     return (
       <main className="relative min-h-screen bg-[#050509] p-2 text-white">
         <RaceHud
@@ -173,7 +217,7 @@ export function MultiplayerRaceClient() {
         />
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <span className="rounded-full border border-lime-300/20 bg-black/50 px-4 py-2 text-xs text-lime-200/70 backdrop-blur">
-            Multiplayer — Room: {getState().roomId?.slice(0, 12) ?? "—"}
+            Multiplayer sync active · Room: {multiplayerState.roomId?.slice(0, 12) ?? "—"} · Players: {players.length}/6 · Remote: {remotePlayers.length} · 15Hz
           </span>
         </div>
         <RaceScene
@@ -181,6 +225,8 @@ export function MultiplayerRaceClient() {
           selectedCar={playerState.selectedCar}
           track={CITY_LOOP_TRACK}
           carRef={carStateRef}
+          remotePlayers={remotePlayers}
+          localSpawn={localSpawn}
         />
       </main>
     );

@@ -14,6 +14,17 @@ import type { RaceRoomState, LobbyPlayer, RoomStatus } from "@/types/multiplayer
 
 export type { RaceRoomState, LobbyPlayer, RoomStatus };
 
+export type MultiplayerMovementPayload = {
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  speed: number;
+  isNitro: boolean;
+  isDrifting: boolean;
+  sentAt?: number;
+};
+
 export type MatchmakingStatus =
   | "idle"
   | "connecting"
@@ -207,6 +218,11 @@ export async function findMatch(params: {
 export function toggleReady(ready: boolean): void {
   if (!_room) return;
   _room.send("ready", { ready });
+}
+
+export function sendMovement(payload: MultiplayerMovementPayload): void {
+  if (!_room) return;
+  _room.send("movement", { ...payload, sentAt: payload.sentAt ?? Date.now() });
 }
 
 export function cancelMatchmaking(): void {

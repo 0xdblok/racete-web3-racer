@@ -20,8 +20,15 @@ app.get("/health", (_req, res) => {
 const server = http.createServer(app);
 const gameServer = new Server({ server });
 
-// Register the racing room
-gameServer.define("race_room", RaceRoom);
+// Register class-based racing rooms (matches frontend classToRoomName())
+gameServer.define("race_D", RaceRoom, { raceClass: "D" });
+gameServer.define("race_C", RaceRoom, { raceClass: "C" });
+gameServer.define("race_B", RaceRoom, { raceClass: "B" });
+gameServer.define("race_A", RaceRoom, { raceClass: "A" });
+gameServer.define("race_S", RaceRoom, { raceClass: "S" });
+gameServer.define("race_open", RaceRoom, { raceClass: "open" });
+// Backward-compatible generic room name
+gameServer.define("race_room", RaceRoom, { raceClass: "open" });
 
 // Start
 server.listen(PORT, () => {

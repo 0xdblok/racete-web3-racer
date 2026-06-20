@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
+import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
@@ -11,6 +12,8 @@ import { CarController } from "@/components/race/CarController";
 import { ChaseCamera, type ChaseCarState } from "@/components/race/ChaseCamera";
 import { CarModel } from "@/components/race/CarModel";
 import { RaceMap } from "@/components/race/RaceMap";
+import { RemoteCar } from "@/components/race/RemoteCar";
+import type { LobbyPlayer } from "@/types/multiplayer";
 // import { TestTrack } from "@/components/race/TestTrack"; // debug fallback
 
 /* ------------------------------------------------------------------ */
@@ -29,12 +32,18 @@ type RaceSceneProps = {
   selectedCar: PlayerCar;
   track: TrackConfig;
   carRef?: React.MutableRefObject<CarState | null>;
+  remotePlayers?: LobbyPlayer[];
+  localSpawn?: { x: number; y?: number; z: number; yaw?: number };
 };
 
-export function RaceScene({ car, selectedCar, carRef }: RaceSceneProps) {
+export function RaceScene({ car, selectedCar, carRef, remotePlayers = [], localSpawn }: RaceSceneProps) {
   const gameplayStats = resolveCarGameplayStats(car, selectedCar);
   const internalCarRef = useRef<CarState | null>(null);
   const activeCarRef = carRef || internalCarRef;
+  const initialPosition = localSpawn
+    ? new THREE.Vector3(localSpawn.x, localSpawn.y ?? 0.3, localSpawn.z)
+    : undefined;
+  const initialRotationY = localSpawn?.yaw ?? undefined;
 
   return (
     <div className="h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
@@ -51,9 +60,19 @@ export function RaceScene({ car, selectedCar, carRef }: RaceSceneProps) {
         <RaceMap />
 
         {/* Car controller wraps the car model, handles all movement */}
-        <CarController stats={gameplayStats} carRef={activeCarRef}>
+        <CarController
+          stats={gameplayStats}
+          carRef={activeCarRef}
+          initialPosition={initialPosition}
+          initialRotationY={initialRotationY}
+        >
           <CarModel car={car} selectedCar={selectedCar} gameplayStats={gameplayStats} isDriving />
         </CarController>
+
+        {/* Remote network cars interpolate their synced Colyseus state */}
+        {remotePlayers.map((player) => (
+          <RemoteCar key={player.sessionId} player={player} />
+        ))}
 
         {/* Chase camera follows the car — uses tuned defaults */}
         <ChaseCamera carState={activeCarRef} />
