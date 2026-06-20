@@ -406,6 +406,22 @@ export function GaragePageClient() {
     setFocusedCarClick(info);
   }, []);
 
+  const handleBackToOverview = useCallback(() => {
+    setFocusedCarId(null);
+    setFocusedCarClick(null);
+  }, []);
+
+  // Escape key: return to showroom overview
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && focusedCarId) {
+        handleBackToOverview();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [focusedCarId, handleBackToOverview]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       void fetchDevStatus();
@@ -495,6 +511,7 @@ export function GaragePageClient() {
             selectedCarId={selectedCarId}
             focusedCarId={focusedCarId}
             onCarClick={handleShowroomCarClick}
+            onBackToOverview={handleBackToOverview}
           />
           {/* Side Panel: focused car details */}
           <div className="flex flex-col gap-4">
@@ -510,7 +527,7 @@ export function GaragePageClient() {
                 onSelect={() => focusedCarClick && void selectCar(focusedCarClick.car.id)}
                 onBuy={() => focusedCarClick && void buyCar(focusedCarClick.car.id)}
                 onUpgrade={(playerCarId, ut) => void upgradeCar(playerCarId, ut)}
-                onBack={() => { setFocusedCarId(null); setFocusedCarClick(null); }}
+                onBack={handleBackToOverview}
               />
             ) : (
               <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 flex flex-col items-center justify-center text-center min-h-[300px]">

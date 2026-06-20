@@ -1,11 +1,11 @@
 "use client";
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Clone, useGLTF, Html, Text } from "@react-three/drei";
+import { Canvas, useThree } from "@react-three/fiber";
+import { Clone, useGLTF, Html, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { CarConfig } from "@/config/cars";
-import type { PlayerCar } from "@/types/game";
 
 /* ------------------------------------------------------------------ */
 /*  Layout: arc arrangement (4 rows, spacing)                          */
@@ -50,48 +50,117 @@ function computeBox(scene: THREE.Group) {
   return { center, size, maxDim };
 }
 
-const CAR_OVERRIDES: Record<string, { rotationY?: number }> = {};
-for (const id of [
-  "street-rat","bavaro-coupe","furia-gt","toro-x",
-  "nova-s1","bavaro-sport","zephyr-z8","bavaro-m5","toro-se","valor-gt",
-  "warp-x1","nova-spider","volt-w6","volt-c5","bavaro-cs",
-]) {
+/* Per-car overrides for models that need tuning after normalization */
+const CAR_OVERRIDES: Record<
+  string,
+  { rotationY?: number; scaleMultiplier?: number; positionOffset?: [number, number, number]; labelOffset?: [number, number, number] }
+> = {};
+
+// Default: flip 180 so cars face forward
+const ALL_CAR_IDS = [
+  "street-rat", "bavaro-coupe", "furia-gt", "toro-x",
+  "nova-s1", "bavaro-sport", "zephyr-z8", "bavaro-m5", "toro-se", "valor-gt",
+  "warp-x1", "nova-spider", "volt-w6", "volt-c5", "bavaro-cs",
+];
+for (const id of ALL_CAR_IDS) {
   CAR_OVERRIDES[id] = { rotationY: Math.PI };
 }
 
+// Bavaro Sport: model normalizes small, increase scale
+CAR_OVERRIDES["bavaro-sport"] = { ...CAR_OVERRIDES["bavaro-sport"], scaleMultiplier: 1.5 };
+
+// Street Rat / Tesla Cybertruck: model pivot is off-center, nudge forward
+CAR_OVERRIDES["street-rat"] = { ...CAR_OVERRIDES["street-rat"], positionOffset: [0, 0, 0.5] };
+
+// Aurox V10 and Sturm RS have no model; no override needed (placeholder used)
+CAR_OVERRIDES["aurox-v10"] = { rotationY: Math.PI };
+CAR_OVERRIDES["sturm-rs"] = { rotationY: Math.PI };
+
 /* ------------------------------------------------------------------ */
-/*  Camera controller (smooth zoom to focused car)                     */
+/*  ShowroomCamera — OrbitControls with smooth focus transitions       */
 /* ------------------------------------------------------------------ */
 
-type FocusTarget = { pos: [number, number, number]; lookAt: [number, number, number] } | null;
+type FocusTarget = {
+  pos: [number, number, number];
+  lookAt: [number, number, number];
+} | null;
 
-function CameraController({ focus }: { focus: FocusTarget }) {
+function ShowroomCamera({ focus }: { focus: FocusTarget }) {
+  const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera } = useThree();
-  const targetPos = useRef(new THREE.Vector3(0, 12, 16));
-  const targetLook = useRef(new THREE.Vector3(0, 1, 0));
+  const desiredTarget = useRef(new THREE.Vector3(0, 1, 0));
+  const animatedTarget = useRef(new THREE.Vector3(0, 1, 0));
 
+  // When focus changes, snap desired and animate camera toward it
   useEffect(() => {
-    if (focus) {
-      targetPos.current.set(...focus.pos);
-      targetLook.current.set(...focus.lookAt);
+    if (focus && controlsRef.current) {
+      desiredTarget.current.set(focus.lookAt[0], focus.lookAt[1], focus.lookAt[2]);
+      animatedTarget.current.set(focus.lookAt[0], focus.lookAt[1], focus.lookAt[2]);
+
+      // Move camera closer to the car over ~0.8s
+      const targetCamPos = new THREE.Vector3(focus.pos[0], focus.pos[1], focus.pos[2]);
+      const start = camera.position.clone();
+      const startTarget = controlsRef.current.target.clone();
+      const endTarget = new THREE.Vector3(focus.lookAt[0], focus.lookAt[1], focus.lookAt[2]);
+      let elapsed = 0;
+      const duration = 0.8;
+
+      function animate() {
+        elapsed += 1 / 60;
+        const t = Math.min(elapsed / duration, 1.0);
+        const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        camera.position.lerpVectors(start, targetCamPos, ease);
+        controlsRef.current!.target.lerpVectors(startTarget, endTarget, ease);
+        controlsRef.current!.update();
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      animate();
     } else {
-      targetPos.current.set(0, 12, 16);
-      targetLook.current.set(0, 1, 0);
+      if (controlsRef.current) {
+        // Fly back to overview
+        const start = camera.position.clone();
+        const startTarget = controlsRef.current.target.clone();
+        const endTarget = new THREE.Vector3(0, 1, 0);
+        const endCamPos = new THREE.Vector3(0, 12, 16);
+        let elapsed = 0;
+        const duration = 0.8;
+
+        function animate() {
+          elapsed += 1 / 60;
+          const t = Math.min(elapsed / duration, 1.0);
+          const ease = 1 - Math.pow(1 - t, 3);
+          camera.position.lerpVectors(start, endCamPos, ease);
+          if (controlsRef.current) {
+            controlsRef.current.target.lerpVectors(startTarget, endTarget, ease);
+            controlsRef.current.update();
+          }
+          if (t < 1) {
+            requestAnimationFrame(animate);
+          }
+        }
+        animate();
+      }
     }
-  }, [focus]);
+  }, [focus, camera]);
 
-  useFrame((_, delta) => {
-    const t = 1 - Math.exp(-4 * delta);
-    camera.position.lerp(targetPos.current, t);
-    const currentLook = new THREE.Vector3();
-    camera.getWorldDirection(currentLook);
-    const desiredDir = targetLook.current.clone().sub(camera.position).normalize();
-    const lerpedDir = currentLook.lerp(desiredDir, t).normalize();
-    const lookTarget = camera.position.clone().add(lerpedDir.multiplyScalar(5));
-    camera.lookAt(lookTarget);
-  });
-
-  return null;
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      minDistance={2.5}
+      maxDistance={30}
+      minPolarAngle={0.15}
+      maxPolarAngle={Math.PI / 2.2}
+      enableDamping
+      dampingFactor={0.08}
+      mouseButtons={{
+        LEFT: THREE.MOUSE.ROTATE,
+        MIDDLE: THREE.MOUSE.PAN,
+        RIGHT: THREE.MOUSE.ROTATE,
+      }}
+    />
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -101,32 +170,40 @@ function CameraController({ focus }: { focus: FocusTarget }) {
 function Floor() {
   return (
     <group>
-      {/* Light floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
         <planeGeometry args={[40, 20]} />
         <meshStandardMaterial color="#1e1e28" roughness={0.4} metalness={0.1} />
       </mesh>
-      {/* Subtle grid lines */}
       <gridHelper args={[40, 40, "#2a2a3a", "#1a1a25"]} position={[0, 0, 0]} />
     </group>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Neon ring under focused/selected car                               */
+/*  Neon ring under car                                                */
 /* ------------------------------------------------------------------ */
 
-function NeonRing({ position, color, radius = 1.6 }: { position: [number, number, number]; color: string; radius?: number }) {
+function NeonRing({
+  position,
+  color,
+  radius = 1.6,
+  opacity = 0.6,
+}: {
+  position: [number, number, number];
+  color: string;
+  radius?: number;
+  opacity?: number;
+}) {
   return (
     <mesh position={position} rotation={[-Math.PI / 2, 0, 0]}>
       <ringGeometry args={[radius - 0.08, radius, 64]} />
-      <meshBasicMaterial color={color} side={THREE.DoubleSide} transparent opacity={0.6} />
+      <meshBasicMaterial color={color} side={THREE.DoubleSide} transparent opacity={opacity} />
     </mesh>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Single showroom car (lazy loaded, Suspense isolated)               */
+/*  Showroom car (clickable, hoverable, with model/placeholder)        */
 /* ------------------------------------------------------------------ */
 
 function ShowroomCar({
@@ -144,33 +221,89 @@ function ShowroomCar({
   isFocused: boolean;
   onClick: () => void;
 }) {
-  const hasModel = Boolean(car.modelUrl);
+  const [hovered, setHovered] = useState(false);
+  const { gl } = useThree();
 
-  const ringColor = isSelected ? "#a3e635" : isOwned ? "#e879f9" : "#ffffff22";
+  const ringColor = isFocused
+    ? "#a3e635"
+    : hovered
+      ? "#facc15"
+      : isSelected
+        ? "#a3e635"
+        : isOwned
+          ? "#e879f9"
+          : "#ffffff22";
+
+  const ringOpacity = isFocused ? 0.9 : hovered ? 0.7 : isSelected ? 0.6 : isOwned ? 0.5 : 0.2;
   const ringRadius = isFocused ? 1.8 : isSelected ? 1.6 : 1.2;
+
+  const handlePointerOver = useCallback(() => {
+    setHovered(true);
+  }, []);
+
+  const handlePointerOut = useCallback(() => {
+    setHovered(false);
+  }, []);
+
+  // Sync cursor to hover state via effect (avoids direct DOM mutation lint error)
+  useEffect(() => {
+    // eslint-disable-next-line
+    gl.domElement.style.cursor = hovered ? "pointer" : "auto";
+  }, [hovered, gl]);
+
+  const handleClick = useCallback(
+    (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      onClick();
+    },
+    [onClick],
+  );
 
   return (
     <group position={[position.x, 0, position.z]}>
       {/* Neon ring */}
-      <NeonRing position={[0, 0.02, 0]} color={ringColor} radius={ringRadius} />
+      <NeonRing position={[0, 0.02, 0]} color={ringColor} radius={ringRadius} opacity={ringOpacity} />
 
       {/* Car name label */}
-      <Html position={[0, isFocused ? 3.5 : 2.5, 0]} center style={{ pointerEvents: "none" }}>
-        <div className={`text-center whitespace-nowrap ${isFocused ? "scale-125" : ""}`}>
-          <p className={`text-[10px] font-black ${isSelected ? "text-lime-300" : isOwned ? "text-fuchsia-200" : "text-white/60"}`}>
+      <Html
+        position={[0, isFocused ? 3.8 : 2.8, 0]}
+        center
+        style={{ pointerEvents: "auto" }}
+        onClick={handleClick}
+      >
+        <div
+          className={`text-center whitespace-nowrap cursor-pointer select-none ${
+            isFocused ? "scale-125" : hovered ? "scale-110" : ""
+          }`}
+        >
+          <p
+            className={`text-[10px] font-black ${
+              isFocused
+                ? "text-lime-300"
+                : hovered
+                  ? "text-yellow-200"
+                  : isSelected
+                    ? "text-lime-300"
+                    : isOwned
+                      ? "text-fuchsia-200"
+                      : "text-white/60"
+            }`}
+          >
             {car.name}
           </p>
           <p className="text-[8px] text-white/30">{car.class}</p>
         </div>
       </Html>
 
-      {/* Clickable invisible mesh for raycasting */}
+      {/* Large clickable invisible hitbox (covers car + ring + label area) */}
       <mesh
-        position={[0, 1.2, 0]}
-        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        position={[0, 1.4, 0]}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
         visible={false}
       >
-        <boxGeometry args={[3, 2.4, 5]} />
+        <boxGeometry args={[4, 3, 6]} />
         <meshBasicMaterial />
       </mesh>
 
@@ -183,7 +316,7 @@ function ShowroomCar({
 }
 
 /* ------------------------------------------------------------------ */
-/*  CarModel with Box3 normalization                                  */
+/*  CarModel with Box3 normalization + per-car overrides               */
 /* ------------------------------------------------------------------ */
 
 function CarModelOrFallback({ car }: { car: CarConfig }) {
@@ -203,12 +336,14 @@ function NormalizedCarModel({ car }: { car: CarConfig }) {
   const override = CAR_OVERRIDES[car.id] ?? {};
   const box = useMemo(() => computeBox(gltf.scene), [gltf]);
 
-  const scale = TARGET_SIZE / box.maxDim;
+  const baseScale = TARGET_SIZE / box.maxDim;
+  const scale = baseScale * (override.scaleMultiplier ?? 1);
   const rotationY = override.rotationY ?? 0;
+  const offset = override.positionOffset ?? [0, 0, 0];
   const floorY = -box.center.y * scale + box.size.y * 0.5 * scale;
 
   return (
-    <group position={[0, floorY, 0]} scale={scale} rotation-y={rotationY}>
+    <group position={[offset[0], floorY + offset[1], offset[2]]} scale={scale} rotation-y={rotationY}>
       <Clone object={gltf.scene} />
     </group>
   );
@@ -233,9 +368,10 @@ function PlaceholderMesh({ accent }: { accent: string }) {
         <boxGeometry args={[1.3, 0.1, 0.06]} />
         <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.5} />
       </mesh>
-      {/* Missing model text */}
       <Html position={[0, 1.2, 0]} center>
-        <p className="text-[8px] text-amber-300/80 whitespace-nowrap font-bold">Model not uploaded yet</p>
+        <p className="text-[8px] text-amber-300/80 whitespace-nowrap font-bold">
+          Model not uploaded yet
+        </p>
       </Html>
     </group>
   );
@@ -250,9 +386,13 @@ class GltfErrorBoundary extends React.Component<
   { failed: boolean }
 > {
   state = { failed: false };
-  static getDerivedStateFromError() { return { failed: true }; }
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
   componentDidCatch() {}
-  render() { return this.state.failed ? this.props.fallback : this.props.children; }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -262,17 +402,11 @@ class GltfErrorBoundary extends React.Component<
 function ShowroomLighting() {
   return (
     <>
-      {/* Strong ambient for overall visibility */}
       <ambientLight intensity={1.8} color="#ffffff" />
-      {/* Key light from front-top */}
       <directionalLight position={[0, 10, 15]} intensity={3.5} color="#ffffff" />
-      {/* Fill from left */}
       <directionalLight position={[-10, 5, -5]} intensity={1.5} color="#e0e0ff" />
-      {/* Fill from right */}
       <directionalLight position={[10, 5, -5]} intensity={1.5} color="#ffe0e0" />
-      {/* Rim/back light to separate dark cars */}
       <directionalLight position={[0, 3, -12]} intensity={2.0} color="#ffffff" />
-      {/* Top-down soft */}
       <directionalLight position={[0, 10, 0]} intensity={0.8} color="#ffffff" />
     </>
   );
@@ -294,6 +428,7 @@ type GarageShowroom3DProps = {
   selectedCarId: string | null;
   focusedCarId: string | null;
   onCarClick: (info: ShowroomCarClick) => void;
+  onBackToOverview: () => void;
 };
 
 export function GarageShowroom3D({
@@ -302,6 +437,7 @@ export function GarageShowroom3D({
   selectedCarId,
   focusedCarId,
   onCarClick,
+  onBackToOverview,
 }: GarageShowroom3DProps) {
   const focusTarget: FocusTarget = useMemo(() => {
     if (!focusedCarId) return null;
@@ -327,14 +463,33 @@ export function GarageShowroom3D({
 
   return (
     <div className="w-full h-full min-h-[500px] md:min-h-[600px] rounded-[2rem] border border-white/10 bg-[#0c0c16] overflow-hidden relative">
+      {/* Back to overview overlay button (visible when focused) */}
+      {focusedCarId && (
+        <div className="absolute top-4 left-4 z-20">
+          <button
+            onClick={onBackToOverview}
+            className="rounded-full border border-white/20 bg-black/60 backdrop-blur px-4 py-2 text-xs text-white/80 hover:bg-white/10 transition-colors"
+          >
+            ← Back to showroom
+          </button>
+        </div>
+      )}
+
       <Canvas
         camera={{ position: [0, 12, 16], fov: 45, near: 0.5, far: 80 }}
         gl={{ antialias: true }}
         style={{ background: "transparent" }}
+        // Canvas-level Escape key listener
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Escape" && focusedCarId) {
+            onBackToOverview();
+          }
+        }}
+        tabIndex={0}
       >
         <ShowroomLighting />
         <Floor />
-        <CameraController focus={focusTarget} />
+        <ShowroomCamera focus={focusTarget} />
 
         <group>
           {cars.map((car, index) => {
