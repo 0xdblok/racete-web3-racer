@@ -15,6 +15,7 @@ import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
 import { getUpgradePrice, MAX_UPGRADE_LEVEL, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
+import { GarageCarPreview } from "@/components/garage/GarageCarPreview";
 import type { PlayerInitResponse } from "@/types/game";
 
 type Status = "idle" | "loading" | "ready" | "error";
@@ -506,8 +507,11 @@ export function WalletGameDashboard() {
             const busy = activeCarId === car.id;
             return (
               <article key={car.id} className={`rounded-3xl border p-5 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
-                <div className="mb-4 flex h-40 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black">
-                  <div className="h-16 w-32 rounded-[45%_55%_35%_35%] border border-fuchsia-300/60 bg-fuchsia-400/15 shadow-[0_0_60px_rgba(217,70,239,0.35)]" />
+                <div className="mb-4">
+                  <GarageCarPreview car={car} selectedCar={ownedCar} />
+                  {(!car.modelUrl || car.modelUrl.endsWith(".glb")) && (
+                    <p className="mt-2 text-center text-xs text-amber-200/80">Model not uploaded yet — showing fallback</p>
+                  )}
                 </div>
                 <div className="flex items-start justify-between gap-4">
                   <div>
