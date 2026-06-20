@@ -10,7 +10,8 @@ import { resolveCarGameplayStats } from "@/lib/car-gameplay-stats";
 import { CarController } from "@/components/race/CarController";
 import { ChaseCamera, type ChaseCarState } from "@/components/race/ChaseCamera";
 import { CarModel } from "@/components/race/CarModel";
-import { TestTrack } from "@/components/race/TestTrack";
+import { RaceMap } from "@/components/race/RaceMap";
+// import { TestTrack } from "@/components/race/TestTrack"; // debug fallback
 
 /* ------------------------------------------------------------------ */
 /*  Car state type (shared between controller and camera)              */
@@ -46,8 +47,8 @@ export function RaceScene({ car, selectedCar, carRef }: RaceSceneProps) {
         <pointLight position={[300, 50, 200]} intensity={60} color="#bef264" />
         <pointLight position={[0, 60, 400]} intensity={40} color="#60a5fa" />
 
-        {/* Huge test track */}
-        <TestTrack />
+        {/* Racing circuit map */}
+        <RaceMap />
 
         {/* Car controller wraps the car model, handles all movement */}
         <CarController stats={gameplayStats} carRef={activeCarRef}>

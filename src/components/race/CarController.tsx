@@ -39,7 +39,7 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
   // Physics state
   const speed = useRef(0);
   const rotation = useRef(0);       // y-rotation (radians)
-  const worldPos = useRef(new THREE.Vector3(0, 0.3, 0));
+  const worldPos = useRef(new THREE.Vector3(0, 0.3, -80)); // RaceMap start line
 
   // Smoothed steering
   const currentSteer = useRef(0);   // lerped steering (-1..1)
@@ -72,7 +72,7 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
       currentSteer.current = 0;
       driftAngle.current = 0;
       driftFactor.current = 0;
-      worldPos.current.set(0, 0.3, 0);
+      worldPos.current.set(0, 0.3, -80); // reset to RaceMap start line
       nitroFuel.current = stats.nitroDuration;
       nitroOnCooldown.current = false;
       nitroCooldownRemaining.current = 0;
@@ -207,9 +207,9 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     );
     worldPos.current.add(forward.clone().multiplyScalar(speed.current * dt));
 
-    // --- Clamp bounds (huge test map: 750×750 → 1500×1500 area) ---
-    worldPos.current.x = THREE.MathUtils.clamp(worldPos.current.x, -750, 750);
-    worldPos.current.z = THREE.MathUtils.clamp(worldPos.current.z, -750, 750);
+    // --- Clamp bounds (1000×1000 arena) ---
+    worldPos.current.x = THREE.MathUtils.clamp(worldPos.current.x, -490, 490);
+    worldPos.current.z = THREE.MathUtils.clamp(worldPos.current.z, -490, 490);
 
     // --- Update group transform ---
     if (groupRef.current) {
