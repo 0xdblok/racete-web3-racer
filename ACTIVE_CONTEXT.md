@@ -1,30 +1,28 @@
 # Active Context
 
-Current milestone: Pump.fun token payment foundation
+Current milestone: Mock token payment mode for economy testing
 
 Completed:
-- Confirmed git worktree clean before payment work.
-- Confirmed GitHub repo `0xdblok/racete-web3-racer` exists and `main` is pushed.
-- Confirmed `.env.local` and `/root/racete-secrets.env` are untracked; only `.env.example` is committed.
-- Confirmed Vercel production env names exist for Supabase, Solana RPC, token mint/decimals, treasury, and buy URL.
-- Added config-driven Race Cash packs.
-- Added `/api/payments/create-intent` for backend-priced token payment intents.
-- Added `/api/payments/confirm` with SPL transfer verification and purchased Race Cash accounting.
-- Added frontend Race Cash shop with wallet SPL `TransferChecked` to treasury ATA.
+- Added explicit `MOCK_TOKEN_MODE` server env and `NEXT_PUBLIC_MOCK_TOKEN_MODE` client env.
+- Kept real Solana SPL `TransferChecked` payment path intact for mainnet mode.
+- Added backend mock confirmation path gated by `MOCK_TOKEN_MODE=true` only.
+- Added frontend Dev mock payment mode UI and mock confirm flow that does not open wallet transaction.
+- Mock Starter Pack test confirmed purchased Race Cash increases by 10,000 and earned Race Cash stays unchanged.
+- Verified `token_transactions.status='mock_confirmed'` and ledger row uses purchased cash.
+- Verified mock confirmation is rejected with 403 when server mock mode is disabled.
 
 Next task:
-- Deploy payment foundation and test with a real token mint/treasury once the Pump.fun token exists.
+- Use mock payment mode to build/test garage car purchases and upgrades before the real Pump.fun token exists.
 
 Important files:
 - `src/components/WalletGameDashboard.tsx`
 - `src/app/api/payments/create-intent/route.ts`
 - `src/app/api/payments/confirm/route.ts`
-- `src/lib/solana-payments.ts`
-- `src/config/economy.ts`
 - `src/lib/env.ts`
 - `src/lib/server-env.ts`
-- `supabase/schema.sql`
+- `src/lib/solana-payments.ts`
+- `src/config/economy.ts`
+- `.env.example`
 
 Open blockers:
-- Current token mint is still placeholder until the real Pump.fun SPL token is created.
-- End-to-end successful payment requires wallet with the real token and treasury ATA creation/payment on-chain.
+- Real SPL payment success still requires the actual Pump.fun token mint, treasury wallet, and funded user token account.

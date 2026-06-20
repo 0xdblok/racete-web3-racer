@@ -96,11 +96,11 @@ export function WalletGameDashboard() {
   const buyRaceCashPack = useCallback(
     async (pack: RaceCashPack) => {
       if (!publicKey || !walletAddress) return;
-      if (!publicEnv.tokenMint || !publicEnv.treasuryWallet) {
+      if (!publicEnv.mockTokenMode && (!publicEnv.tokenMint || !publicEnv.treasuryWallet)) {
         setPaymentStatus({ tone: "error", message: "Token mint or treasury wallet is not configured." });
         return;
       }
-      if (tokenBalance < pack.tokenAmount) {
+      if (!publicEnv.mockTokenMode && tokenBalance < pack.tokenAmount) {
         setPaymentStatus({ tone: "error", message: `Not enough token balance for ${pack.name}.` });
         return;
       }
@@ -120,6 +120,27 @@ export function WalletGameDashboard() {
         });
         const intent = (await intentRes.json()) as CreateIntentResponse & { error?: string };
         if (!intentRes.ok) throw new Error(intent.error || "Create payment intent failed");
+
+        if (publicEnv.mockTokenMode) {
+          setPaymentStatus({ tone: "normal", message: "Dev mock payment mode: confirming without wallet transaction..." });
+          const confirmRes = await fetch("/api/payments/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentIntentId: intent.paymentIntentId,
+              mockConfirmation: {
+                type: "RACETE_MOCK_TOKEN_PAYMENT",
+                walletAddress,
+              },
+            }),
+          });
+          const confirmation = await confirmRes.json();
+          if (!confirmRes.ok) throw new Error(confirmation.error || "Mock payment verification failed");
+
+          setPaymentStatus({ tone: "success", message: `Dev mock payment confirmed. Added ${formatNumber(intent.raceCashAmount)} purchased Race Cash.` });
+          await initPlayer();
+          return;
+        }
 
         setPaymentStatus({ tone: "normal", message: "Open your wallet and approve the SPL token transfer..." });
 
@@ -219,6 +240,11 @@ export function WalletGameDashboard() {
                 <p className="text-sm font-bold uppercase tracking-[0.3em] text-lime-300">Race Cash shop</p>
                 <h2 className="mt-2 text-3xl font-black">Buy Race Cash with token</h2>
                 <p className="mt-2 text-sm text-white/60">Purchased Race Cash is tracked separately and is not eligible for future cashout.</p>
+                {publicEnv.mockTokenMode && (
+                  <p className="mt-3 rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-bold text-amber-100">
+                    Dev mock payment mode: token payments are simulated and no wallet transaction will open.
+                  </p>
+                )}
               </div>
               <button onClick={() => void refreshTokenBalance()} className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10">Refresh token balance</button>
             </div>

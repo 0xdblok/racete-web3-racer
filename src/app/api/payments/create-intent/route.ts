@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
     }
 
-    if (!serverEnv.tokenMint || !serverEnv.treasuryWallet) {
+    if (!serverEnv.mockTokenMode && (!serverEnv.tokenMint || !serverEnv.treasuryWallet)) {
       return NextResponse.json({ error: "Token payments are not configured" }, { status: 503 });
     }
 

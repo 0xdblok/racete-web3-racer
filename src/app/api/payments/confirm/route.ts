@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRaceCashPack } from "@/config/economy";
+import { serverEnv } from "@/lib/server-env";
 import { verifyTokenTransferSignature } from "@/lib/solana-payments";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -17,36 +18,40 @@ type PaymentIntentRow = {
 };
 
 type PlayerRow = {
+  earned_race_cash: number | string;
   purchased_race_cash: number | string;
   total_token_spent: number | string;
   season_token_spent: number | string;
 };
 
+type MockConfirmation = {
+  type?: string;
+  walletAddress?: string;
+};
+
+const MOCK_CONFIRMATION_TYPE = "RACETE_MOCK_TOKEN_PAYMENT";
+
 export async function POST(request: NextRequest) {
   try {
-    const { paymentIntentId, signature } = await request.json();
+    const body = await request.json();
+    const paymentIntentId = body.paymentIntentId;
+    const signature = body.signature;
+    const mockConfirmation = body.mockConfirmation as MockConfirmation | undefined;
+    const isMockConfirmation = mockConfirmation?.type === MOCK_CONFIRMATION_TYPE;
 
     if (typeof paymentIntentId !== "string" || !paymentIntentId) {
       return NextResponse.json({ error: "Missing payment intent" }, { status: 400 });
     }
 
-    if (typeof signature !== "string" || signature.length < 32) {
+    if (!isMockConfirmation && (typeof signature !== "string" || signature.length < 32)) {
       return NextResponse.json({ error: "Invalid transaction signature" }, { status: 400 });
     }
 
-    const supabase = getSupabaseAdmin();
-
-    const { data: reusedSignature, error: reusedError } = await supabase
-      .from("token_transactions")
-      .select("id")
-      .eq("signature", signature)
-      .maybeSingle();
-
-    if (reusedError) throw reusedError;
-    if (reusedSignature) {
-      return NextResponse.json({ error: "Transaction signature already used" }, { status: 409 });
+    if (isMockConfirmation && !serverEnv.mockTokenMode) {
+      return NextResponse.json({ error: "Mock payments are disabled" }, { status: 403 });
     }
 
+    const supabase = getSupabaseAdmin();
     const { data: intent, error: intentError } = await supabase
       .from("payment_intents")
       .select("*")
@@ -69,15 +74,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment intent price mismatch" }, { status: 400 });
     }
 
-    const verified = await verifyTokenTransferSignature({
-      signature,
-      walletAddress: intent.wallet_address,
-      expectedTokenAmount: intent.token_amount,
-    });
+    const finalSignature = isMockConfirmation ? `mock:${intent.id}` : signature;
+    if (typeof finalSignature !== "string") {
+      return NextResponse.json({ error: "Invalid confirmation signature" }, { status: 400 });
+    }
+
+    if (isMockConfirmation && mockConfirmation?.walletAddress !== intent.wallet_address) {
+      return NextResponse.json({ error: "Mock confirmation wallet mismatch" }, { status: 400 });
+    }
+
+    const { data: reusedSignature, error: reusedError } = await supabase
+      .from("token_transactions")
+      .select("id")
+      .eq("signature", finalSignature)
+      .maybeSingle();
+
+    if (reusedError) throw reusedError;
+    if (reusedSignature) {
+      return NextResponse.json({ error: "Transaction signature already used" }, { status: 409 });
+    }
+
+    const verified = isMockConfirmation
+      ? {
+          tokenMint: intent.token_mint,
+          recipientWallet: intent.treasury_wallet,
+        }
+      : await verifyTokenTransferSignature({
+          signature: finalSignature,
+          walletAddress: intent.wallet_address,
+          expectedTokenAmount: intent.token_amount,
+        });
 
     const { data: claimedIntent, error: claimError } = await supabase
       .from("payment_intents")
-      .update({ status: "paid", signature, confirmed_at: new Date().toISOString() })
+      .update({ status: isMockConfirmation ? "mock_paid" : "paid", signature: finalSignature, confirmed_at: new Date().toISOString() })
       .eq("id", intent.id)
       .eq("status", "pending")
       .select("id")
@@ -90,25 +120,26 @@ export async function POST(request: NextRequest) {
 
     const { error: transactionError } = await supabase.from("token_transactions").insert({
       wallet_address: intent.wallet_address,
-      signature,
+      signature: finalSignature,
       token_amount: intent.token_amount,
       action_type: intent.action_type,
       payment_intent_id: intent.id,
       token_mint: verified.tokenMint,
       recipient_wallet: verified.recipientWallet,
-      status: "confirmed",
+      status: isMockConfirmation ? "mock_confirmed" : "confirmed",
     });
 
     if (transactionError) throw transactionError;
 
     const { data: player, error: playerError } = await supabase
       .from("players")
-      .select("purchased_race_cash,total_token_spent,season_token_spent")
+      .select("earned_race_cash,purchased_race_cash,total_token_spent,season_token_spent")
       .eq("wallet_address", intent.wallet_address)
       .single<PlayerRow>();
 
     if (playerError) throw playerError;
 
+    const earnedRaceCash = Number(player.earned_race_cash || 0);
     const purchasedRaceCash = Number(player.purchased_race_cash || 0) + pack.raceCashAmount;
     const totalTokenSpent = Number(player.total_token_spent || 0) + pack.tokenAmount;
     const seasonTokenSpent = Number(player.season_token_spent || 0) + pack.tokenAmount;
@@ -127,18 +158,20 @@ export async function POST(request: NextRequest) {
     const { error: ledgerError } = await supabase.from("race_cash_ledger").insert({
       wallet_address: intent.wallet_address,
       amount: pack.raceCashAmount,
-      source: "token_purchase",
+      source: isMockConfirmation ? "mock_token_purchase" : "token_purchase",
       cash_type: "purchased",
-      reason: `Bought ${pack.name}`,
+      reason: `${isMockConfirmation ? "Mock bought" : "Bought"} ${pack.name}`,
     });
 
     if (ledgerError) throw ledgerError;
 
     return NextResponse.json({
-      status: "confirmed",
+      status: isMockConfirmation ? "mock_confirmed" : "confirmed",
       purchasedRaceCashAdded: pack.raceCashAmount,
       tokenSpent: pack.tokenAmount,
-      signature,
+      earnedRaceCash,
+      purchasedRaceCash,
+      signature: finalSignature,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Confirm payment failed";
