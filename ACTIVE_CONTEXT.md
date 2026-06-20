@@ -1,27 +1,26 @@
 # Active Context
 
-Current milestone: Garage car purchases and selected car flow
+Current milestone: Car upgrades system
 
 Completed:
-- Added `/api/cars/buy` for Race Cash-only car purchases.
-- Added `/api/cars/select` for owned-car selection with one selected car per wallet.
-- Extended `/api/payments/create-intent` with `actionType='buy_car'` for premium cars.
-- Extended `/api/payments/confirm` so verified/mock token payment completes premium car purchase.
-- Race Cash car spending uses backend car prices and spends purchased Race Cash before earned Race Cash.
-- Car purchase ledger rows use negative amounts and preserve earned vs purchased cash type.
-- Garage UI now shows locked/owned/selected state, buy/select buttons, prices, and insufficient balance messages.
-- Verified API tests for Bavaro Race Cash buy, selected car update, duplicate rejection, insufficient balance rejection, and Sturm RS premium mock token buy.
+- Added config-driven upgrade pricing and deterministic power-rating formula.
+- Added `/api/cars/upgrade` for Race Cash-only upgrades.
+- Extended payment intents with `actionType='upgrade_car'` and `upgrade_type`.
+- Extended payment confirmation to apply premium upgrades after verified/mock token payment.
+- Upgrade Race Cash spending uses purchased Race Cash first, then earned Race Cash.
+- Upgrade ledger rows use negative amounts and preserve earned vs purchased cash type.
+- Garage UI now shows owned-car upgrade levels, next-level costs, upgrade buttons, and insufficient balance messages.
+- Verified API tests for Race Cash engine upgrade, premium mock engine upgrade, invalid type, unowned car, insufficient balance, max level, token transaction, power rating increase, and selected car preservation.
 
 Next task:
-- Add upgrade levels and upgrade purchases using Race Cash-only low levels and Race Cash + token higher levels.
+- Add track catalog/unlock foundation or basic solo scene foundation, depending on next milestone.
 
 Important files:
-- `src/app/api/cars/buy/route.ts`
-- `src/app/api/cars/select/route.ts`
+- `src/config/upgrades.ts`
+- `src/lib/car-upgrades.ts`
+- `src/app/api/cars/upgrade/route.ts`
 - `src/app/api/payments/create-intent/route.ts`
 - `src/app/api/payments/confirm/route.ts`
-- `src/lib/car-purchases.ts`
-- `src/lib/player-state.ts`
 - `src/components/WalletGameDashboard.tsx`
 
 Open blockers:

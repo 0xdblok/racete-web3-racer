@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRaceCashPack } from "@/config/economy";
 import { getCarPrice, purchaseCarWithRaceCash } from "@/lib/car-purchases";
+import { applyCarUpgrade, getUpgradeQuote } from "@/lib/car-upgrades";
 import { serverEnv } from "@/lib/server-env";
 import { verifyTokenTransferSignature } from "@/lib/solana-payments";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
@@ -11,6 +12,7 @@ type PaymentIntentRow = {
   action_type: string;
   item_id: string;
   car_id: string | null;
+  upgrade_type: string | null;
   token_amount: number | string;
   token_mint: string;
   treasury_wallet: string;
@@ -65,18 +67,30 @@ export async function POST(request: NextRequest) {
     if (new Date(intent.expires_at).getTime() < Date.now()) {
       return NextResponse.json({ error: "Payment intent expired" }, { status: 410 });
     }
-    if (!["buy_race_cash", "buy_car"].includes(intent.action_type)) {
+    if (!["buy_race_cash", "buy_car", "upgrade_car"].includes(intent.action_type)) {
       return NextResponse.json({ error: "Unsupported payment action" }, { status: 400 });
     }
 
     const pack = intent.action_type === "buy_race_cash" ? getRaceCashPack(intent.item_id) : null;
     const car = intent.action_type === "buy_car" ? await getCarPrice(supabase, intent.car_id || intent.item_id) : null;
+    const upgradeQuoteResult = intent.action_type === "upgrade_car"
+      ? await getUpgradeQuote({
+          supabase,
+          walletAddress: intent.wallet_address,
+          playerCarId: intent.item_id,
+          upgradeType: intent.upgrade_type || "",
+        })
+      : null;
+    const upgradeQuote = upgradeQuoteResult?.quote || null;
 
     if (intent.action_type === "buy_race_cash" && (!pack || Number(intent.token_amount) !== pack.tokenAmount)) {
       return NextResponse.json({ error: "Payment intent price mismatch" }, { status: 400 });
     }
     if (intent.action_type === "buy_car" && (!car || Number(intent.token_amount) !== car.priceToken || car.priceToken <= 0)) {
       return NextResponse.json({ error: "Payment intent car price mismatch" }, { status: 400 });
+    }
+    if (intent.action_type === "upgrade_car" && (!upgradeQuote || Number(intent.token_amount) !== upgradeQuote.token || upgradeQuote.token <= 0)) {
+      return NextResponse.json({ error: "Payment intent upgrade price mismatch" }, { status: 400 });
     }
 
     if (intent.action_type === "buy_car" && car) {
@@ -98,6 +112,19 @@ export async function POST(request: NextRequest) {
       if (existingCar) return NextResponse.json({ error: "Car already owned" }, { status: 409 });
       const raceCashBalance = Number(balancePlayer.purchased_race_cash || 0) + Number(balancePlayer.earned_race_cash || 0);
       if (raceCashBalance < car.priceRaceCash) {
+        return NextResponse.json({ error: "Insufficient Race Cash" }, { status: 402 });
+      }
+    }
+
+    if (intent.action_type === "upgrade_car" && upgradeQuote) {
+      const { data: balancePlayer, error: balanceError } = await supabase
+        .from("players")
+        .select("earned_race_cash,purchased_race_cash")
+        .eq("wallet_address", intent.wallet_address)
+        .single<{ earned_race_cash: number | string; purchased_race_cash: number | string }>();
+      if (balanceError) throw balanceError;
+      const raceCashBalance = Number(balancePlayer.purchased_race_cash || 0) + Number(balancePlayer.earned_race_cash || 0);
+      if (raceCashBalance < upgradeQuote.raceCash) {
         return NextResponse.json({ error: "Insufficient Race Cash" }, { status: 402 });
       }
     }
@@ -234,6 +261,30 @@ export async function POST(request: NextRequest) {
         player: purchase.player,
         ownedCars: purchase.ownedCars,
         selectedCar: purchase.selectedCar,
+      });
+    }
+
+    if (intent.action_type === "upgrade_car" && upgradeQuote) {
+      const upgrade = await applyCarUpgrade({
+        supabase,
+        walletAddress: intent.wallet_address,
+        playerCarId: intent.item_id,
+        upgradeType: intent.upgrade_type || "",
+        requireTokenPaid: true,
+      });
+
+      return NextResponse.json({
+        status: isMockConfirmation ? "mock_confirmed" : "confirmed",
+        playerCarId: intent.item_id,
+        upgradeType: upgradeQuote.upgradeType,
+        nextLevel: upgradeQuote.nextLevel,
+        tokenSpent: Number(intent.token_amount),
+        raceCashSpent: upgrade.raceCashSpent,
+        powerRating: upgrade.powerRating,
+        signature: finalSignature,
+        player: upgrade.player,
+        ownedCars: upgrade.ownedCars,
+        selectedCar: upgrade.selectedCar,
       });
     }
 

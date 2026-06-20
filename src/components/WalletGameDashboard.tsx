@@ -12,6 +12,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
 import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
+import { getUpgradePrice, MAX_UPGRADE_LEVEL, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerInitResponse } from "@/types/game";
@@ -28,6 +29,7 @@ type CreateIntentResponse = {
   packName: string;
   carName?: string;
   carId?: string;
+  upgradeType?: string;
 };
 
 function tokenAmountToRaw(amount: number, decimals: number) {
@@ -47,9 +49,11 @@ export function WalletGameDashboard() {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(null);
   const [activePackId, setActivePackId] = useState<string | null>(null);
   const [activeCarId, setActiveCarId] = useState<string | null>(null);
+  const [activeUpgradeKey, setActiveUpgradeKey] = useState<string | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
   const ownedCarIds = useMemo(() => new Set(state?.ownedCars.map((car) => car.car_id) || []), [state]);
+  const ownedCarByCatalogId = useMemo(() => new Map((state?.ownedCars || []).map((car) => [car.car_id, car])), [state]);
   const selectedCarId = state?.selectedCar?.car_id || null;
   const totalRaceCash = Number(state?.player.earned_race_cash || 0) + Number(state?.player.purchased_race_cash || 0);
 
@@ -297,6 +301,96 @@ export function WalletGameDashboard() {
     [walletAddress],
   );
 
+  const upgradeCar = useCallback(
+    async (playerCarId: string, upgradeType: UpgradeType) => {
+      if (!publicKey || !walletAddress) return;
+      const key = `${playerCarId}:${upgradeType}`;
+      const ownedCar = state?.ownedCars.find((car) => car.id === playerCarId);
+      const currentLevel = Number(ownedCar?.[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
+      const price = getUpgradePrice(currentLevel);
+      if (!price) return;
+
+      setActiveUpgradeKey(key);
+      setPaymentStatus({ tone: "normal", message: `Upgrading ${upgradeType} to level ${price.nextLevel}...` });
+
+      try {
+        if (price.token <= 0) {
+          const res = await fetch("/api/cars/upgrade", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ walletAddress, playerCarId, upgradeType }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Upgrade failed");
+          setState(data);
+          setPaymentStatus({ tone: "success", message: `${upgradeType} upgraded to level ${price.nextLevel}.` });
+          return;
+        }
+
+        if (!publicEnv.mockTokenMode && (!publicEnv.tokenMint || !publicEnv.treasuryWallet)) {
+          throw new Error("Token mint or treasury wallet is not configured.");
+        }
+        if (!publicEnv.mockTokenMode && tokenBalance < price.token) {
+          throw new Error(`Not enough token balance for ${upgradeType} upgrade.`);
+        }
+
+        const intentRes = await fetch("/api/payments/create-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress, actionType: "upgrade_car", playerCarId, upgradeType }),
+        });
+        const intent = (await intentRes.json()) as CreateIntentResponse & { error?: string };
+        if (!intentRes.ok) throw new Error(intent.error || "Create upgrade payment intent failed");
+
+        if (publicEnv.mockTokenMode) {
+          setPaymentStatus({ tone: "normal", message: "Dev mock payment mode: confirming premium upgrade without wallet transaction..." });
+          const confirmRes = await fetch("/api/payments/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentIntentId: intent.paymentIntentId,
+              mockConfirmation: { type: "RACETE_MOCK_TOKEN_PAYMENT", walletAddress },
+            }),
+          });
+          const confirmation = await confirmRes.json();
+          if (!confirmRes.ok) throw new Error(confirmation.error || "Mock premium upgrade failed");
+          setState({ player: confirmation.player, ownedCars: confirmation.ownedCars, selectedCar: confirmation.selectedCar });
+          setPaymentStatus({ tone: "success", message: `${upgradeType} upgraded to level ${price.nextLevel} with dev mock token payment.` });
+          return;
+        }
+
+        setPaymentStatus({ tone: "normal", message: `Open your wallet to approve ${upgradeType} token payment...` });
+        const mint = new PublicKey(intent.tokenMint);
+        const treasury = new PublicKey(intent.treasuryWallet);
+        const sourceAta = getAssociatedTokenAddressSync(mint, publicKey);
+        const treasuryAta = getAssociatedTokenAddressSync(mint, treasury);
+        const rawAmount = tokenAmountToRaw(intent.tokenAmount, publicEnv.tokenDecimals);
+        const transaction = new Transaction().add(
+          createAssociatedTokenAccountIdempotentInstruction(publicKey, treasuryAta, treasury, mint),
+          createTransferCheckedInstruction(sourceAta, mint, treasuryAta, publicKey, rawAmount, publicEnv.tokenDecimals),
+        );
+        const signature = await sendTransaction(transaction, connection);
+        const latestBlockhash = await connection.getLatestBlockhash("confirmed");
+        await connection.confirmTransaction({ signature, ...latestBlockhash }, "confirmed");
+        const confirmRes = await fetch("/api/payments/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId: intent.paymentIntentId, signature }),
+        });
+        const confirmation = await confirmRes.json();
+        if (!confirmRes.ok) throw new Error(confirmation.error || "Premium upgrade failed");
+        setState({ player: confirmation.player, ownedCars: confirmation.ownedCars, selectedCar: confirmation.selectedCar });
+        setPaymentStatus({ tone: "success", message: `${upgradeType} upgraded to level ${price.nextLevel}.` });
+        await refreshTokenBalance();
+      } catch (err) {
+        setPaymentStatus({ tone: "error", message: err instanceof Error ? err.message : "Upgrade failed" });
+      } finally {
+        setActiveUpgradeKey(null);
+      }
+    },
+    [connection, publicKey, refreshTokenBalance, sendTransaction, state?.ownedCars, tokenBalance, walletAddress],
+  );
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (connected && walletAddress) void initPlayer();
@@ -389,6 +483,7 @@ export function WalletGameDashboard() {
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {CARS.map((car) => {
             const owned = ownedCarIds.has(car.id);
+            const ownedCar = ownedCarByCatalogId.get(car.id);
             const selected = selectedCarId === car.id;
             const insufficientRaceCash = !owned && totalRaceCash < car.priceRaceCash;
             const insufficientToken = !owned && !publicEnv.mockTokenMode && car.priceToken > 0 && tokenBalance < car.priceToken;
@@ -401,7 +496,7 @@ export function WalletGameDashboard() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-black">{car.name}</h2>
-                    <p className="text-sm text-white/55">Class {car.class} · PR {car.basePowerRating}</p>
+                    <p className="text-sm text-white/55">Class {car.class} · PR {ownedCar?.power_rating || car.basePowerRating}</p>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>{selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}</span>
                 </div>
@@ -431,6 +526,45 @@ export function WalletGameDashboard() {
                     </button>
                   )}
                 </div>
+                {ownedCar && (
+                  <div className="mt-5 border-t border-white/10 pt-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.25em] text-lime-200/80">Upgrades</p>
+                    <div className="mt-3 space-y-3">
+                      {UPGRADE_TYPES.map((upgradeType) => {
+                        const level = Number(ownedCar[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
+                        const price = getUpgradePrice(level);
+                        const upgradeKey = `${ownedCar.id}:${upgradeType}`;
+                        const upgradeBusy = activeUpgradeKey === upgradeKey;
+                        const insufficientUpgradeRaceCash = Boolean(price && totalRaceCash < price.raceCash);
+                        const insufficientUpgradeToken = Boolean(price && !publicEnv.mockTokenMode && price.token > 0 && tokenBalance < price.token);
+                        return (
+                          <div key={upgradeType} className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="capitalize text-sm font-bold">{upgradeType}</span>
+                              <span className="text-xs text-white/60">Lv {level}/{MAX_UPGRADE_LEVEL}</span>
+                            </div>
+                            {price ? (
+                              <>
+                                <p className="mt-1 text-xs text-white/55">Next: {formatNumber(price.raceCash)} Race Cash{price.token > 0 ? ` + ${formatNumber(price.token)} token` : ""}</p>
+                                {insufficientUpgradeRaceCash && <p className="mt-1 text-xs text-red-200">Insufficient Race Cash.</p>}
+                                {insufficientUpgradeToken && <p className="mt-1 text-xs text-red-200">Insufficient token balance.</p>}
+                                <button
+                                  onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
+                                  disabled={activeUpgradeKey !== null || status !== "ready" || insufficientUpgradeRaceCash || insufficientUpgradeToken}
+                                  className="mt-2 w-full rounded-full border border-lime-300/40 px-3 py-1.5 text-xs font-black text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-45"
+                                >
+                                  {upgradeBusy ? "Upgrading..." : price.token > 0 ? "Upgrade with Race Cash + token" : "Upgrade with Race Cash"}
+                                </button>
+                              </>
+                            ) : (
+                              <p className="mt-1 text-xs text-lime-200">Max level reached.</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </article>
             );
           })}
