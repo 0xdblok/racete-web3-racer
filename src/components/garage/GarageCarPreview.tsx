@@ -120,6 +120,7 @@ function PowerBarPreview({ car, selectedCar }: GarageCarPreviewProps) {
 }
 
 function getPreviewScale(carId: string) {
+  if (carId === "bavaro-coupe") return 0.06;
   if (carId === "toro-x") return 0.85;
   if (carId === "aurox-v10") return 0.9;
   return 1;

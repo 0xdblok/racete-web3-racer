@@ -17,7 +17,7 @@ const SHOWROOM_SLOTS: { carId: string; position: [number, number, number]; rotat
 
 const CAR_SHOWROOM_CONFIG: Record<string, { scale: number; positionOffset: [number, number, number]; rotationOffset: [number, number, number] }> = {
   "street-rat": { scale: 0.35, positionOffset: [0, 0.3, 0], rotationOffset: [0, 0, 0] },
-  "bavaro-coupe": { scale: 0.08, positionOffset: [0, 0.05, 0], rotationOffset: [0, 0, 0] },
+  "bavaro-coupe": { scale: 0.06, positionOffset: [0, 0.05, 0], rotationOffset: [0, 0, 0] },
   "furia-gt": { scale: 0.45, positionOffset: [0, 0.15, 0], rotationOffset: [0, 0, 0] },
   "toro-x": { scale: 0.4, positionOffset: [0, 0.35, 0], rotationOffset: [0, 0, 0] },
 };
