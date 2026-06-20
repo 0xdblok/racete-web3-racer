@@ -3,12 +3,28 @@ import { CARS, STARTER_CAR_ID } from "@/config/cars";
 import { getPlayerState } from "@/lib/player-state";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-const DEV_WALLET = "7ZA3Z6pceuPzrrhnNNqRyT1evjBUAKZXLeCgxCzmMMzz";
-const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+function getDevWalletAddresses(): string[] {
+  const wallets: string[] = [];
+  const single = process.env.DEV_WALLET_ADDRESS?.trim();
+  if (single) wallets.push(single);
+  const multi = process.env.DEV_WALLET_ADDRESSES?.split(",") || [];
+  for (const w of multi) {
+    const trimmed = w.trim();
+    if (trimmed) wallets.push(trimmed);
+  }
+  return wallets;
+}
+
+function isDevWallet(walletAddress: string): boolean {
+  const allowed = new Set(getDevWalletAddresses());
+  return allowed.has(walletAddress);
+}
 
 function isDevToolsEnabled() {
   return process.env.DEV_TOOLS_ENABLED === "true";
 }
+
+const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
     }
 
-    if (walletAddress !== DEV_WALLET) {
+    if (!isDevWallet(walletAddress)) {
       return NextResponse.json({ error: "Unauthorized wallet" }, { status: 403 });
     }
 

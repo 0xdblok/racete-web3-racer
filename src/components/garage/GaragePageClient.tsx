@@ -52,7 +52,7 @@ export function GaragePageClient() {
   const [activeCarId, setActiveCarId] = useState<string | null>(null);
   const [activeUpgradeKey, setActiveUpgradeKey] = useState<string | null>(null);
   const [focusedCarId, setFocusedCarId] = useState<string | null>(null);
-  const [devStatus, setDevStatus] = useState<{ devToolsEnabled: boolean; devWalletAddress: string } | null>(null);
+  const [devStatus, setDevStatus] = useState<{ devToolsEnabled: boolean; devWalletAddresses: string[] } | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
   const ownedCarIds = useMemo(() => new Set(state?.ownedCars.map((car) => car.car_id) || []), [state]);
@@ -61,7 +61,7 @@ export function GaragePageClient() {
   const totalRaceCash = Number(state?.player.earned_race_cash || 0) + Number(state?.player.purchased_race_cash || 0);
 
   const devToolsEnabled = Boolean(devStatus?.devToolsEnabled);
-  const isDevWallet = walletAddress === devStatus?.devWalletAddress;
+  const isDevWallet = walletAddress ? (devStatus?.devWalletAddresses || []).includes(walletAddress) : false;
 
   const refreshTokenBalance = useCallback(async () => {
     if (!publicKey || !publicEnv.tokenMint) {
