@@ -9,8 +9,11 @@ import { CARS } from "@/config/cars";
 import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
+import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
+import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
+import { formatRaceTime } from "@/lib/race/useRaceLoop";
 
 const RaceScene = dynamic(
   () => import("@/components/race/RaceScene").then((mod) => ({ default: mod.RaceScene })),
@@ -32,8 +35,25 @@ export function RacePageClient() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
+  const [raceProgress, setRaceProgress] = useState<RaceProgress | null>(null);
+  const [raceResult, setRaceResult] = useState<RaceResult | null>(null);
+  const [raceKey, setRaceKey] = useState(0);
   const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
+
+  const handleRaceProgress = useCallback((progress: RaceProgress) => {
+    setRaceProgress(progress);
+  }, []);
+
+  const handleRaceFinish = useCallback((result: RaceResult) => {
+    setRaceResult(result);
+  }, []);
+
+  const handleRaceAgain = useCallback(() => {
+    setRaceResult(null);
+    setRaceProgress(null);
+    setRaceKey((k) => k + 1);
+  }, []);
 
   // Bridge: poll carStateRef every frame to push telemetry to React state
   useEffect(() => {
@@ -128,12 +148,29 @@ export function RacePageClient() {
   if (state?.selectedCar && selectedCatalogCar) {
     return (
       <main className="relative min-h-screen bg-[#050509] p-2 text-white">
-        <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} telemetry={telemetry} />
+        <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} telemetry={telemetry} raceProgress={raceProgress} />
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <Link href="/garage" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Garage</Link>
           <button onClick={() => void loadPlayer()} className="rounded-full border border-lime-300/35 bg-black/50 px-4 py-2 text-sm font-bold text-lime-100 backdrop-blur hover:bg-lime-300/10">Refresh car</button>
         </div>
-        <RaceScene car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} carRef={carStateRef} />
+        <RaceScene
+          key={raceKey}
+          car={selectedCatalogCar}
+          selectedCar={state.selectedCar}
+          track={CITY_LOOP_TRACK}
+          carRef={carStateRef}
+          onProgress={handleRaceProgress}
+          onFinish={handleRaceFinish}
+        />
+        {raceResult && (
+          <RaceResultsOverlay
+            result={raceResult}
+            formatRaceTime={formatRaceTime}
+            carName={selectedCatalogCar.name}
+            trackName={CITY_LOOP_TRACK.name}
+            onRaceAgain={handleRaceAgain}
+          />
+        )}
       </main>
     );
   }

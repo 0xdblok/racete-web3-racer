@@ -8,9 +8,11 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
 import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { RaceHud } from "@/components/race/RaceHud";
+import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
 import { getState, sendMovement, subscribe, type MatchmakingState } from "@/lib/multiplayer/client";
+import { formatRaceTime, type RaceResult, type RaceProgress } from "@/lib/race/useRaceLoop";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 
@@ -67,8 +69,25 @@ function MultiplayerRaceClientInner() {
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
   const [view, setView] = useState<View>("matchmaking");
   const [multiplayerState, setMultiplayerState] = useState<MatchmakingState>(() => getState());
+  const [raceProgress, setRaceProgress] = useState<RaceProgress | null>(null);
+  const [raceResult, setRaceResult] = useState<RaceResult | null>(null);
+  const [raceKey, setRaceKey] = useState(0);
   const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
+
+  const handleRaceProgress = useCallback((progress: RaceProgress) => {
+    setRaceProgress(progress);
+  }, []);
+
+  const handleRaceFinish = useCallback((result: RaceResult) => {
+    setRaceResult(result);
+  }, []);
+
+  const handleRaceAgain = useCallback(() => {
+    setRaceResult(null);
+    setRaceProgress(null);
+    setRaceKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     return subscribe(() => {
@@ -261,6 +280,7 @@ function MultiplayerRaceClientInner() {
           track={CITY_LOOP_TRACK}
           telemetry={telemetry}
           multiplayer
+          raceProgress={raceProgress}
         />
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <span className="rounded-full border border-lime-300/20 bg-black/50 px-4 py-2 text-xs text-lime-200/70 backdrop-blur">
@@ -268,13 +288,25 @@ function MultiplayerRaceClientInner() {
           </span>
         </div>
         <RaceScene
+          key={raceKey}
           car={selectedCatalogCar}
           selectedCar={playerState.selectedCar}
           track={CITY_LOOP_TRACK}
           carRef={carStateRef}
           remotePlayers={remotePlayers}
           localSpawn={localSpawn}
+          onProgress={handleRaceProgress}
+          onFinish={handleRaceFinish}
         />
+        {raceResult && (
+          <RaceResultsOverlay
+            result={raceResult}
+            formatRaceTime={formatRaceTime}
+            carName={selectedCatalogCar.name}
+            trackName={CITY_LOOP_TRACK.name}
+            onRaceAgain={handleRaceAgain}
+          />
+        )}
       </main>
     );
   }

@@ -13,6 +13,9 @@ import { ChaseCamera, type ChaseCarState } from "@/components/race/ChaseCamera";
 import { CarModel } from "@/components/race/CarModel";
 import { RaceMap } from "@/components/race/RaceMap";
 import { RemoteCar } from "@/components/race/RemoteCar";
+import { CheckpointGates } from "@/components/race/CheckpointGates";
+import { RaceCountdown } from "@/components/race/RaceCountdown";
+import { useRaceLoop, type RaceResult, type RaceProgress } from "@/lib/race/useRaceLoop";
 import type { LobbyPlayer } from "@/types/multiplayer";
 // import { TestTrack } from "@/components/race/TestTrack"; // debug fallback
 
@@ -34,19 +37,42 @@ type RaceSceneProps = {
   carRef?: React.MutableRefObject<CarState | null>;
   remotePlayers?: LobbyPlayer[];
   localSpawn?: { x: number; y?: number; z: number; yaw?: number };
+  onFinish?: (result: RaceResult) => void;
+  onProgress?: (progress: RaceProgress) => void;
 };
 
-export function RaceScene({ car, selectedCar, carRef, remotePlayers = [], localSpawn }: RaceSceneProps) {
+export function RaceScene({
+  car,
+  selectedCar,
+  track,
+  carRef,
+  remotePlayers = [],
+  localSpawn,
+  onFinish,
+  onProgress,
+}: RaceSceneProps) {
   const gameplayStats = resolveCarGameplayStats(car, selectedCar);
   const internalCarRef = useRef<CarState | null>(null);
   const activeCarRef = carRef || internalCarRef;
-  const initialPosition = localSpawn
-    ? new THREE.Vector3(localSpawn.x, localSpawn.y ?? 0.3, localSpawn.z)
-    : undefined;
-  const initialRotationY = localSpawn?.yaw ?? undefined;
+
+  const start = localSpawn ?? track.startPosition;
+  const initialPosition = new THREE.Vector3(start.x, start.y ?? 0.3, start.z);
+  const initialRotationY = start.yaw ?? 0;
+
+  const race = useRaceLoop(activeCarRef, track, {
+    autoStart: true,
+    onFinish,
+  });
+
+  // Mirror progress to parent on every render
+  if (onProgress) {
+    onProgress(race);
+  }
 
   return (
-    <div className="h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
+    <div className="relative h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
+      {race.phase === "countdown" && <RaceCountdown countdown={race.countdown} />}
+
       <Canvas camera={{ position: [0, 8, 15], fov: 55, far: 2000 }} shadows>
         <color attach="background" args={["#050509"]} />
         <fog attach="fog" args={["#050509", 400, 1200]} />
@@ -58,6 +84,13 @@ export function RaceScene({ car, selectedCar, carRef, remotePlayers = [], localS
 
         {/* Racing circuit map */}
         <RaceMap />
+
+        {/* Checkpoint and finish gates */}
+        <CheckpointGates
+          checkpoints={race.checkpoints}
+          currentCheckpointIndex={race.currentCheckpointIndex}
+          phase={race.phase}
+        />
 
         {/* Car controller wraps the car model, handles all movement */}
         <CarController

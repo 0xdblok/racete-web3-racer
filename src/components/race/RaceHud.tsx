@@ -3,9 +3,11 @@
 import { useMemo } from "react";
 import { formatNumber, shortWallet } from "@/lib/format";
 import { resolveCarGameplayStats } from "@/lib/car-gameplay-stats";
+import { formatRaceTime } from "@/lib/race/useRaceLoop";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
+import type { RaceProgress } from "@/lib/race/useRaceLoop";
 
 /** Convert internal game speed to display km/h.
  *  Internal maxSpeed ranges ~21 (starter) to ~85 (Bugatti).
@@ -26,6 +28,8 @@ type RaceHudProps = {
     nitroCooldown: boolean;
     drifting: boolean;
   } | null;
+  /** Race progress: laps, checkpoints, timing */
+  raceProgress?: RaceProgress | null;
 };
 
 export function RaceHud({
@@ -35,6 +39,7 @@ export function RaceHud({
   track,
   telemetry,
   multiplayer = false,
+  raceProgress,
 }: RaceHudProps) {
   const stats = useMemo(
     () => resolveCarGameplayStats(car, selectedCar),
@@ -53,6 +58,17 @@ export function RaceHud({
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-lime-300">{multiplayer ? "Multiplayer" : "Solo shell"}</p>
           <h1 className="mt-1 text-2xl font-black text-white">{track.name}</h1>
           <p className="mt-1 max-w-sm text-sm text-white/60">{track.description}</p>
+          {raceProgress && raceProgress.phase !== "waiting" && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <ProgressStat label="Lap" value={`${raceProgress.lap}/${track.lapCount}`} active />
+              <ProgressStat label="Checkpoint" value={`${raceProgress.currentCheckpointIndex + 1}/${raceProgress.totalCheckpoints}`} active />
+              <ProgressStat label="Time" value={formatRaceTime(raceProgress.totalRaceTimeMs)} />
+              <ProgressStat label="Best Lap" value={raceProgress.bestLapTimeMs > 0 ? formatRaceTime(raceProgress.bestLapTimeMs) : "—"} />
+            </div>
+          )}
+          {raceProgress?.wrongWayHint && (
+            <p className="mt-2 text-xs font-black uppercase tracking-widest text-amber-300">Wrong way — turn around</p>
+          )}
         </div>
 
         {/* Car info + telemetry */}
@@ -133,6 +149,15 @@ function UpgradeBadge({
     <div className="rounded-full border border-white/10 px-2 py-0.5 text-center">
       <span className={color}>Lv{level}</span>{" "}
       <span className="text-white/40">{label}</span>
+    </div>
+  );
+}
+
+function ProgressStat({ label, value, active }: { label: string; value: string; active?: boolean }) {
+  return (
+    <div className={`rounded-xl border px-2.5 py-1.5 text-center ${active ? "border-lime-300/25 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
+      <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">{label}</p>
+      <p className={`text-sm font-black ${active ? "text-lime-300" : "text-white"}`}>{value}</p>
     </div>
   );
 }
