@@ -78,6 +78,27 @@ function buildRoadSegments(path: [number, number][]): RoadSegmentData[] {
   return segs;
 }
 
+function distanceToTrackCenter(x: number, z: number, segments: RoadSegmentData[]): number {
+  let best = Infinity;
+  for (const seg of segments) {
+    const ax = seg.start[0];
+    const az = seg.start[1];
+    const bx = seg.end[0];
+    const bz = seg.end[1];
+    const abx = bx - ax;
+    const abz = bz - az;
+    const lenSq = abx * abx + abz * abz;
+    if (lenSq < 0.001) continue;
+    const t = Math.max(0, Math.min(1, ((x - ax) * abx + (z - az) * abz) / lenSq));
+    const px = ax + abx * t;
+    const pz = az + abz * t;
+    const dx = x - px;
+    const dz = z - pz;
+    best = Math.min(best, Math.sqrt(dx * dx + dz * dz));
+  }
+  return best;
+}
+
 /* ── LCG deterministic random ── */
 function lcg(seed: number): number {
   return ((seed * 16807) % 2147483647);
@@ -102,7 +123,7 @@ export function RaceMap() {
 
       {/* Road markings */}
       {roadSegments.map((seg, i) => (
-        <RoadMarkings key={`mark-${i}`} seg={seg} index={i} />
+        <RoadMarkings key={`mark-${i}`} seg={seg} />
       ))}
 
       {/* Sidewalks */}
@@ -113,20 +134,17 @@ export function RaceMap() {
       {/* Start / finish line */}
       <StartFinishLine />
 
-      {/* Concrete barriers (replaces guardrails at collision boundary) */}
+      {/* Sleek barriers aligned to collision boundary */}
       <ConcreteBarriers roadSegments={roadSegments} />
 
-      {/* City street lights */}
+      {/* Modern street lights — safely outside the driving corridor */}
       <CityLights roadSegments={roadSegments} />
 
-      {/* Buildings along the circuit */}
+      {/* Buildings kept far outside road + sidewalk + camera corridor */}
       <Buildings />
 
-      {/* Neon signs & billboards */}
+      {/* Neon signs & billboards — outside barriers only */}
       <NeonSigns roadSegments={roadSegments} />
-
-      {/* Street props */}
-      <StreetProps roadSegments={roadSegments} />
 
       {/* Distant skyline */}
       <Skyline />
@@ -173,33 +191,43 @@ function RoadSegment({ seg }: { seg: RoadSegmentData }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, seg.angle]} position={[cx, 0.01, cz]} receiveShadow>
       <planeGeometry args={[TRACK_WIDTH, seg.length]} />
-      <meshStandardMaterial color="#1a1a22" roughness={0.5} metalness={0.25} />
+      <meshStandardMaterial color="#202434" roughness={0.42} metalness={0.28} />
     </mesh>
   );
 }
 
-function RoadMarkings({ seg, index }: { seg: RoadSegmentData; index: number }) {
+function RoadMarkings({ seg }: { seg: RoadSegmentData }) {
   const cx = (seg.start[0] + seg.end[0]) / 2;
   const cz = (seg.start[1] + seg.end[1]) / 2;
   const isStraight = seg.length > 50;
 
   return (
     <group rotation={[-Math.PI / 2, 0, seg.angle]} position={[cx, 0.025, cz]}>
-      {/* Solid edge lines (white) */}
-      <mesh position={[-TRACK_WIDTH / 2 + 0.3, 0, 0]}>
-        <planeGeometry args={[0.25, seg.length]} />
-        <meshBasicMaterial color="#ffffff" opacity={0.55} transparent />
+      {/* Bright solid edge lines */}
+      <mesh position={[-TRACK_WIDTH / 2 + 0.35, 0, 0]}>
+        <planeGeometry args={[0.32, seg.length]} />
+        <meshBasicMaterial color="#f8fafc" opacity={0.9} transparent />
       </mesh>
-      <mesh position={[TRACK_WIDTH / 2 - 0.3, 0, 0]}>
-        <planeGeometry args={[0.25, seg.length]} />
-        <meshBasicMaterial color="#ffffff" opacity={0.55} transparent />
+      <mesh position={[TRACK_WIDTH / 2 - 0.35, 0, 0]}>
+        <planeGeometry args={[0.32, seg.length]} />
+        <meshBasicMaterial color="#f8fafc" opacity={0.9} transparent />
+      </mesh>
+
+      {/* Cyan neon curb-guide strips just inside the edges */}
+      <mesh position={[-TRACK_WIDTH / 2 + 0.9, 0.002, 0]}>
+        <planeGeometry args={[0.12, seg.length]} />
+        <meshBasicMaterial color="#22d3ee" opacity={0.45} transparent />
+      </mesh>
+      <mesh position={[TRACK_WIDTH / 2 - 0.9, 0.002, 0]}>
+        <planeGeometry args={[0.12, seg.length]} />
+        <meshBasicMaterial color="#d946ef" opacity={0.42} transparent />
       </mesh>
 
       {/* Center dashed line (straights only) */}
       {isStraight && <CenterDash length={seg.length} />}
 
       {/* Direction arrows on long straights */}
-      {isStraight && index % 3 === 0 && <DirectionArrow />}
+      {isStraight && <ArrowRepeater length={seg.length} />}
     </group>
   );
 }
@@ -210,27 +238,38 @@ function CenterDash({ length }: { length: number }) {
     <group>
       {Array.from({ length: count }).map((_, i) => (
         <mesh key={i} position={[0, 0, -length / 2 + i * 5 + 2.5]} visible={i % 2 === 0}>
-          <planeGeometry args={[0.18, 2.5]} />
-          <meshBasicMaterial color="#ffffff" opacity={0.35} transparent />
+          <planeGeometry args={[0.22, 3]} />
+          <meshBasicMaterial color="#f8fafc" opacity={0.72} transparent />
         </mesh>
       ))}
     </group>
   );
 }
 
+function ArrowRepeater({ length }: { length: number }) {
+  const count = Math.max(1, Math.floor(length / 70));
+  return (
+    <group>
+      {Array.from({ length: count }).map((_, i) => (
+        <group key={`arrow-${i}`} position={[0, 0.003, -length / 2 + ((i + 1) * length) / (count + 1)]}>
+          <DirectionArrow />
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function DirectionArrow() {
-  // Simple arrow made from 3 box meshes
+  // Flat road paint only — not a physical obstacle.
   return (
     <group position={[0, 0.005, 0]}>
-      {/* Arrow shaft */}
-      <mesh position={[0, 0, -0.5]}>
-        <boxGeometry args={[0.3, 0.01, 1.5]} />
-        <meshBasicMaterial color="#bef264" opacity={0.5} transparent />
+      <mesh position={[0, 0, -0.75]}>
+        <boxGeometry args={[0.55, 0.01, 2.3]} />
+        <meshBasicMaterial color="#bef264" opacity={0.82} transparent />
       </mesh>
-      {/* Arrow head */}
-      <mesh position={[0, 0, 0.5]} rotation-z={Math.PI / 2}>
-        <coneGeometry args={[0.5, 0.9, 3, 1]} />
-        <meshBasicMaterial color="#bef264" opacity={0.5} transparent />
+      <mesh position={[0, 0, 0.7]} rotation-z={Math.PI / 2}>
+        <coneGeometry args={[0.9, 1.4, 3, 1]} />
+        <meshBasicMaterial color="#bef264" opacity={0.82} transparent />
       </mesh>
     </group>
   );
@@ -250,22 +289,22 @@ function Sidewalk({ seg }: { seg: RoadSegmentData }) {
       {/* Left sidewalk */}
       <mesh position={[-offset, 0, 0]} receiveShadow>
         <planeGeometry args={[SIDEWALK_WIDTH, seg.length]} />
-        <meshStandardMaterial color="#1a1a24" roughness={0.7} metalness={0.05} />
+        <meshStandardMaterial color="#111827" roughness={0.62} metalness={0.12} />
       </mesh>
       {/* Right sidewalk */}
       <mesh position={[offset, 0, 0]} receiveShadow>
         <planeGeometry args={[SIDEWALK_WIDTH, seg.length]} />
-        <meshStandardMaterial color="#1a1a24" roughness={0.7} metalness={0.05} />
+        <meshStandardMaterial color="#111827" roughness={0.62} metalness={0.12} />
       </mesh>
 
       {/* Curbs (slightly raised edge between road and sidewalk) */}
       <mesh position={[-TRACK_WIDTH / 2 - 0.15, CURB_HEIGHT / 2 + 0.01, 0]}>
         <boxGeometry args={[0.3, CURB_HEIGHT, seg.length]} />
-        <meshStandardMaterial color="#2a2a35" roughness={0.5} metalness={0.15} />
+        <meshStandardMaterial color="#334155" roughness={0.44} metalness={0.24} />
       </mesh>
       <mesh position={[TRACK_WIDTH / 2 + 0.15, CURB_HEIGHT / 2 + 0.01, 0]}>
         <boxGeometry args={[0.3, CURB_HEIGHT, seg.length]} />
-        <meshStandardMaterial color="#2a2a35" roughness={0.5} metalness={0.15} />
+        <meshStandardMaterial color="#334155" roughness={0.44} metalness={0.24} />
       </mesh>
     </group>
   );
@@ -347,48 +386,46 @@ function ConcreteBarriers({ roadSegments }: { roadSegments: RoadSegmentData[] })
   return (
     <group>
       {roadSegments.map((seg, i) => {
-        const count = Math.floor(seg.length / 3); // barrier every 3m
-        return Array.from({ length: count }).map((_, p) => {
-          const t = (p + 0.5) / count;
-          // Left barrier
-          const lx = seg.start[0] + seg.dirX * seg.length * t + seg.perpX * (TRACK_WIDTH / 2 + 1);
-          const lz = seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * (TRACK_WIDTH / 2 + 1);
-          // Right barrier
-          const rx = seg.start[0] + seg.dirX * seg.length * t - seg.perpX * (TRACK_WIDTH / 2 + 1);
-          const rz = seg.start[1] + seg.dirZ * seg.length * t - seg.perpZ * (TRACK_WIDTH / 2 + 1);
-
-          return (
-            <React.Fragment key={`cb-${i}-${p}`}>
-              <BarrierBlock x={lx} z={lz} angle={seg.angle} />
-              <BarrierBlock x={rx} z={rz} angle={seg.angle} />
-            </React.Fragment>
-          );
-        });
+        const cx = (seg.start[0] + seg.end[0]) / 2;
+        const cz = (seg.start[1] + seg.end[1]) / 2;
+        const offset = TRACK_WIDTH / 2 + 1;
+        return (
+          <React.Fragment key={`barrier-${i}`}>
+            <BarrierRail
+              x={cx + seg.perpX * offset}
+              z={cz + seg.perpZ * offset}
+              angle={seg.angle}
+              length={seg.length}
+            />
+            <BarrierRail
+              x={cx - seg.perpX * offset}
+              z={cz - seg.perpZ * offset}
+              angle={seg.angle}
+              length={seg.length}
+            />
+          </React.Fragment>
+        );
       })}
     </group>
   );
 }
 
-function BarrierBlock({ x, z, angle }: { x: number; z: number; angle: number }) {
+function BarrierRail({ x, z, angle, length }: { x: number; z: number; angle: number; length: number }) {
   return (
     <group position={[x, 0, z]} rotation-y={angle}>
-      {/* Jersey barrier shape: wide base + narrower top */}
+      {/* Low concrete wall aligned with collision boundary */}
       <mesh position={[0, 0.35, 0]}>
-        <boxGeometry args={[0.5, 0.7, 2.5]} />
-        <meshStandardMaterial color="#a1a1aa" roughness={0.6} metalness={0.15} />
+        <boxGeometry args={[0.45, 0.7, length]} />
+        <meshStandardMaterial color="#cbd5e1" roughness={0.44} metalness={0.18} />
       </mesh>
-      <mesh position={[0, 0.75, 0]}>
-        <boxGeometry args={[0.3, 0.15, 2.5]} />
-        <meshStandardMaterial color="#d4d4d8" roughness={0.5} metalness={0.1} />
+      {/* Clean neon guide strip */}
+      <mesh position={[0, 0.76, 0]}>
+        <boxGeometry args={[0.12, 0.08, length]} />
+        <meshBasicMaterial color="#22d3ee" opacity={0.78} transparent />
       </mesh>
-      {/* Reflective stripe */}
-      <mesh position={[0, 0.55, 1.3]}>
-        <planeGeometry args={[0.35, 0.2]} />
-        <meshBasicMaterial color="#d946ef" opacity={0.5} transparent side={2} />
-      </mesh>
-      <mesh position={[0, 0.55, -1.3]}>
-        <planeGeometry args={[0.35, 0.2]} />
-        <meshBasicMaterial color="#d946ef" opacity={0.5} transparent side={2} />
+      <mesh position={[0, 0.18, 0]}>
+        <boxGeometry args={[0.5, 0.08, length]} />
+        <meshBasicMaterial color="#d946ef" opacity={0.45} transparent />
       </mesh>
     </group>
   );
@@ -406,13 +443,13 @@ function CityLights({ roadSegments }: { roadSegments: RoadSegmentData[] }) {
       for (let p = 1; p <= count; p++) {
         const t = p / (count + 1);
         result.push({
-          x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * (TRACK_WIDTH / 2 + 5),
-          z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * (TRACK_WIDTH / 2 + 5),
+          x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * (TRACK_WIDTH / 2 + 9),
+          z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * (TRACK_WIDTH / 2 + 9),
           colorI: result.length,
         });
         result.push({
-          x: seg.start[0] + seg.dirX * seg.length * t - seg.perpX * (TRACK_WIDTH / 2 + 5),
-          z: seg.start[1] + seg.dirZ * seg.length * t - seg.perpZ * (TRACK_WIDTH / 2 + 5),
+          x: seg.start[0] + seg.dirX * seg.length * t - seg.perpX * (TRACK_WIDTH / 2 + 9),
+          z: seg.start[1] + seg.dirZ * seg.length * t - seg.perpZ * (TRACK_WIDTH / 2 + 9),
           colorI: result.length,
         });
       }
@@ -479,45 +516,42 @@ function Buildings() {
 }
 
 const BUILDING_COLORS = [
-  "#1a1a2e", "#16162a", "#1e1e32", "#181830", "#202036",
-  "#1c1c28", "#222238", "#141428", "#2a2a3e", "#1a1a30",
+  "#0f172a", "#111827", "#172033", "#0b1120", "#1e293b",
+  "#101827", "#162033", "#0f1b2d", "#182235", "#111a2c",
 ];
 
 function generateBuildings(): BuildingData[] {
   const result: BuildingData[] = [];
-  const minDistFromTrack = TRACK_WIDTH / 2 + 6; // outside sidewalk and barrier
+  const trackSegments = buildRoadSegments(TRACK_PATH);
+  const safeClearance = TRACK_WIDTH / 2 + SIDEWALK_WIDTH + 18; // road + barrier + sidewalk + camera gap
   let s = 42069; // LCG seed
 
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 140 && result.length < 82; i++) {
     s = lcg(s);
     const x = ((s - 1) / 2147483646 - 0.5) * 850;
     s = lcg(s);
     const z = ((s - 1) / 2147483646 - 0.5) * 850;
 
-    // Check distance from all track waypoints
-    let tooClose = false;
-    for (const [tx, tz] of TRACK_PATH) {
-      const dx = x - tx;
-      const dz = z - tz;
-      if (Math.sqrt(dx * dx + dz * dz) < minDistFromTrack) { tooClose = true; break; }
-    }
-    if (tooClose) continue;
+    s = lcg(s);
+    const w = 8 + ((s - 1) / 2147483646) * 20; // clean modern blocks, 8-28m
+    s = lcg(s);
+    const d = 8 + ((s - 1) / 2147483646) * 18; // 8-26m
+    const footprintRadius = Math.sqrt(w * w + d * d) / 2;
+
+    // Keep building footprint safely outside the entire track corridor, not just waypoints.
+    const centerDistance = distanceToTrackCenter(x, z, trackSegments);
+    if (centerDistance - footprintRadius < safeClearance) continue;
 
     s = lcg(s);
-    const w = 4 + ((s - 1) / 2147483646) * 22; // width 4-26m
-    s = lcg(s);
-    const d = 4 + ((s - 1) / 2147483646) * 18; // depth 4-22m
-    s = lcg(s);
-    // Height: mostly tall (15-50m) with some shorter
     const hRand = (s - 1) / 2147483646;
-    const h = hRand < 0.15 ? 6 + hRand * 15 : 18 + hRand * 35;
+    const h = hRand < 0.18 ? 10 + hRand * 18 : 24 + hRand * 40;
 
     s = lcg(s);
-    const windowRows = Math.floor(3 + ((s - 1) / 2147483646) * (h / 3));
+    const windowRows = Math.floor(4 + ((s - 1) / 2147483646) * (h / 3.5));
     s = lcg(s);
-    const windowColsW = Math.floor(1 + ((s - 1) / 2147483646) * (w / 3));
-    const windowColsD = Math.floor(1 + ((s - 1) / 2147483646) * (d / 3));
-    const color = BUILDING_COLORS[i % BUILDING_COLORS.length];
+    const windowColsW = Math.floor(2 + ((s - 1) / 2147483646) * (w / 4));
+    const windowColsD = Math.floor(2 + ((s - 1) / 2147483646) * (d / 4));
+    const color = BUILDING_COLORS[result.length % BUILDING_COLORS.length];
 
     result.push({ x, z, w, d, h, color, windowRows, windowCols: Math.max(windowColsW, windowColsD) });
   }
@@ -616,12 +650,13 @@ function NeonSigns({ roadSegments }: { roadSegments: RoadSegmentData[] }) {
   const signs = useMemo(() => {
     const result: { x: number; z: number; rot: number; w: number; h: number; color: string }[] = [];
     roadSegments.forEach((seg, si) => {
-      if (si % 4 !== 0) return; // place every 4th segment
+      if (si % 5 !== 0) return; // fewer signs, less clutter
       const t = 0.5;
+      const signOffset = TRACK_WIDTH / 2 + 16;
       // Left of road
       result.push({
-        x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * (TRACK_WIDTH / 2 + 9),
-        z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * (TRACK_WIDTH / 2 + 9),
+        x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * signOffset,
+        z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * signOffset,
         rot: seg.angle + Math.PI / 2,
         w: 5,
         h: 2,
@@ -629,8 +664,8 @@ function NeonSigns({ roadSegments }: { roadSegments: RoadSegmentData[] }) {
       });
       // Right of road
       result.push({
-        x: seg.start[0] + seg.dirX * seg.length * t - seg.perpX * (TRACK_WIDTH / 2 + 9),
-        z: seg.start[1] + seg.dirZ * seg.length * t - seg.perpZ * (TRACK_WIDTH / 2 + 9),
+        x: seg.start[0] + seg.dirX * seg.length * t - seg.perpX * signOffset,
+        z: seg.start[1] + seg.dirZ * seg.length * t - seg.perpZ * signOffset,
         rot: seg.angle + Math.PI / 2,
         w: 5,
         h: 2,
@@ -670,90 +705,6 @@ function NeonSigns({ roadSegments }: { roadSegments: RoadSegmentData[] }) {
           </mesh>
         </group>
       ))}
-    </group>
-  );
-}
-
-/* ================================================================== */
-/*  Street props — cones, crates, manhole covers                       */
-/* ================================================================== */
-
-function StreetProps({ roadSegments }: { roadSegments: RoadSegmentData[] }) {
-  const props = useMemo(() => {
-    const result: { type: "cone" | "crate" | "manhole"; x: number; z: number; rot: number }[] = [];
-    let s = 98765;
-
-    // Manhole covers on road surface
-    roadSegments.forEach((seg) => {
-      const count = Math.floor(seg.length / 15);
-      for (let p = 1; p <= count; p++) {
-        const t = (p + 0.3) / (count + 1);
-        s = lcg(s);
-        const lat = ((s - 1) / 2147483646 - 0.5) * (TRACK_WIDTH - 4);
-        result.push({
-          type: "manhole",
-          x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * lat,
-          z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * lat,
-          rot: s % 360 * Math.PI / 180,
-        });
-      }
-    });
-
-    // Crates + cones on sidewalks
-    roadSegments.forEach((seg, si) => {
-      if (si % 2 !== 0) return;
-      const count = Math.floor(seg.length / 20);
-      for (let p = 1; p <= count; p++) {
-        const t = p / (count + 1);
-        s = lcg(s);
-        const side = (s % 2) * 2 - 1; // -1 or 1
-        const propType: "cone" | "crate" = s % 3 === 0 ? "crate" : "cone";
-        result.push({
-          type: propType,
-          x: seg.start[0] + seg.dirX * seg.length * t + seg.perpX * side * (TRACK_WIDTH / 2 + SIDEWALK_WIDTH / 2),
-          z: seg.start[1] + seg.dirZ * seg.length * t + seg.perpZ * side * (TRACK_WIDTH / 2 + SIDEWALK_WIDTH / 2),
-          rot: (s % 360) * Math.PI / 180,
-        });
-      }
-    });
-
-    return result;
-  }, [roadSegments]);
-
-  return (
-    <group>
-      {props.map((p, i) => {
-        switch (p.type) {
-          case "manhole":
-            return (
-              <mesh
-                key={`mh-${i}`}
-                position={[p.x, 0.03, p.z]}
-                rotation-x={-Math.PI / 2}
-                rotation-z={p.rot}
-              >
-                <cylinderGeometry args={[0.35, 0.35, 0.02, 12]} />
-                <meshStandardMaterial color="#3a3a45" roughness={0.4} metalness={0.6} />
-              </mesh>
-            );
-          case "cone":
-            return (
-              <mesh key={`cone-${i}`} position={[p.x, 0.4, p.z]}>
-                <coneGeometry args={[0.2, 0.8, 6]} />
-                <meshStandardMaterial color="#f97316" roughness={0.3} emissive="#f97316" emissiveIntensity={0.15} />
-              </mesh>
-            );
-          case "crate":
-            return (
-              <mesh key={`crate-${i}`} position={[p.x, 0.25, p.z]} rotation-y={p.rot}>
-                <boxGeometry args={[0.5, 0.5, 0.5]} />
-                <meshStandardMaterial color="#3f3f46" roughness={0.6} metalness={0.2} />
-              </mesh>
-            );
-          default:
-            return null;
-        }
-      })}
     </group>
   );
 }
