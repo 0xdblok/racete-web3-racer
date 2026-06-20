@@ -5,6 +5,7 @@ import { Environment, Grid, OrbitControls } from "@react-three/drei";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
+import { CarModel } from "@/components/race/CarModel";
 
 type RaceSceneProps = {
   car: CarConfig;
@@ -23,7 +24,7 @@ export function RaceScene({ car, selectedCar, track }: RaceSceneProps) {
         <pointLight position={[-4, 3, -6]} intensity={18} color="#d946ef" />
         <pointLight position={[5, 3, 5]} intensity={14} color="#bef264" />
         <PlaceholderTrack trackName={track.name} />
-        <PlaceholderCar car={car} selectedCar={selectedCar} />
+        <CarModel car={car} selectedCar={selectedCar} />
         <Environment preset="night" />
         <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.05} minDistance={5} maxDistance={16} />
       </Canvas>
@@ -62,43 +63,6 @@ function PlaceholderTrack({ trackName }: { trackName: string }) {
   );
 }
 
-function PlaceholderCar({ car, selectedCar }: { car: CarConfig; selectedCar: PlayerCar }) {
-  const accent = car.class === "S" || car.class === "A" ? "#f97316" : car.class.startsWith("B") ? "#d946ef" : "#84cc16";
-  return (
-    <group position={[0, 0.55, -5.8]} rotation-y={Math.PI}>
-      <mesh castShadow>
-        <boxGeometry args={[2.3, 0.55, 4.2]} />
-        <meshStandardMaterial color="#18181b" roughness={0.35} metalness={0.65} />
-      </mesh>
-      <mesh position={[0, 0.45, -0.35]} castShadow>
-        <boxGeometry args={[1.45, 0.5, 1.55]} />
-        <meshStandardMaterial color="#27272a" roughness={0.25} metalness={0.75} />
-      </mesh>
-      <mesh position={[0, 0.14, -2.16]}>
-        <boxGeometry args={[1.55, 0.12, 0.08]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.2} />
-      </mesh>
-      <mesh position={[0, 0.78, 1.9]}>
-        <boxGeometry args={[1.65, 0.08, 0.35]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.65} />
-      </mesh>
-      {[[-1.22, -0.18, -1.35], [1.22, -0.18, -1.35], [-1.22, -0.18, 1.35], [1.22, -0.18, 1.35]].map(([x, y, z]) => (
-        <mesh key={`${x}-${z}`} position={[x, y, z]} rotation-z={Math.PI / 2} castShadow>
-          <cylinderGeometry args={[0.34, 0.34, 0.26, 24]} />
-          <meshStandardMaterial color="#050505" roughness={0.55} metalness={0.25} />
-        </mesh>
-      ))}
-      <mesh position={[0, 1.35, 0]}>
-        <boxGeometry args={[2.2, 0.04, 0.04]} />
-        <meshBasicMaterial color={accent} />
-      </mesh>
-      <mesh position={[0, 1.5, 0]}>
-        <boxGeometry args={[Math.min(3.6, selectedCar.power_rating / 110), 0.04, 0.04]} />
-        <meshBasicMaterial color="#bef264" />
-      </mesh>
-    </group>
-  );
-}
 
 function TextBillboard({ label }: { label: string }) {
   return (

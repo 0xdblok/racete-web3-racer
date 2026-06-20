@@ -1,30 +1,22 @@
 # Active Context
 
-Current milestone: First solo garage-to-play scene shell
+Current milestone: Sketchfab realistic car asset pass
 
 Completed:
-- Installed Three/R3F scene dependencies: `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/rapier`.
-- Added City Loop starter track config.
-- Added `/race` page using connected wallet state and selected garage car.
-- Added `/api/player/state` to read player state without mutating/auto-selecting fallback cars.
-- Added basic 3D race shell with dark scene, track placeholder, placeholder selected car, lights, camera, and HUD.
-- Added Garage/Dashboard Play buttons enabled when a selected car exists.
-- Verified no-wallet `/race` shows connect-wallet message.
-- Verified selected car state, no-selected fallback state, and garage buy/select/upgrade regressions.
+- Selected Sketchfab-only candidate assets for Toro X and Aurox V10 with CC BY 4.0 license metadata.
+- Added `docs/assets.md` attribution/download notes.
+- Added `CarModel` component using `@react-three/drei` `useGLTF` with fallback mesh when local GLB files are missing or fail to load.
+- Wired `/race` scene to load selected car model URL from car config.
+- Added `public/models/cars/README.md` with expected downloaded file names.
+
+Blocked:
+- Actual Sketchfab GLB download requires authenticated Sketchfab OAuth/account access. No Sketchfab token exists in local env/secrets, so no real GLB asset was committed in this pass.
 
 Next task:
-- Add basic keyboard car movement and follow camera, still solo-only.
+- Provide a Sketchfab OAuth token or manually download the selected GLBs, then place them at `public/models/cars/toro-x.glb` and `public/models/cars/aurox-v10.glb`.
 
 Important files:
-- `src/config/tracks.ts`
-- `src/app/race/page.tsx`
-- `src/app/api/player/state/route.ts`
-- `src/components/race/RacePageClient.tsx`
+- `docs/assets.md`
+- `public/models/cars/README.md`
+- `src/components/race/CarModel.tsx`
 - `src/components/race/RaceScene.tsx`
-- `src/components/race/RaceHud.tsx`
-- `src/components/WalletGameDashboard.tsx`
-- `src/lib/player-state.ts`
-
-Open blockers:
-- None for solo scene shell.
-- Real SPL payment success still requires the actual Pump.fun token mint, treasury wallet, and funded user token account.
