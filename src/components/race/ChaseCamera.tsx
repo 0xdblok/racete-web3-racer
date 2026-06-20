@@ -11,13 +11,13 @@ import * as THREE from "three";
 /* ------------------------------------------------------------------ */
 
 /* ── Tuning constants ── */
-const BASE_DISTANCE = 6;        // default distance behind car
+const BASE_DISTANCE = 5;        // was 6 — closer to vehicle
 const BASE_HEIGHT = 2.8;        // camera height above car
 const LOOK_AHEAD = 8;           // how far ahead of car to look (meters)
-const FOLLOW_SMOOTHNESS = 4;    // position catch-up speed
-const ROTATION_SMOOTHNESS = 5;  // lookAt catch-up speed
-const SPEED_PULLBACK = 4;       // extra distance added at max speed
-const NITRO_PULLBACK = 2;       // extra distance during nitro
+const FOLLOW_SMOOTHNESS = 7;    // was 4 — faster position catch-up
+const ROTATION_SMOOTHNESS = 8;  // was 5 — faster lookAt catch-up
+const SPEED_PULLBACK = 2;       // was 4 — less pullback at max speed
+const NITRO_PULLBACK = 1;       // was 2 — less pullback during nitro
 const MIN_ZOOM = 2.5;           // closest zoom (mouse wheel)
 const MAX_ZOOM = 50;            // farthest zoom
 const ZOOM_SPEED = 0.6;         // wheel sensitivity
