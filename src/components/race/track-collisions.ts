@@ -30,6 +30,13 @@ const TRACK_WIDTH = 14;           // road width in meters
 const GUARDRAIL_OFFSET = 8;       // guardrail distance from centerline (TRACK_WIDTH/2 + 1)
 const WORLD_BOUND = 480;          // world edge (hard stop, leaves 10m margin from visual wall at 490)
 
+const ROAD_SPEED_MULT = 1.0;
+const GRASS_SPEED_MULT = 0.7;     // grass/off-road keeps 70% speed
+const WALL_SAFETY_MARGIN = 0.6;   // clamp car safely inside boundary to avoid re-colliding every frame
+const WALL_SLIDE_KEEP = 0.55;     // preserve tangent velocity when hitting wall at an angle
+const WALL_PARALLEL_KEEP = 0.75;  // preserve more speed when already sliding parallel
+const WALL_ESCAPE_KEEP = 0.96;    // near-full speed when moving away from wall
+
 /* ── Spawn / reset ── */
 
 export const SPAWN_POSITION = new THREE.Vector3(0, 0.3, -80);
@@ -141,8 +148,18 @@ export type CollisionInfo = {
   hitWorldBound: boolean;
   /** 0–1 off-track factor (0 = on road, 1 = fully off-track) */
   offTrackFactor: number;
-  /** Speed multiplier from terrain (1.0 = full, 0.0 = stopped) */
+  /** Speed multiplier from terrain cap (1.0 = full, 0.7 = grass/off-road) */
   terrainSpeedMult: number;
+  /** Collision normal points away from wall, back toward valid driving area */
+  normalX: number;
+  normalZ: number;
+  /** Wall tangent for arcade sliding */
+  tangentX: number;
+  tangentZ: number;
+  /** Movement classification at impact */
+  movingIntoWall: boolean;
+  movingAwayFromWall: boolean;
+  movingParallelWall: boolean;
 };
 
 /**
@@ -171,7 +188,14 @@ export function resolveTrackCollision(
     hitGuardrail: false,
     hitWorldBound: false,
     offTrackFactor: 0,
-    terrainSpeedMult: 1.0,
+    terrainSpeedMult: ROAD_SPEED_MULT,
+    normalX: 0,
+    normalZ: 0,
+    tangentX: 0,
+    tangentZ: 0,
+    movingIntoWall: false,
+    movingAwayFromWall: false,
+    movingParallelWall: false,
   };
 
   /* ── 1. Guardrail collision ── */
@@ -180,46 +204,63 @@ export function resolveTrackCollision(
     const { seg, closestX, closestZ, lateralDist } = nearest;
     const absLat = Math.abs(lateralDist);
 
-    // Terrain zones
+    // Detection: road / off-road / guardrail are separate states.
     if (absLat <= TRACK_WIDTH / 2) {
-      // On road — full speed
       info.onRoad = true;
       info.offTrackFactor = 0;
-      info.terrainSpeedMult = 1.0;
+      info.terrainSpeedMult = ROAD_SPEED_MULT;
     } else if (absLat <= GUARDRAIL_OFFSET) {
-      // Shoulder / grass — flat 30% reduction
       info.onRoad = false;
       info.offTrackFactor = (absLat - TRACK_WIDTH / 2) / (GUARDRAIL_OFFSET - TRACK_WIDTH / 2);
-      info.terrainSpeedMult = 0.7;
+      info.terrainSpeedMult = GRASS_SPEED_MULT;
     } else {
-      // Past guardrail — hard collision (slide at 35%)
       info.onRoad = false;
       info.hitGuardrail = true;
       info.offTrackFactor = 1.0;
+      info.terrainSpeedMult = ROAD_SPEED_MULT; // wall response handles impact; don't stack grass slowdown
 
-      // Push car back inside
       const signLat = lateralDist > 0 ? 1 : -1;
-      const pushTarget = (GUARDRAIL_OFFSET - 0.3) * signLat; // just inside guardrail
-      const pushDelta = pushTarget - lateralDist;
-      if (Math.abs(pushDelta) > 0) {
-        // Move car to just inside the guardrail
-        px = closestX + pushDelta * seg.perpX;
-        pz = closestZ + pushDelta * seg.perpZ;
-      }
+      const legalLat = (GUARDRAIL_OFFSET - WALL_SAFETY_MARGIN) * signLat;
 
-      // Cancel velocity component pushing into the wall
-      // Wall normal points inward (toward centerline), opposite to lateral sign
-      const wallNx = -signLat * seg.perpX;
-      const wallNz = -signLat * seg.perpZ;
-      const velIntoWall = vx * wallNx + vz * wallNz;
-      if (velIntoWall > 0) {
-        // Remove the inward velocity component
-        vx -= velIntoWall * wallNx;
-        vz -= velIntoWall * wallNz;
-      }
+      // Clamp to just inside the valid corridor with a safety margin.
+      px = closestX + legalLat * seg.perpX;
+      pz = closestZ + legalLat * seg.perpZ;
 
-      // Allow sliding along wall but at reduced speed
-      info.terrainSpeedMult = 0.35;
+      // Outward points deeper into the wall; inward is the escape/pushback direction.
+      const outwardX = signLat * seg.perpX;
+      const outwardZ = signLat * seg.perpZ;
+      const inwardX = -outwardX;
+      const inwardZ = -outwardZ;
+      const tangentX = seg.dirX;
+      const tangentZ = seg.dirZ;
+
+      info.normalX = inwardX;
+      info.normalZ = inwardZ;
+      info.tangentX = tangentX;
+      info.tangentZ = tangentZ;
+
+      const outwardSpeed = vx * outwardX + vz * outwardZ;
+      const inwardSpeed = vx * inwardX + vz * inwardZ;
+      const tangentSpeed = vx * tangentX + vz * tangentZ;
+      const tangentAbs = Math.abs(tangentSpeed);
+
+      info.movingIntoWall = outwardSpeed > 0.15;
+      info.movingAwayFromWall = inwardSpeed > 0.15;
+      info.movingParallelWall = !info.movingIntoWall && !info.movingAwayFromWall && tangentAbs > 0.15;
+
+      if (info.movingIntoWall) {
+        // Remove outward velocity, keep a playable slide along the barrier.
+        vx = tangentX * tangentSpeed * WALL_SLIDE_KEEP;
+        vz = tangentZ * tangentSpeed * WALL_SLIDE_KEEP;
+      } else if (info.movingAwayFromWall) {
+        // Let reverse/escape inputs work. Preserve almost all velocity away from wall.
+        vx = (inwardX * inwardSpeed + tangentX * tangentSpeed) * WALL_ESCAPE_KEEP;
+        vz = (inwardZ * inwardSpeed + tangentZ * tangentSpeed) * WALL_ESCAPE_KEEP;
+      } else {
+        // Low-speed/parallel scrape: preserve controlled sliding, no glue.
+        vx = tangentX * tangentSpeed * WALL_PARALLEL_KEEP;
+        vz = tangentZ * tangentSpeed * WALL_PARALLEL_KEEP;
+      }
     }
   }
 
@@ -229,24 +270,32 @@ export function resolveTrackCollision(
     px = -bound;
     if (vx < 0) vx = 0;
     info.hitWorldBound = true;
+    info.normalX = 1;
+    info.normalZ = 0;
     info.terrainSpeedMult = Math.min(info.terrainSpeedMult, 0.3);
   }
   if (px > bound) {
     px = bound;
     if (vx > 0) vx = 0;
     info.hitWorldBound = true;
+    info.normalX = -1;
+    info.normalZ = 0;
     info.terrainSpeedMult = Math.min(info.terrainSpeedMult, 0.3);
   }
   if (pz < -bound) {
     pz = -bound;
     if (vz < 0) vz = 0;
     info.hitWorldBound = true;
+    info.normalX = 0;
+    info.normalZ = 1;
     info.terrainSpeedMult = Math.min(info.terrainSpeedMult, 0.3);
   }
   if (pz > bound) {
     pz = bound;
     if (vz > 0) vz = 0;
     info.hitWorldBound = true;
+    info.normalX = 0;
+    info.normalZ = -1;
     info.terrainSpeedMult = Math.min(info.terrainSpeedMult, 0.3);
   }
 

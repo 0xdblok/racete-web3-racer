@@ -47,6 +47,11 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
   const driftAngle = useRef(0);     // lateral drift angle (separate from steer)
   const driftFactor = useRef(0);    // 0..1 lerped drift amount
 
+  // Collision recovery state
+  const collisionTimer = useRef(0);
+  const escapeAssistTimer = useRef(0);
+  const lastCollisionNormal = useRef(new THREE.Vector2(0, 0));
+
   // Nitro state
   const nitroFuel = useRef(stats.nitroDuration);
   const nitroOnCooldown = useRef(false);
@@ -55,6 +60,7 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
   useFrame((_, delta) => {
     const k = keys.current;
     const dt = Math.min(delta, 0.1);
+    escapeAssistTimer.current = Math.max(0, escapeAssistTimer.current - dt);
 
     // --- Raw binary input ---
     const throttle = (k.has("ArrowUp") || k.has("w") || k.has("W")) ? 1 : 0;
@@ -73,6 +79,9 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
       currentSteer.current = 0;
       driftAngle.current = 0;
       driftFactor.current = 0;
+      collisionTimer.current = 0;
+      escapeAssistTimer.current = 0;
+      lastCollisionNormal.current.set(0, 0);
       worldPos.current.copy(SPAWN_POSITION);
       nitroFuel.current = stats.nitroDuration;
       nitroOnCooldown.current = false;
@@ -146,7 +155,8 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
       if (currentSpeed > 0) {
         speed.current -= stats.brakeForce * dt;
       } else {
-        speed.current -= stats.reverseSpeed * 0.3 * dt;
+        const reverseAssist = escapeAssistTimer.current > 0 ? 1.0 : 0.3;
+        speed.current -= stats.reverseSpeed * reverseAssist * dt;
       }
     } else {
       // Natural drag
@@ -212,22 +222,46 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     const velVec = forward.clone().multiplyScalar(speed.current);
     const result = resolveTrackCollision(worldPos.current, velVec);
 
-    // Apply position pushback
+    // Apply position correction first.
     worldPos.current.x = result.position[0];
     worldPos.current.z = result.position[1];
 
-    // Apply terrain speed reduction (off-road / shoulder)
-    speed.current *= result.info.terrainSpeedMult;
+    const hitWall = result.info.hitGuardrail || result.info.hitWorldBound;
 
-    // If guardrail hit, slide along wall by aligning with resolved velocity
-    if (result.info.hitGuardrail) {
+    if (hitWall) {
+      collisionTimer.current += dt;
+      escapeAssistTimer.current = 0.75;
+      lastCollisionNormal.current.set(result.info.normalX, result.info.normalZ);
+
+      // Failsafe: if repeated collision frames happen, add a tiny inward nudge.
+      // This prevents boundary jitter without teleporting the car.
+      if (collisionTimer.current > 1.5 && lastCollisionNormal.current.lengthSq() > 0.001) {
+        worldPos.current.x += lastCollisionNormal.current.x * 0.25;
+        worldPos.current.z += lastCollisionNormal.current.y * 0.25;
+      }
+
+      // Collision response is not terrain decay. Use resolved velocity once.
       const rvx = result.velocity[0];
       const rvz = result.velocity[1];
-      const rSpeed = Math.sqrt(rvx * rvx + rvz * rvz);
-      if (rSpeed > 0.5) {
-        rotation.current = Math.atan2(rvx, rvz);
-        speed.current = rSpeed * Math.sign(speed.current);
+      const resolvedSpeed = Math.sqrt(rvx * rvx + rvz * rvz);
+      const sign = speed.current === 0 ? 1 : Math.sign(speed.current);
+
+      if (resolvedSpeed < 0.15 && result.info.movingIntoWall) {
+        speed.current = 0;
+      } else if (resolvedSpeed > 0.05) {
+        speed.current = THREE.MathUtils.clamp(resolvedSpeed * sign, -stats.reverseSpeed, maxSpd);
       }
+    } else {
+      collisionTimer.current = 0;
+
+      // Terrain response is a speed cap, not per-frame multiplication.
+      // Road = 100%, shoulder/grass = 70%, returning to road restores full cap.
+      const terrainMult = result.info.terrainSpeedMult;
+      speed.current = THREE.MathUtils.clamp(
+        speed.current,
+        -stats.reverseSpeed * terrainMult,
+        maxSpd * terrainMult,
+      );
     }
 
     // --- Update group transform ---
