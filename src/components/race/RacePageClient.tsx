@@ -2,15 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
 import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
-import { RaceScene } from "@/components/race/RaceScene";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
+
+const RaceScene = dynamic(
+  () => import("@/components/race/RaceScene").then((mod) => ({ default: mod.RaceScene })),
+  { ssr: false, loading: () => <div className="flex items-center justify-center h-screen text-white/60">Loading 3D race engine…</div> },
+);
 
 type Status = "idle" | "loading" | "ready" | "error";
 

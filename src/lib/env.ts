@@ -9,6 +9,7 @@ export const publicEnv = {
   gameName: process.env.NEXT_PUBLIC_GAME_NAME || "Race Cash Rally",
   mockTokenMode: isExplicitlyTrue(process.env.NEXT_PUBLIC_MOCK_TOKEN_MODE),
   devToolsEnabled: isExplicitlyTrue(process.env.NEXT_PUBLIC_DEV_TOOLS_ENABLED),
+  gameServerUrl: process.env.NEXT_PUBLIC_GAME_SERVER_URL || "",
 };
 
 export const serverEnv = {

@@ -9,6 +9,7 @@ import {
   subscribe,
   type MatchmakingState,
 } from "@/lib/multiplayer/client";
+import { publicEnv } from "@/lib/env";
 import type { CarConfig } from "@/config/cars";
 import type { PlayerCar } from "@/types/game";
 
@@ -17,6 +18,15 @@ type Props = {
   playerCar: PlayerCar;
   onStateChange?: (state: MatchmakingState) => void;
 };
+
+function getDisplayedServerUrl(): string {
+  if (publicEnv.gameServerUrl) return publicEnv.gameServerUrl;
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.hostname}:2567`;
+  }
+  return "not configured";
+}
 
 export function MatchmakingPanel({ selectedCar, playerCar, onStateChange }: Props) {
   const { publicKey, connected } = useWallet();
@@ -61,6 +71,11 @@ export function MatchmakingPanel({ selectedCar, playerCar, onStateChange }: Prop
         <p className="mt-2 text-sm text-white/60">
           {selectedCar.class}-class &middot; PR {playerCar.power_rating ?? selectedCar.basePowerRating}
         </p>
+        {!publicEnv.gameServerUrl && (
+          <p className="mt-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs text-amber-200/80">
+            No game server URL configured. Using auto-detect ({getDisplayedServerUrl()}).
+          </p>
+        )}
         <button
           onClick={handleFindMatch}
           disabled={!connected}
@@ -81,7 +96,7 @@ export function MatchmakingPanel({ selectedCar, playerCar, onStateChange }: Prop
       <div className="mx-auto max-w-md rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center">
         <div className="mx-auto mb-4 size-10 animate-spin rounded-full border-2 border-lime-300 border-t-transparent" />
         <p className="text-lg font-bold text-white">Connecting to game server...</p>
-        <p className="mt-2 text-xs text-white/40">{process.env.NEXT_PUBLIC_GAME_SERVER_URL || "ws://localhost:2567"}</p>
+        <p className="mt-2 text-xs text-white/40">{getDisplayedServerUrl()}</p>
       </div>
     );
   }

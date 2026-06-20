@@ -5,8 +5,9 @@
  * Singleton client — one Colyseus connection per browser tab.
  */
 
-import { Client, Room } from "colyseus.js";
+import type { Client, Room } from "colyseus.js";
 import type { RaceRoomState, LobbyPlayer, RoomStatus } from "@/types/multiplayer";
+import { publicEnv } from "@/lib/env";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -44,17 +45,33 @@ export type MatchmakingState = {
 type Listener = () => void;
 
 /* ------------------------------------------------------------------ */
+/*  Server URL resolution                                              */
+/* ------------------------------------------------------------------ */
+
+function getConfiguredServerUrl(): string | null {
+  if (publicEnv.gameServerUrl) return publicEnv.gameServerUrl;
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const port = "2567";
+    return `${protocol}//${window.location.hostname}:${port}`;
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Singleton client                                                    */
 /* ------------------------------------------------------------------ */
 
-const GAME_SERVER_URL =
-  process.env.NEXT_PUBLIC_GAME_SERVER_URL || "http://localhost:2567";
-
 let _client: Client | null = null;
 
-function getClient(): Client {
+async function getClient(): Promise<Client> {
   if (!_client) {
-    _client = new Client(GAME_SERVER_URL);
+    const url = getConfiguredServerUrl();
+    if (!url) {
+      throw new Error("Game server URL is not configured. Set NEXT_PUBLIC_GAME_SERVER_URL.");
+    }
+    const colyseus = (await import("colyseus.js")) as unknown as { Client: new (url: string) => Client };
+    _client = new colyseus.Client(url);
   }
   return _client;
 }
@@ -131,7 +148,7 @@ export async function findMatch(params: {
   setState({ status: "connecting", error: null });
 
   try {
-    const client = getClient();
+    const client = await getClient();
     const roomName = classToRoomName(params.carClass);
 
     // joinOrCreate: either join an existing room for this class, or create one

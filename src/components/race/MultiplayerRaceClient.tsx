@@ -1,18 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
 import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { RaceHud } from "@/components/race/RaceHud";
-import { RaceScene } from "@/components/race/RaceScene";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
 import { getState, sendMovement, subscribe, type MatchmakingState } from "@/lib/multiplayer/client";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
+
+// Dynamic import: RaceScene pulls in @react-three/* and may fail on some browsers.
+// Load it only when racing view is active to avoid crashing the whole page on initial render.
+const RaceScene = dynamic(
+  () => import("@/components/race/RaceScene").then((mod) => ({ default: mod.RaceScene })),
+  { ssr: false, loading: () => <div className="flex items-center justify-center h-screen text-white/60">Loading 3D race engine…</div> },
+);
 
 type Status = "idle" | "loading" | "ready" | "error";
 type View = "matchmaking" | "lobby" | "racing";
@@ -24,7 +31,35 @@ type Telemetry = {
   drifting: boolean;
 };
 
-export function MultiplayerRaceClient() {
+export class MultiplayerErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; errorMessage: string }
+> {
+  state = { hasError: false, errorMessage: "" };
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, errorMessage: error.message };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("[MultiplayerRaceClient] crashed:", error.message, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="flex min-h-screen items-center justify-center bg-[#050509] p-6 text-white">
+          <div className="mx-auto max-w-md rounded-[2rem] border border-red-400/20 bg-red-500/[0.06] p-8 text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.35em] text-red-300">Multiplayer Error</p>
+            <h1 className="mt-3 text-2xl font-black">Component crashed</h1>
+            <p className="mt-2 text-sm text-red-100/70">{this.state.errorMessage}</p>
+            <a href="/" className="mt-6 inline-flex rounded-full bg-lime-300 px-5 py-2.5 text-sm font-black text-black">Back to home</a>
+          </div>
+        </main>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function MultiplayerRaceClientInner() {
   const { publicKey, connected } = useWallet();
   const [playerState, setPlayerState] = useState<PlayerInitResponse | null>(null);
   const [status, setStatus] = useState<Status>("idle");
@@ -233,6 +268,14 @@ export function MultiplayerRaceClient() {
   }
 
   return <MultiplayerShell><Panel>Preparing multiplayer shell...</Panel></MultiplayerShell>;
+}
+
+export function MultiplayerRaceClient() {
+  return (
+    <MultiplayerErrorBoundary>
+      <MultiplayerRaceClientInner />
+    </MultiplayerErrorBoundary>
+  );
 }
 
 function MultiplayerShell({ children }: { children: React.ReactNode }) {
