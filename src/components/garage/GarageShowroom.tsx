@@ -7,12 +7,25 @@ import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 
 const SHOWROOM_SLOTS: { carId: string; position: [number, number, number]; rotation: [number, number, number] }[] = [
-  { carId: "street-rat", position: [-10, 0, 0], rotation: [0, 0.3, 0] },
-  { carId: "bavaro-coupe", position: [-6, 0, 0], rotation: [0, 0.15, 0] },
-  { carId: "aurox-v10", position: [-2, 0, 0], rotation: [0, 0, 0] },
-  { carId: "sturm-rs", position: [2, 0, 0], rotation: [0, -0.15, 0] },
-  { carId: "furia-gt", position: [6, 0, 0], rotation: [0, -0.3, 0] },
-  { carId: "toro-x", position: [10, 0, 0], rotation: [0, -0.4, 0] },
+  // Back row (z = -3)
+  { carId: "street-rat", position: [-14, 0.3, -3], rotation: [0, 0.3, 0] },
+  { carId: "bavaro-coupe", position: [-10.5, 0.3, -3], rotation: [0, 0.15, 0] },
+  { carId: "aurox-v10", position: [-7, 0.3, -3], rotation: [0, 0, 0] },
+  { carId: "sturm-rs", position: [-3.5, 0.3, -3], rotation: [0, -0.1, 0] },
+  { carId: "furia-gt", position: [0, 0.3, -3], rotation: [0, 0, 0] },
+  { carId: "toro-x", position: [3.5, 0.3, -3], rotation: [0, -0.15, 0] },
+  { carId: "nova-s1", position: [7, 0.3, -3], rotation: [0, -0.1, 0] },
+  { carId: "bavaro-sport", position: [10.5, 0.3, -3], rotation: [0, -0.2, 0] },
+  { carId: "zephyr-z8", position: [14, 0.3, -3], rotation: [0, -0.3, 0] },
+  // Front row (z = 3)
+  { carId: "bavaro-m5", position: [-12, 0, 3], rotation: [0, -0.2, 0] },
+  { carId: "toro-se", position: [-8, 0, 3], rotation: [0, -0.1, 0] },
+  { carId: "valor-gt", position: [-4, 0, 3], rotation: [0, 0, 0] },
+  { carId: "warp-x1", position: [0, 0, 3], rotation: [0, 0.05, 0] },
+  { carId: "nova-spider", position: [4, 0, 3], rotation: [0, 0.1, 0] },
+  { carId: "volt-w6", position: [8, 0, 3], rotation: [0, 0.15, 0] },
+  { carId: "volt-c5", position: [12, 0, 3], rotation: [0, 0.2, 0] },
+  { carId: "bavaro-cs", position: [16, 0, 3], rotation: [0, 0.25, 0] },
 ];
 
 const CAR_SHOWROOM_CONFIG: Record<string, { scale: number; positionOffset: [number, number, number]; rotationOffset: [number, number, number] }> = {
@@ -43,30 +56,31 @@ export function GarageShowroom({
     <div className="h-full w-full">
       <Canvas
         shadows
-        camera={{ position: [0, 5, 20], fov: 65 }}
+        camera={{ position: [0, 7, 28], fov: 60 }}
         gl={{ antialias: true, alpha: false }}
         style={{ background: "#111118" }}
       >
         {/* Bright ambient light so everything is visible */}
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[0, 15, 10]} intensity={2.5} castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
-        <directionalLight position={[-15, 10, -5]} intensity={1.2} />
-        <directionalLight position={[15, 10, -5]} intensity={1.2} />
-        <pointLight position={[0, 6, 5]} intensity={2} color="#ffffff" />
+        <ambientLight intensity={1.4} />
+        <directionalLight position={[0, 18, 15]} intensity={2.5} castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
+        <directionalLight position={[-15, 12, -8]} intensity={1.2} />
+        <directionalLight position={[15, 12, -8]} intensity={1.2} />
+        <pointLight position={[0, 8, 10]} intensity={2} color="#ffffff" />
+        <pointLight position={[0, 8, -8]} intensity={1.5} color="#f0e6ff" />
 
         <Suspense fallback={null}>
           <Environment preset="city" />
         </Suspense>
 
-        {/* Floor - brighter */}
+        {/* Floor - brighter and wider */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
-          <planeGeometry args={[50, 25]} />
+          <planeGeometry args={[70, 30]} />
           <meshStandardMaterial color="#1a1a2e" roughness={0.4} metalness={0.5} />
         </mesh>
 
-        {/* Back wall for depth */}
-        <mesh position={[0, 4, -8]} receiveShadow>
-          <planeGeometry args={[50, 10]} />
+        {/* Back wall */}
+        <mesh position={[0, 5, -12]} receiveShadow>
+          <planeGeometry args={[70, 12]} />
           <meshStandardMaterial color="#16162a" roughness={0.5} metalness={0.4} />
         </mesh>
 
@@ -97,11 +111,11 @@ export function GarageShowroom({
         <OrbitControls
           enablePan={true}
           enableZoom={true}
-          minDistance={5}
-          maxDistance={40}
+          minDistance={6}
+          maxDistance={50}
           maxPolarAngle={Math.PI / 2.1}
           minPolarAngle={0.3}
-          target={[0, 1.2, 0]}
+          target={[0, 1.5, 0]}
         />
       </Canvas>
     </div>
@@ -243,11 +257,11 @@ function FallbackMesh({ car }: { car: CarConfig }) {
 function ShowroomGrid() {
   const lines = useMemo(() => {
     const result: { start: [number, number, number]; end: [number, number, number] }[] = [];
-    for (let x = -12; x <= 12; x += 2.5) {
-      result.push({ start: [x, 0.01, -4], end: [x, 0.01, 4] });
+    for (let x = -18; x <= 18; x += 3) {
+      result.push({ start: [x, 0.01, -6], end: [x, 0.01, 6] });
     }
-    for (let z = -4; z <= 4; z += 2) {
-      result.push({ start: [-12.5, 0.01, z], end: [12.5, 0.01, z] });
+    for (let z = -6; z <= 6; z += 3) {
+      result.push({ start: [-18, 0.01, z], end: [18, 0.01, z] });
     }
     return result;
   }, []);

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Subaru BRZ (ZD8)
+* source:	https://sketchfab.com/3d-models/subaru-brz-zd8-bcab5a68e83645cd83d48f1b5cf3923d
+* author:	ilvskf (https://sketchfab.com/ilvskf)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Subaru BRZ (ZD8)" (https://sketchfab.com/3d-models/subaru-brz-zd8-bcab5a68e83645cd83d48f1b5cf3923d) by ilvskf (https://sketchfab.com/ilvskf) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
