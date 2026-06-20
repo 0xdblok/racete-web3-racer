@@ -23,9 +23,11 @@ type CarControllerProps = {
 };
 
 /* ── Tuning constants (tweak these for feel) ── */
-const STEER_RISE_SPEED = 6;       // how fast steering ramps up (per second)
-const STEER_RETURN_SPEED = 4;     // how fast steering returns to center
-const MAX_YAW_RATE = 2.5;         // max radians/second the car can rotate
+const STEER_RISE_SPEED = 3;       // how fast steering ramps up (per second) — was 6
+const STEER_RETURN_SPEED = 3;     // how fast steering returns to center — was 4
+const MAX_YAW_RATE = 1.3;         // max radians/second the car can rotate — was 2.5
+const CORNERING_DRAG = 1.2;       // speed loss multiplier when turning (steerAngle × speedRatio × this)
+const DRIFT_CORNERING_MULT = 0.5; // drifting loses less speed in corners (multiplied against CORNERING_DRAG)
 const DRIFT_LERP_SPEED = 3;       // how fast drift factor lerps in/out
 const DRIFT_STEER_BONUS = 1.4;    // extra steering angle during drift
 const DRIFT_LATERAL_SPEED = 1.2;  // how fast drift angle builds laterally
@@ -151,6 +153,17 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
         speed.current -= stats.drag * dt;
       } else if (currentSpeed < 0) {
         speed.current += stats.drag * dt;
+      }
+    }
+    // --- Cornering drag (lose speed while turning) ---
+    if (Math.abs(speed.current) > 1) {
+      const steerAbs = Math.abs(currentSteer.current);
+      if (steerAbs > 0.02) {
+        const speedRatio = Math.abs(speed.current) / maxSpd;
+        const dragMult = isDrifting ? DRIFT_CORNERING_MULT : 1.0;
+        const turnDrag = steerAbs * speedRatio * CORNERING_DRAG * dragMult;
+        // Apply as proportional drag: reduce speed by turnDrag fraction per second
+        speed.current -= speed.current * turnDrag * dt;
       }
     }
     speed.current = THREE.MathUtils.clamp(speed.current, -stats.reverseSpeed, maxSpd);
