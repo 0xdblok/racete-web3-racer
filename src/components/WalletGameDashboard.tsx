@@ -466,7 +466,7 @@ export function WalletGameDashboard() {
           </section>
         )}
 
-        {connected && publicEnv.devToolsEnabled && (
+        {connected && process.env.NEXT_PUBLIC_DEV_TOOLS_ENABLED === "true" && (
           <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/[0.05] p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
