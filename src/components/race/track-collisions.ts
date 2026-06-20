@@ -187,12 +187,12 @@ export function resolveTrackCollision(
       info.offTrackFactor = 0;
       info.terrainSpeedMult = 1.0;
     } else if (absLat <= GUARDRAIL_OFFSET) {
-      // Shoulder — slowed
+      // Shoulder / grass — flat 30% reduction
       info.onRoad = false;
       info.offTrackFactor = (absLat - TRACK_WIDTH / 2) / (GUARDRAIL_OFFSET - TRACK_WIDTH / 2);
-      info.terrainSpeedMult = THREE.MathUtils.clamp(1.0 - info.offTrackFactor * 0.6, 0.4, 1.0);
+      info.terrainSpeedMult = 0.7;
     } else {
-      // Past guardrail — hard collision
+      // Past guardrail — hard collision (slide at 35%)
       info.onRoad = false;
       info.hitGuardrail = true;
       info.offTrackFactor = 1.0;
@@ -220,12 +220,6 @@ export function resolveTrackCollision(
 
       // Allow sliding along wall but at reduced speed
       info.terrainSpeedMult = 0.35;
-    }
-
-    // Off-track terrain speed reduction (only if not already handled by guardrail)
-    if (!info.hitGuardrail && info.offTrackFactor > 0) {
-      // Blend based on how far off-track
-      info.terrainSpeedMult = THREE.MathUtils.clamp(1.0 - info.offTrackFactor * 0.7, 0.3, 1.0);
     }
   }
 
