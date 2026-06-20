@@ -8,4 +8,10 @@ export const publicEnv = {
   tokenBuyUrl: process.env.NEXT_PUBLIC_TOKEN_BUY_URL || "https://pump.fun/",
   gameName: process.env.NEXT_PUBLIC_GAME_NAME || "Race Cash Rally",
   mockTokenMode: isExplicitlyTrue(process.env.NEXT_PUBLIC_MOCK_TOKEN_MODE),
+  devToolsEnabled: isExplicitlyTrue(process.env.NEXT_PUBLIC_DEV_TOOLS_ENABLED),
+};
+
+export const serverEnv = {
+  devToolsEnabled: isExplicitlyTrue(process.env.DEV_TOOLS_ENABLED),
+  devWalletAddress: process.env.DEV_WALLET_ADDRESS || "",
 };

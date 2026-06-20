@@ -392,6 +392,27 @@ export function WalletGameDashboard() {
     [connection, publicKey, refreshTokenBalance, sendTransaction, state?.ownedCars, tokenBalance, walletAddress],
   );
 
+  const devGrant = useCallback(async () => {
+    if (!walletAddress) return;
+    setStatus("loading");
+    setPaymentStatus({ tone: "normal", message: "Granting dev garage..." });
+    try {
+      const res = await fetch("/api/dev/grant-garage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Dev grant failed");
+      setState(data);
+      setPaymentStatus({ tone: "success", message: "Dev grant complete. All cars unlocked + 2M purchased Race Cash." });
+      setStatus("ready");
+    } catch (err) {
+      setPaymentStatus({ tone: "error", message: err instanceof Error ? err.message : "Dev grant failed" });
+      setStatus("error");
+    }
+  }, [walletAddress]);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (connected && walletAddress) void initPlayer();
@@ -442,6 +463,25 @@ export function WalletGameDashboard() {
             <Stat label="Pump.fun Token" value={formatNumber(tokenBalance)} sub={`Balance: ${tokenBalanceStatus}`} />
             <Stat label="Earned Race Cash" value={formatNumber(state?.player.earned_race_cash)} sub="Cashout-eligible later" />
             <Stat label="Purchased Race Cash" value={formatNumber(state?.player.purchased_race_cash)} sub="Not cashout eligible" />
+          </section>
+        )}
+
+        {connected && publicEnv.devToolsEnabled && (
+          <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/[0.05] p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.25em] text-amber-200/80">Dev tools</p>
+                <h2 className="mt-1 text-lg font-black">Unlock all cars + add 2M Race Cash</h2>
+                <p className="text-sm text-white/60">Only works for the dev testing wallet.</p>
+              </div>
+              <button
+                onClick={() => void devGrant()}
+                disabled={status !== "ready"}
+                className="rounded-full bg-amber-300 px-5 py-3 text-sm font-black text-black hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                Dev: unlock all cars + add Race Cash
+              </button>
+            </div>
           </section>
         )}
 
