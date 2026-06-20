@@ -50,31 +50,18 @@ function computeBox(scene: THREE.Group) {
   return { center, size, maxDim };
 }
 
-/* Per-car overrides for models that need tuning after normalization */
+// Per-car overrides — only for models that need tuning.
+// No blanket rotation; cars use their natural model forward direction.
 const CAR_OVERRIDES: Record<
   string,
   { rotationY?: number; scaleMultiplier?: number; positionOffset?: [number, number, number]; labelOffset?: [number, number, number] }
 > = {};
 
-// Default: flip 180 so cars face forward
-const ALL_CAR_IDS = [
-  "street-rat", "bavaro-coupe", "furia-gt", "toro-x",
-  "nova-s1", "bavaro-sport", "zephyr-z8", "bavaro-m5", "toro-se", "valor-gt",
-  "warp-x1", "nova-spider", "volt-w6", "volt-c5", "bavaro-cs",
-];
-for (const id of ALL_CAR_IDS) {
-  CAR_OVERRIDES[id] = { rotationY: Math.PI };
-}
-
 // Bavaro Sport: model normalizes small, increase scale
-CAR_OVERRIDES["bavaro-sport"] = { ...CAR_OVERRIDES["bavaro-sport"], scaleMultiplier: 1.5 };
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.5 };
 
 // Street Rat / Tesla Cybertruck: model pivot is off-center, nudge forward
-CAR_OVERRIDES["street-rat"] = { ...CAR_OVERRIDES["street-rat"], positionOffset: [0, 0, 0.5] };
-
-// Aurox V10 and Sturm RS have no model; no override needed (placeholder used)
-CAR_OVERRIDES["aurox-v10"] = { rotationY: Math.PI };
-CAR_OVERRIDES["sturm-rs"] = { rotationY: Math.PI };
+CAR_OVERRIDES["street-rat"] = { positionOffset: [0, 0, 0.5] };
 
 /* ------------------------------------------------------------------ */
 /*  ShowroomCamera — OrbitControls with smooth focus transitions       */
@@ -445,7 +432,7 @@ export function GarageShowroom3D({
     if (idx < 0) return null;
     const pos = getCarPosition(idx);
     return {
-      pos: [pos.x, 2.5, pos.z + 6],
+      pos: [pos.x - 2.5, 2.5, pos.z + 6],
       lookAt: [pos.x, 0.8, pos.z],
     };
   }, [focusedCarId, cars]);

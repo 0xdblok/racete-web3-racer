@@ -24,15 +24,12 @@ function computeBox(scene: THREE.Group) {
 
 type CarOverride = { rotationY?: number; scaleMultiplier?: number; yOffset?: number };
 
+// Per-car overrides — only for models that need tuning.
+// No blanket rotation; cars use their natural model forward direction.
 const CAR_OVERRIDES: Record<string, CarOverride> = {};
-// Default rotationY=PI for all cars (rear-facing view)
-for (const id of [
-  "street-rat","bavaro-coupe","aurox-v10","sturm-rs","furia-gt","toro-x",
-  "nova-s1","bavaro-sport","zephyr-z8","bavaro-m5","toro-se","valor-gt",
-  "warp-x1","nova-spider","volt-w6","volt-c5","bavaro-cs",
-]) {
-  CAR_OVERRIDES[id] = { rotationY: Math.PI };
-}
+
+// Bavaro Sport: model normalizes small, increase scale
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.5 };
 
 /* ------------------------------------------------------------------ */
 /*  ShowroomModel — loads 1 GLTF, normalizes, renders                  */

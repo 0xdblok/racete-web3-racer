@@ -29,14 +29,12 @@ function computeBox(scene: THREE.Group) {
   return { center, size, maxDim };
 }
 
+// Per-car overrides — only for models that need tuning.
+// No blanket rotation; cars use their natural model forward direction.
 const CAR_OVERRIDES: Record<string, { rotationY?: number; scaleMultiplier?: number }> = {};
-for (const id of [
-  "street-rat","bavaro-coupe","furia-gt","toro-x",
-  "nova-s1","bavaro-sport","zephyr-z8","bavaro-m5","toro-se","valor-gt",
-  "warp-x1","nova-spider","volt-w6","volt-c5","bavaro-cs",
-]) {
-  CAR_OVERRIDES[id] = { rotationY: Math.PI };
-}
+
+// Bavaro Sport: model normalizes small, increase scale
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.5 };
 
 /* ------------------------------------------------------------------ */
 /*  Status type                                                        */
