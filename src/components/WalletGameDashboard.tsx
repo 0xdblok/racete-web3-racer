@@ -39,7 +39,7 @@ function tokenAmountToRaw(amount: number, decimals: number) {
   return BigInt(whole || "0") * BigInt(10) ** BigInt(decimals) + BigInt(normalizedFraction || "0");
 }
 
-export function WalletGameDashboard() {
+export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabled?: boolean }) {
   const { connection } = useConnection();
   const { publicKey, connected, sendTransaction } = useWallet();
   const [status, setStatus] = useState<Status>("idle");
@@ -466,7 +466,7 @@ export function WalletGameDashboard() {
           </section>
         )}
 
-        {connected && process.env.NEXT_PUBLIC_DEV_TOOLS_ENABLED === "true" && (
+        {connected && devToolsEnabled && (
           <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/[0.05] p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
