@@ -33,8 +33,20 @@ function computeBox(scene: THREE.Group) {
 // No blanket rotation; cars use their natural model forward direction.
 const CAR_OVERRIDES: Record<string, { rotationY?: number; scaleMultiplier?: number }> = {};
 
-// Bavaro Sport: model normalizes small, increase scale
-CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.5 };
+// Scale overrides: match GarageShowroom3D for consistent preview sizing
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.8 };
+CAR_OVERRIDES["zephyr-z8"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["bavaro-m5"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["valor-gt"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["toro-se"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["volt-c5"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["bavaro-cs"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["warp-x1"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["nova-spider"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["volt-w6"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["furia-gt"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["nova-s1"] = { scaleMultiplier: 1.2 };
+CAR_OVERRIDES["toro-x"] = { scaleMultiplier: 1.2 };
 
 /* ------------------------------------------------------------------ */
 /*  Status type                                                        */
@@ -213,14 +225,17 @@ function StaticCanvas({
         gl={{ antialias: false }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[4, 5, 5]} intensity={2.0} />
-        <directionalLight position={[-3, 2, -2]} intensity={0.6} />
+        <ambientLight intensity={2.5} />
+        <directionalLight position={[0, 6, 6]} intensity={4.0} />
+        <directionalLight position={[-4, 3, -3]} intensity={2.0} />
+        <directionalLight position={[4, 2, -3]} intensity={1.5} />
+        <directionalLight position={[0, 2, -5]} intensity={2.5} />
+        <directionalLight position={[0, 2, 5]} intensity={1.5} />
 
-        {/* Light floor */}
+        {/* Light floor — lighter so dark cars stand out */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.25, 0]}>
           <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="#1a1a20" roughness={0.6} />
+          <meshStandardMaterial color="#2a2a38" roughness={0.5} />
         </mesh>
 
         <Suspense fallback={null}>
@@ -292,7 +307,7 @@ class CanvasErrorBoundary extends React.Component<
 
 function Silhouette2D({ car, accent }: { car: CarConfig; accent: string }) {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center px-4 bg-gradient-to-br from-zinc-900 to-black">
+    <div className="absolute inset-0 flex flex-col items-center justify-center px-4 bg-gradient-to-br from-zinc-800 to-zinc-900">
       <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
         <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
         <rect x="25" y="8" width="70" height="16" rx="6" fill={accent} />
@@ -344,7 +359,7 @@ function StatusLabel({
 /* ------------------------------------------------------------------ */
 
 const containerClass =
-  "h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative";
+  "h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden relative";
 
 function getAccent(carClass: string) {
   if (carClass === "S" || carClass === "A") return "#f97316";
