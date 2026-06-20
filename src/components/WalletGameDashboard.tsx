@@ -16,6 +16,7 @@ import { getUpgradePrice, MAX_UPGRADE_LEVEL, UPGRADE_TYPES, type UpgradeType } f
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerInitResponse } from "@/types/game";
+import { HeroShowroom, HeroShowroomPlaceholder } from "@/components/garage/HeroShowroom";
 
 type Status = "idle" | "loading" | "ready" | "error";
 type PaymentStatus = { tone: "normal" | "error" | "success"; message: string } | null;
@@ -50,6 +51,7 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
   const [activePackId, setActivePackId] = useState<string | null>(null);
   const [activeCarId, setActiveCarId] = useState<string | null>(null);
   const [activeUpgradeKey, setActiveUpgradeKey] = useState<string | null>(null);
+  const [showroomCarId, setShowroomCarId] = useState<string | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
   const ownedCarIds = useMemo(() => new Set(state?.ownedCars.map((car) => car.car_id) || []), [state]);
@@ -484,16 +486,44 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
           </section>
         )}
 
-        {connected && state?.selectedCar && (
-          <section className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/[0.05] p-5">
+        {/* Hero 3D Showroom */}
+        <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          {connected ? (
+            <HeroShowroom
+              car={CARS.find(c => c.id === (showroomCarId || selectedCarId || "street-rat")) || CARS[0]}
+              carName={(CARS.find(c => c.id === (showroomCarId || selectedCarId)) || CARS[0]).name}
+            />
+          ) : (
+            <HeroShowroomPlaceholder />
+          )}
+          <div className="flex flex-col justify-center gap-4 rounded-[2rem] border border-lime-300/20 bg-lime-300/[0.04] p-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-fuchsia-200/80">Ready for solo shell</p>
-              <h2 className="mt-1 text-2xl font-black">Selected car: {CARS.find((car) => car.id === state.selectedCar?.car_id)?.name || state.selectedCar.car_id}</h2>
-              <p className="text-sm text-white/60">City Loop is free and unlocked by default.</p>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-lime-300">Race ready</p>
+              <h2 className="mt-2 text-2xl font-black">
+                {connected && selectedCarId
+                  ? CARS.find(c => c.id === selectedCarId)?.name || "Garage"
+                  : "Select a car"}
+              </h2>
+              <p className="mt-2 text-sm text-white/60">
+                {connected
+                  ? "Click a car card below to preview it here."
+                  : "Connect wallet to start building your garage."}
+              </p>
             </div>
-            <Link href="/race" className="rounded-full bg-fuchsia-400 px-5 py-3 text-sm font-black text-black hover:bg-fuchsia-300">Play City Loop</Link>
-          </section>
-        )}
+            {connected && selectedCarId ? (
+              <Link href="/race" className="rounded-full bg-fuchsia-400 px-6 py-3 text-sm font-black text-black hover:bg-fuchsia-300 text-center">
+                Play Race
+              </Link>
+            ) : connected ? (
+              <span className="rounded-full border border-white/10 px-6 py-3 text-sm text-white/35 text-center">
+                Select a car to race
+              </span>
+            ) : null}
+            <Link href="/garage" className="rounded-full border border-white/15 px-6 py-3 text-sm text-white/70 hover:bg-white/10 text-center">
+              Open Full Garage
+            </Link>
+          </div>
+        </section>
 
         {status === "loading" && <Panel>Creating/loading player profile and starter car...</Panel>}
         {error && <Panel tone="error">{error}</Panel>}
@@ -555,7 +585,10 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
             const busy = activeCarId === car.id;
             return (
               <DashboardCardErrorBoundary key={car.id}>
-                <article className={`rounded-3xl border p-5 shadow-lg shadow-black/30 flex flex-col ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
+                <article
+                  onClick={() => setShowroomCarId(car.id)}
+                  className={`rounded-3xl border p-5 shadow-lg shadow-black/30 flex flex-col cursor-pointer transition-colors hover:border-white/25 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}
+                >
                   {/* 2D-only preview — no Canvas, no WebGL, no 3D ever */}
                   <div className="mb-4 shrink-0">
                     <CarSilhouette2D car={car} />
@@ -585,7 +618,7 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
                     <div className="flex gap-2">
                       {owned ? (
                         <button
-                          onClick={() => void selectCar(car.id)}
+                          onClick={(e) => { e.stopPropagation(); void selectCar(car.id); }}
                           disabled={selected || activeCarId !== null || status !== "ready"}
                           className="w-full rounded-full bg-lime-300 px-4 py-2 text-sm font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
                         >
@@ -593,7 +626,7 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
                         </button>
                       ) : (
                         <button
-                          onClick={() => void buyCar(car.id)}
+                          onClick={(e) => { e.stopPropagation(); void buyCar(car.id); }}
                           disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
                           className="w-full rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
                         >
@@ -625,7 +658,7 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
                                     {insufficientUpgradeRaceCash && <p className="mt-1 text-xs text-red-200">Insufficient Race Cash.</p>}
                                     {insufficientUpgradeToken && <p className="mt-1 text-xs text-red-200">Insufficient token balance.</p>}
                                     <button
-                                      onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
+                                      onClick={(e) => { e.stopPropagation(); void upgradeCar(ownedCar.id, upgradeType); }}
                                       disabled={activeUpgradeKey !== null || status !== "ready" || insufficientUpgradeRaceCash || insufficientUpgradeToken}
                                       className="mt-2 w-full rounded-full border border-lime-300/40 px-3 py-1.5 text-xs font-black text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-45"
                                     >
@@ -663,7 +696,7 @@ function CarSilhouette2D({ car }: { car: { id: string; name: string; class: stri
   const isMissing = !car.modelUrl;
 
   return (
-    <div className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center">
+    <div className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center group">
       <div className="flex flex-col items-center justify-center w-full h-full px-4">
         <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
           <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
@@ -677,6 +710,9 @@ function CarSilhouette2D({ car }: { car: { id: string; name: string; class: stri
       {isMissing && (
         <p className="absolute bottom-2 text-[10px] font-bold text-amber-300/80">Model not uploaded yet</p>
       )}
+      <div className="absolute inset-0 flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <span className="text-[10px] text-white/40 font-bold">Click to preview</span>
+      </div>
     </div>
   );
 }
