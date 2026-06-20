@@ -8,9 +8,9 @@ import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
 
 /** Convert internal game speed to display km/h.
- *  Internal maxSpeed ranges ~26 (starter) to ~105 (Bugatti).
- *  Multiply by ~2.85 to get believable km/h: 105 → 300 km/h. */
-const SPEED_TO_KMH = 2.85;
+ *  Internal maxSpeed ranges ~21 (starter) to ~85 (Bugatti).
+ *  Multiply by ~3.1 to get believable km/h: 85 → 264 km/h. */
+const SPEED_TO_KMH = 3.1;
 
 type RaceHudProps = {
   walletAddress: string;

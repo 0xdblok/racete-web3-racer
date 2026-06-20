@@ -58,10 +58,10 @@ export function resolveCarGameplayStats(
   /* ---- base conversions (car config 0–100 → driving units) ---- */
   // Speed tuning: s.speed is 0-100 (real-world inspired). Multiply by SCALE
   // to get game units. Lower = more controllable, Higher = more extreme.
-  const MAX_SPEED_SCALE = 1.05;     // was 2.0, then 1.3 — further reduced
-  const ACCELERATION_SCALE = 0.17;  // was 0.35, then 0.22
-  const NITRO_POWER_SCALE = 0.26;   // was 0.45, then 0.35
-  const STEERING_SCALE = 0.13;      // was 0.32, then 0.22
+  const MAX_SPEED_SCALE = 0.85;     // was 2.0, then 1.3, then 1.05 — further reduced
+  const ACCELERATION_SCALE = 0.13;  // was 0.35, then 0.22, then 0.17
+  const NITRO_POWER_SCALE = 0.20;   // was 0.45, then 0.35, then 0.26
+  const STEERING_SCALE = 0.13;      // was 0.32, then 0.22 — unchanged this pass
 
   let maxSpeed = s.speed * MAX_SPEED_SCALE;
   let accelForce = s.acceleration * ACCELERATION_SCALE;
