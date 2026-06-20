@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import {
@@ -15,7 +15,7 @@ import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
 import { getUpgradePrice, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
-import type { PlayerInitResponse } from "@/types/game";
+import type { PlayerCar, PlayerInitResponse } from "@/types/game";
 import { LazyCarPreview } from "@/components/garage/LazyCarPreview";
 
 type Status = "idle" | "loading" | "ready" | "error";
@@ -490,63 +490,22 @@ export function GaragePageClient() {
             const insufficientToken = !owned && !publicEnv.mockTokenMode && car.priceToken > 0 && tokenBalance < car.priceToken;
             const busy = activeCarId === car.id;
             return (
-              <article key={car.id} className={`rounded-3xl border p-4 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
-                <LazyCarPreview car={car} ownedCar={ownedCar} />
-                <div className="mt-3 flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-black">{car.name}</h2>
-                    <p className="text-xs text-white/55">Class {car.class} · PR {ownedCar?.power_rating || car.basePowerRating}</p>
-                  </div>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>
-                    {selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}
-                  </span>
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/70">
-                  <span>RC: {formatNumber(car.priceRaceCash)}</span>
-                  <span>TKN: {formatNumber(car.priceToken)}</span>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  {owned ? (
-                    <button
-                      onClick={() => void selectCar(car.id)}
-                      disabled={selected || activeCarId !== null || status !== "ready"}
-                      className="w-full rounded-full bg-lime-300 px-3 py-1.5 text-xs font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => void buyCar(car.id)}
-                      disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
-                      className="w-full rounded-full bg-fuchsia-400 px-3 py-1.5 text-xs font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {busy ? "Buying..." : car.priceToken > 0 ? "Buy with RC+TKN" : "Buy with RC"}
-                    </button>
-                  )}
-                </div>
-                {ownedCar && (
-                  <div className="mt-3 border-t border-white/10 pt-3">
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {UPGRADE_TYPES.map((upgradeType) => {
-                        const level = Number(ownedCar[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
-                        const price = getUpgradePrice(level);
-                        const upgradeKey = `${ownedCar.id}:${upgradeType}`;
-                        const upgradeBusy = activeUpgradeKey === upgradeKey;
-                        return (
-                          <button
-                            key={upgradeType}
-                            onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
-                            disabled={activeUpgradeKey !== null || status !== "ready" || !price}
-                            className="rounded-full border border-lime-300/30 px-2 py-1 text-[10px] font-bold text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            {upgradeBusy ? "..." : `${upgradeType} Lv${level}`}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </article>
+              <CardErrorBoundary key={car.id}>
+                <Card
+                  car={car}
+                  owned={owned}
+                  ownedCar={ownedCar}
+                  selected={selected}
+                  busy={busy}
+                  insufficientRaceCash={insufficientRaceCash}
+                  insufficientToken={insufficientToken}
+                  onSelect={() => void selectCar(car.id)}
+                  onBuy={() => void buyCar(car.id)}
+                  onUpgrade={(playerCarId, ut) => void upgradeCar(playerCarId, ut)}
+                  activeUpgradeKey={activeUpgradeKey}
+                  status={status}
+                />
+              </CardErrorBoundary>
             );
           })}
         </section>
@@ -584,6 +543,173 @@ export function GaragePageClient() {
           </div>
         )}
     </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Card Components (error-isolated cards)                             */
+/* ------------------------------------------------------------------ */
+
+class CardErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error: Error) {
+    console.warn("Card error boundary caught:", error.message);
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div className="rounded-3xl border border-red-400/30 bg-red-500/[0.04] p-4 h-full min-h-[200px] flex items-center justify-center">
+          <p className="text-xs text-red-200/60">Card render error</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+type CardProps = {
+  car: (typeof CARS)[number];
+  owned: boolean;
+  ownedCar: PlayerCar | undefined;
+  selected: boolean;
+  busy: boolean;
+  insufficientRaceCash: boolean;
+  insufficientToken: boolean;
+  onSelect: () => void;
+  onBuy: () => void;
+  onUpgrade: (playerCarId: string, upgradeType: UpgradeType) => void;
+  activeUpgradeKey: string | null;
+  status: Status;
+};
+
+function Card({
+  car,
+  owned,
+  ownedCar,
+  selected,
+  busy,
+  insufficientRaceCash,
+  insufficientToken,
+  onSelect,
+  onBuy,
+  onUpgrade,
+  activeUpgradeKey,
+  status,
+}: CardProps) {
+  return (
+    <article
+      className={`rounded-3xl border p-4 shadow-lg shadow-black/30 flex flex-col ${
+        selected
+          ? "border-lime-300/70 bg-lime-300/[0.08]"
+          : "border-white/10 bg-white/[0.04]"
+      }`}
+    >
+      <div className="shrink-0">
+        <LazyCarPreview car={car} ownedCar={ownedCar} />
+      </div>
+
+      <div className="mt-3 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-black">{car.name}</h2>
+          <p className="text-xs text-white/55">
+            Class {car.class} · PR {ownedCar?.power_rating ?? car.basePowerRating}
+          </p>
+        </div>
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-bold shrink-0 ${
+            selected
+              ? "bg-lime-300 text-black"
+              : owned
+                ? "bg-fuchsia-300 text-black"
+                : "bg-white/10 text-white/70"
+          }`}
+        >
+          {selected
+            ? "Selected"
+            : owned
+              ? "Owned"
+              : car.isStarter
+                ? "Starter"
+                : "Locked"}
+        </span>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/70">
+        <span>RC: {formatNumber(car.priceRaceCash)}</span>
+        <span>TKN: {formatNumber(car.priceToken)}</span>
+      </div>
+
+      <div className="mt-auto pt-4">
+        <div className="flex gap-2">
+          {owned ? (
+            <button
+              onClick={onSelect}
+              disabled={
+                selected || busy || activeUpgradeKey !== null || status !== "ready"
+              }
+              className="w-full rounded-full bg-lime-300 px-3 py-1.5 text-xs font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
+            </button>
+          ) : (
+            <button
+              onClick={onBuy}
+              disabled={
+                activeUpgradeKey !== null ||
+                status !== "ready" ||
+                insufficientRaceCash ||
+                insufficientToken ||
+                car.isStarter
+              }
+              className="w-full rounded-full bg-fuchsia-400 px-3 py-1.5 text-xs font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {busy
+                ? "Buying..."
+                : car.priceToken > 0
+                  ? "Buy with RC+TKN"
+                  : "Buy with RC"}
+            </button>
+          )}
+        </div>
+
+        {ownedCar && (
+          <div className="mt-3 border-t border-white/10 pt-3">
+            <div className="grid grid-cols-2 gap-1.5">
+              {UPGRADE_TYPES.map((upgradeType) => {
+                const level = Number(
+                  ownedCar[
+                    `${upgradeType}_level` as keyof typeof ownedCar
+                  ] ?? 1,
+                );
+                const price = getUpgradePrice(level);
+                const upgradeKey = `${ownedCar.id}:${upgradeType}`;
+                const upgradeBusy = activeUpgradeKey === upgradeKey;
+                return (
+                  <button
+                    key={upgradeType}
+                    onClick={() => onUpgrade(ownedCar.id, upgradeType)}
+                    disabled={
+                      activeUpgradeKey !== null ||
+                      status !== "ready" ||
+                      !price
+                    }
+                    className="rounded-full border border-lime-300/30 px-2 py-1 text-[10px] font-bold text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {upgradeBusy
+                      ? "..."
+                      : `${upgradeType} Lv${level}`}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
   );
 }
 
