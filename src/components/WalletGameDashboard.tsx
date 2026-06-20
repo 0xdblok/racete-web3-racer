@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PublicKey, Transaction } from "@solana/web3.js";
 import {
@@ -15,7 +15,6 @@ import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
 import { getUpgradePrice, MAX_UPGRADE_LEVEL, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
-import { GarageCarPreview } from "@/components/garage/GarageCarPreview";
 import type { PlayerInitResponse } from "@/types/game";
 
 type Status = "idle" | "loading" | "ready" | "error";
@@ -538,6 +537,15 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
         )}
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {/* Diagnostic: car render count */}
+          <div className="col-span-full mb-2 rounded-xl border border-amber-300/30 bg-amber-300/[0.05] px-4 py-2 text-center">
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-200/80">
+              Cars rendered: {CARS.length} / {CARS.length}
+            </span>
+            <span className="ml-3 text-xs text-white/40">
+              IDs: {CARS.map(c => c.id).join(", ")}
+            </span>
+          </div>
           {CARS.map((car) => {
             const owned = ownedCarIds.has(car.id);
             const ownedCar = ownedCarByCatalogId.get(car.id);
@@ -546,92 +554,156 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
             const insufficientToken = !owned && !publicEnv.mockTokenMode && car.priceToken > 0 && tokenBalance < car.priceToken;
             const busy = activeCarId === car.id;
             return (
-              <article key={car.id} className={`rounded-3xl border p-5 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
-                <div className="mb-4">
-                  <GarageCarPreview car={car} selectedCar={ownedCar} />
-                  {(!car.modelUrl || car.modelUrl.endsWith(".glb")) && (
-                    <p className="mt-2 text-center text-xs text-amber-200/80">Model not uploaded yet — showing fallback</p>
-                  )}
-                </div>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-black">{car.name}</h2>
-                    <p className="text-sm text-white/55">Class {car.class} · PR {ownedCar?.power_rating || car.basePowerRating}</p>
+              <DashboardCardErrorBoundary key={car.id}>
+                <article className={`rounded-3xl border p-5 shadow-lg shadow-black/30 flex flex-col ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
+                  {/* 2D-only preview — no Canvas, no WebGL, no 3D ever */}
+                  <div className="mb-4 shrink-0">
+                    <CarSilhouette2D car={car} />
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>{selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}</span>
-                </div>
-                <p className="mt-3 text-sm text-white/65">{car.vibe}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70">
-                  <span>Race Cash: {formatNumber(car.priceRaceCash)}</span>
-                  <span>Token: {formatNumber(car.priceToken)}</span>
-                </div>
-                {!owned && insufficientRaceCash && <p className="mt-3 text-sm text-red-200">Insufficient Race Cash.</p>}
-                {!owned && insufficientToken && <p className="mt-3 text-sm text-red-200">Insufficient token balance.</p>}
-                <div className="mt-5 flex gap-2">
-                  {owned ? (
-                    <button
-                      onClick={() => void selectCar(car.id)}
-                      disabled={selected || activeCarId !== null || status !== "ready"}
-                      className="w-full rounded-full bg-lime-300 px-4 py-2 text-sm font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => void buyCar(car.id)}
-                      disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
-                      className="w-full rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
-                    >
-                      {busy ? "Buying..." : car.priceToken > 0 ? "Buy with Race Cash + token" : "Buy with Race Cash"}
-                    </button>
-                  )}
-                </div>
-                {ownedCar && (
-                  <div className="mt-5 border-t border-white/10 pt-4">
-                    <p className="text-xs font-bold uppercase tracking-[0.25em] text-lime-200/80">Upgrades</p>
-                    <div className="mt-3 space-y-3">
-                      {UPGRADE_TYPES.map((upgradeType) => {
-                        const level = Number(ownedCar[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
-                        const price = getUpgradePrice(level);
-                        const upgradeKey = `${ownedCar.id}:${upgradeType}`;
-                        const upgradeBusy = activeUpgradeKey === upgradeKey;
-                        const insufficientUpgradeRaceCash = Boolean(price && totalRaceCash < price.raceCash);
-                        const insufficientUpgradeToken = Boolean(price && !publicEnv.mockTokenMode && price.token > 0 && tokenBalance < price.token);
-                        return (
-                          <div key={upgradeType} className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="capitalize text-sm font-bold">{upgradeType}</span>
-                              <span className="text-xs text-white/60">Lv {level}/{MAX_UPGRADE_LEVEL}</span>
-                            </div>
-                            {price ? (
-                              <>
-                                <p className="mt-1 text-xs text-white/55">Next: {formatNumber(price.raceCash)} Race Cash{price.token > 0 ? ` + ${formatNumber(price.token)} token` : ""}</p>
-                                {insufficientUpgradeRaceCash && <p className="mt-1 text-xs text-red-200">Insufficient Race Cash.</p>}
-                                {insufficientUpgradeToken && <p className="mt-1 text-xs text-red-200">Insufficient token balance.</p>}
-                                <button
-                                  onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
-                                  disabled={activeUpgradeKey !== null || status !== "ready" || insufficientUpgradeRaceCash || insufficientUpgradeToken}
-                                  className="mt-2 w-full rounded-full border border-lime-300/40 px-3 py-1.5 text-xs font-black text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-45"
-                                >
-                                  {upgradeBusy ? "Upgrading..." : price.token > 0 ? "Upgrade with Race Cash + token" : "Upgrade with Race Cash"}
-                                </button>
-                              </>
-                            ) : (
-                              <p className="mt-1 text-xs text-lime-200">Max level reached.</p>
-                            )}
-                          </div>
-                        );
-                      })}
+
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-black">{car.name}</h2>
+                      <p className="text-sm text-white/55">Class {car.class} · PR {ownedCar?.power_rating || car.basePowerRating}</p>
                     </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>
+                      {selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}
+                    </span>
                   </div>
-                )}
-              </article>
+
+                  <p className="mt-3 text-sm text-white/65">{car.vibe}</p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70">
+                    <span>Race Cash: {formatNumber(car.priceRaceCash)}</span>
+                    <span>Token: {formatNumber(car.priceToken)}</span>
+                  </div>
+
+                  {!owned && insufficientRaceCash && <p className="mt-3 text-sm text-red-200">Insufficient Race Cash.</p>}
+                  {!owned && insufficientToken && <p className="mt-3 text-sm text-red-200">Insufficient token balance.</p>}
+
+                  <div className="mt-auto pt-5">
+                    <div className="flex gap-2">
+                      {owned ? (
+                        <button
+                          onClick={() => void selectCar(car.id)}
+                          disabled={selected || activeCarId !== null || status !== "ready"}
+                          className="w-full rounded-full bg-lime-300 px-4 py-2 text-sm font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => void buyCar(car.id)}
+                          disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
+                          className="w-full rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {busy ? "Buying..." : car.priceToken > 0 ? "Buy with Race Cash + token" : "Buy with Race Cash"}
+                        </button>
+                      )}
+                    </div>
+
+                    {ownedCar && (
+                      <div className="mt-5 border-t border-white/10 pt-4">
+                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-lime-200/80">Upgrades</p>
+                        <div className="mt-3 space-y-3">
+                          {UPGRADE_TYPES.map((upgradeType) => {
+                            const level = Number(ownedCar[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
+                            const price = getUpgradePrice(level);
+                            const upgradeKey = `${ownedCar.id}:${upgradeType}`;
+                            const upgradeBusy = activeUpgradeKey === upgradeKey;
+                            const insufficientUpgradeRaceCash = Boolean(price && totalRaceCash < price.raceCash);
+                            const insufficientUpgradeToken = Boolean(price && !publicEnv.mockTokenMode && price.token > 0 && tokenBalance < price.token);
+                            return (
+                              <div key={upgradeType} className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="capitalize text-sm font-bold">{upgradeType}</span>
+                                  <span className="text-xs text-white/60">Lv {level}/{MAX_UPGRADE_LEVEL}</span>
+                                </div>
+                                {price ? (
+                                  <>
+                                    <p className="mt-1 text-xs text-white/55">Next: {formatNumber(price.raceCash)} Race Cash{price.token > 0 ? ` + ${formatNumber(price.token)} token` : ""}</p>
+                                    {insufficientUpgradeRaceCash && <p className="mt-1 text-xs text-red-200">Insufficient Race Cash.</p>}
+                                    {insufficientUpgradeToken && <p className="mt-1 text-xs text-red-200">Insufficient token balance.</p>}
+                                    <button
+                                      onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
+                                      disabled={activeUpgradeKey !== null || status !== "ready" || insufficientUpgradeRaceCash || insufficientUpgradeToken}
+                                      className="mt-2 w-full rounded-full border border-lime-300/40 px-3 py-1.5 text-xs font-black text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-45"
+                                    >
+                                      {upgradeBusy ? "Upgrading..." : price.token > 0 ? "Upgrade with Race Cash + token" : "Upgrade with Race Cash"}
+                                    </button>
+                                  </>
+                                ) : (
+                                  <p className="mt-1 text-xs text-lime-200">Max level reached.</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              </DashboardCardErrorBoundary>
             );
           })}
         </section>
       </section>
     </main>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/*  CarSilhouette2D — pure HTML/CSS, no Canvas, no WebGL              */
+/* ------------------------------------------------------------------ */
+
+function CarSilhouette2D({ car }: { car: { id: string; name: string; class: string; modelUrl: string } }) {
+  const accent = car.class === "S" || car.class === "A" ? "#f97316"
+    : car.class.startsWith("B") ? "#d946ef"
+    : "#84cc16";
+  const isMissing = !car.modelUrl;
+
+  return (
+    <div className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center w-full h-full px-4">
+        <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
+          <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
+          <rect x="25" y="8" width="70" height="16" rx="6" fill={accent} />
+          <circle cx="30" cy="34" r="6" fill={accent} />
+          <circle cx="90" cy="34" r="6" fill={accent} />
+        </svg>
+        <p className="mt-2 text-xs text-white/30 font-bold">{car.name}</p>
+        <p className="text-[10px] text-white/20">Class {car.class}</p>
+      </div>
+      {isMissing && (
+        <p className="absolute bottom-2 text-[10px] font-bold text-amber-300/80">Model not uploaded yet</p>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Error boundary — isolated card failures never hide siblings        */
+/* ------------------------------------------------------------------ */
+
+class DashboardCardErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch(error: Error) {
+    console.warn("Dashboard card error boundary caught:", error.message);
+  }
+  render() {
+    if (this.state.failed) {
+      return (
+        <div className="rounded-3xl border border-red-400/30 bg-red-500/[0.04] p-4 h-full min-h-[200px] flex items-center justify-center">
+          <p className="text-xs text-red-200/60">Card render error</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {

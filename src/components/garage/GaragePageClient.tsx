@@ -482,6 +482,12 @@ export function GaragePageClient() {
 
         {/* Car Card Grid */}
         <section className="mx-6 mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {/* Diagnostic: car render count */}
+          <div className="col-span-full mb-2 rounded-xl border border-amber-300/30 bg-amber-300/[0.05] px-4 py-2 text-center">
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-amber-200/80">
+              Cars rendered: {CARS.length} / {CARS.length}
+            </span>
+          </div>
           {CARS.map((car) => {
             const owned = ownedCarIds.has(car.id);
             const ownedCar = ownedCarByCatalogId.get(car.id);
