@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { STARTER_CAR_ID } from "@/config/cars";
 
-export async function getPlayerState(supabase: SupabaseClient, walletAddress: string) {
+export async function getPlayerState(supabase: SupabaseClient, walletAddress: string, options: { autoSelectFallback?: boolean } = {}) {
   const [{ data: player, error: playerError }, { data: ownedCars, error: carsError }] = await Promise.all([
     supabase.from("players").select("*").eq("wallet_address", walletAddress).single(),
     supabase
@@ -14,13 +14,14 @@ export async function getPlayerState(supabase: SupabaseClient, walletAddress: st
   if (playerError) throw playerError;
   if (carsError) throw carsError;
 
-  const selectedCar = ownedCars?.find((car) => car.is_selected) || ownedCars?.[0] || null;
-  if (ownedCars?.length && !ownedCars.some((car) => car.is_selected)) {
+  const selectedCar = ownedCars?.find((car) => car.is_selected) || null;
+  if (options.autoSelectFallback !== false && ownedCars?.length && !ownedCars.some((car) => car.is_selected)) {
+    const fallbackCar = ownedCars[0];
     await supabase
       .from("player_cars")
       .update({ is_selected: true })
       .eq("wallet_address", walletAddress)
-      .eq("car_id", selectedCar?.car_id || STARTER_CAR_ID);
+      .eq("car_id", fallbackCar?.car_id || STARTER_CAR_ID);
     const { data: refreshedOwnedCars, error: refreshedError } = await supabase
       .from("player_cars")
       .select("*")

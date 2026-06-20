@@ -1,27 +1,30 @@
 # Active Context
 
-Current milestone: Car upgrades system
+Current milestone: First solo garage-to-play scene shell
 
 Completed:
-- Added config-driven upgrade pricing and deterministic power-rating formula.
-- Added `/api/cars/upgrade` for Race Cash-only upgrades.
-- Extended payment intents with `actionType='upgrade_car'` and `upgrade_type`.
-- Extended payment confirmation to apply premium upgrades after verified/mock token payment.
-- Upgrade Race Cash spending uses purchased Race Cash first, then earned Race Cash.
-- Upgrade ledger rows use negative amounts and preserve earned vs purchased cash type.
-- Garage UI now shows owned-car upgrade levels, next-level costs, upgrade buttons, and insufficient balance messages.
-- Verified API tests for Race Cash engine upgrade, premium mock engine upgrade, invalid type, unowned car, insufficient balance, max level, token transaction, power rating increase, and selected car preservation.
+- Installed Three/R3F scene dependencies: `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/rapier`.
+- Added City Loop starter track config.
+- Added `/race` page using connected wallet state and selected garage car.
+- Added `/api/player/state` to read player state without mutating/auto-selecting fallback cars.
+- Added basic 3D race shell with dark scene, track placeholder, placeholder selected car, lights, camera, and HUD.
+- Added Garage/Dashboard Play buttons enabled when a selected car exists.
+- Verified no-wallet `/race` shows connect-wallet message.
+- Verified selected car state, no-selected fallback state, and garage buy/select/upgrade regressions.
 
 Next task:
-- Add track catalog/unlock foundation or basic solo scene foundation, depending on next milestone.
+- Add basic keyboard car movement and follow camera, still solo-only.
 
 Important files:
-- `src/config/upgrades.ts`
-- `src/lib/car-upgrades.ts`
-- `src/app/api/cars/upgrade/route.ts`
-- `src/app/api/payments/create-intent/route.ts`
-- `src/app/api/payments/confirm/route.ts`
+- `src/config/tracks.ts`
+- `src/app/race/page.tsx`
+- `src/app/api/player/state/route.ts`
+- `src/components/race/RacePageClient.tsx`
+- `src/components/race/RaceScene.tsx`
+- `src/components/race/RaceHud.tsx`
 - `src/components/WalletGameDashboard.tsx`
+- `src/lib/player-state.ts`
 
 Open blockers:
+- None for solo scene shell.
 - Real SPL payment success still requires the actual Pump.fun token mint, treasury wallet, and funded user token account.

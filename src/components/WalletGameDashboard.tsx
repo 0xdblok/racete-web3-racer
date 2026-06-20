@@ -412,6 +412,11 @@ export function WalletGameDashboard() {
           <Link href="/" className="text-xl font-black tracking-[0.35em] text-fuchsia-300">RACETE</Link>
           <div className="flex items-center gap-3">
             <Link className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10" href="/garage">Garage</Link>
+            {selectedCarId ? (
+              <Link className="rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300" href="/race">Play</Link>
+            ) : (
+              <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/35">Select car to play</span>
+            )}
             <a className="rounded-full bg-lime-300 px-4 py-2 text-sm font-bold text-black hover:bg-lime-200" href={publicEnv.tokenBuyUrl} target="_blank" rel="noreferrer">Buy Token</a>
             <WalletMultiButton />
           </div>
@@ -436,6 +441,17 @@ export function WalletGameDashboard() {
             <Stat label="Pump.fun Token" value={formatNumber(tokenBalance)} sub={`Balance: ${tokenBalanceStatus}`} />
             <Stat label="Earned Race Cash" value={formatNumber(state?.player.earned_race_cash)} sub="Cashout-eligible later" />
             <Stat label="Purchased Race Cash" value={formatNumber(state?.player.purchased_race_cash)} sub="Not cashout eligible" />
+          </section>
+        )}
+
+        {connected && state?.selectedCar && (
+          <section className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/[0.05] p-5">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-fuchsia-200/80">Ready for solo shell</p>
+              <h2 className="mt-1 text-2xl font-black">Selected car: {CARS.find((car) => car.id === state.selectedCar?.car_id)?.name || state.selectedCar.car_id}</h2>
+              <p className="text-sm text-white/60">City Loop is free and unlocked by default.</p>
+            </div>
+            <Link href="/race" className="rounded-full bg-fuchsia-400 px-5 py-3 text-sm font-black text-black hover:bg-fuchsia-300">Play City Loop</Link>
           </section>
         )}
 
