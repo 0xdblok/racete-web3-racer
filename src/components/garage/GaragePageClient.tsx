@@ -12,11 +12,11 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
 import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
-import { getUpgradePrice, MAX_UPGRADE_LEVEL, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
+import { getUpgradePrice, UPGRADE_TYPES, type UpgradeType } from "@/config/upgrades";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerInitResponse } from "@/types/game";
-import { GarageShowroom } from "@/components/garage/GarageShowroom";
+import { LazyCarPreview } from "@/components/garage/LazyCarPreview";
 
 type Status = "idle" | "loading" | "ready" | "error";
 type PaymentStatus = { tone: "normal" | "error" | "success"; message: string } | null;
@@ -51,7 +51,6 @@ export function GaragePageClient() {
   const [activePackId, setActivePackId] = useState<string | null>(null);
   const [activeCarId, setActiveCarId] = useState<string | null>(null);
   const [activeUpgradeKey, setActiveUpgradeKey] = useState<string | null>(null);
-  const [focusedCarId, setFocusedCarId] = useState<string | null>(null);
   const [devStatus, setDevStatus] = useState<{ devToolsEnabled: boolean; devWalletAddresses: string[] } | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
@@ -420,24 +419,8 @@ export function GaragePageClient() {
     return () => window.clearTimeout(timer);
   }, [connected, initPlayer, walletAddress]);
 
-  const focusedCar = useMemo(() => CARS.find((c) => c.id === focusedCarId) || null, [focusedCarId]);
-  const focusedOwnedCar = focusedCar ? ownedCarByCatalogId.get(focusedCar.id) : undefined;
-
   return (
-    <main className="relative min-h-screen bg-[#050509] text-white">
-      {/* 3D Showroom */}
-      <div className="absolute inset-0">
-        <GarageShowroom
-          cars={CARS}
-          ownedCarIds={ownedCarIds}
-          selectedCarId={selectedCarId}
-          focusedCarId={focusedCarId}
-          onCarClick={setFocusedCarId}
-        />
-      </div>
-
-      {/* UI Overlay */}
-      <div className="relative z-10 flex min-h-screen flex-col">
+    <main className="min-h-screen bg-[#050509] text-white">
         {/* Top Nav */}
         <nav className="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
           <Link href="/" className="text-xl font-black tracking-[0.35em] text-fuchsia-300">RACETE</Link>
@@ -497,99 +480,79 @@ export function GaragePageClient() {
           <div className="mx-6 mt-3 rounded-2xl border border-red-400/30 bg-red-500/10 p-4 text-red-100">{error}</div>
         )}
 
-        {/* Spacer to push detail panel to bottom */}
-        <div className="flex-1" />
-
-        {/* Car Detail Panel */}
-        {focusedCar && (
-          <div className="mx-6 mb-6 rounded-[2rem] border border-white/15 bg-black/80 backdrop-blur-xl p-6">
-            <div className="flex flex-col gap-6 lg:flex-row">
-              {/* Car Info */}
-              <div className="flex-1">
-                <div className="flex items-start justify-between gap-4">
+        {/* Car Card Grid */}
+        <section className="mx-6 mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {CARS.map((car) => {
+            const owned = ownedCarIds.has(car.id);
+            const ownedCar = ownedCarByCatalogId.get(car.id);
+            const selected = selectedCarId === car.id;
+            const insufficientRaceCash = !owned && totalRaceCash < car.priceRaceCash;
+            const insufficientToken = !owned && !publicEnv.mockTokenMode && car.priceToken > 0 && tokenBalance < car.priceToken;
+            const busy = activeCarId === car.id;
+            return (
+              <article key={car.id} className={`rounded-3xl border p-4 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
+                <LazyCarPreview car={car} ownedCar={ownedCar} />
+                {!car.modelUrl && (
+                  <p className="mt-2 text-center text-xs text-amber-200/80">Model not uploaded yet — showing fallback</p>
+                )}
+                <div className="mt-3 flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-3xl font-black">{focusedCar.name}</h2>
-                    <p className="text-sm text-white/55">Class {focusedCar.class} · PR {focusedOwnedCar?.power_rating || focusedCar.basePowerRating}</p>
+                    <h2 className="text-lg font-black">{car.name}</h2>
+                    <p className="text-xs text-white/55">Class {car.class} · PR {ownedCar?.power_rating || car.basePowerRating}</p>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${selectedCarId === focusedCar.id ? "bg-lime-300 text-black" : ownedCarIds.has(focusedCar.id) ? "bg-fuchsia-300 text-black" : focusedCar.isStarter ? "bg-white/10 text-white/70" : "bg-white/10 text-white/70"}`}>
-                    {selectedCarId === focusedCar.id ? "Selected" : ownedCarIds.has(focusedCar.id) ? "Owned" : focusedCar.isStarter ? "Starter" : "Locked"}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>
+                    {selected ? "Selected" : owned ? "Owned" : car.isStarter ? "Starter" : "Locked"}
                   </span>
                 </div>
-                <p className="mt-3 text-sm text-white/65">{focusedCar.vibe}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-white/70">
-                  <span>Race Cash: {formatNumber(focusedCar.priceRaceCash)}</span>
-                  <span>Token: {formatNumber(focusedCar.priceToken)}</span>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/70">
+                  <span>RC: {formatNumber(car.priceRaceCash)}</span>
+                  <span>TKN: {formatNumber(car.priceToken)}</span>
                 </div>
-                {devToolsEnabled && (
-                  <p className="mt-2 text-xs text-amber-200/60">ID: {focusedCar.id} · {focusedCar.modelUrl || "fallback"}</p>
-                )}
-
-                {/* Actions */}
-                <div className="mt-5 flex gap-2">
-                  {ownedCarIds.has(focusedCar.id) ? (
+                <div className="mt-4 flex gap-2">
+                  {owned ? (
                     <button
-                      onClick={() => void selectCar(focusedCar.id)}
-                      disabled={selectedCarId === focusedCar.id || activeCarId !== null || status !== "ready"}
-                      className="rounded-full bg-lime-300 px-5 py-2 text-sm font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
+                      onClick={() => void selectCar(car.id)}
+                      disabled={selected || activeCarId !== null || status !== "ready"}
+                      className="w-full rounded-full bg-lime-300 px-3 py-1.5 text-xs font-black text-black hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      {activeCarId === focusedCar.id ? "Selecting..." : selectedCarId === focusedCar.id ? "Active car" : "Select car"}
+                      {busy ? "Selecting..." : selected ? "Active car" : "Select car"}
                     </button>
                   ) : (
                     <button
-                      onClick={() => void buyCar(focusedCar.id)}
-                      disabled={activeCarId !== null || status !== "ready" || (!focusedCar.isStarter && totalRaceCash < focusedCar.priceRaceCash) || (!publicEnv.mockTokenMode && focusedCar.priceToken > 0 && tokenBalance < focusedCar.priceToken) || focusedCar.isStarter}
-                      className="rounded-full bg-fuchsia-400 px-5 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
+                      onClick={() => void buyCar(car.id)}
+                      disabled={activeCarId !== null || status !== "ready" || insufficientRaceCash || insufficientToken || car.isStarter}
+                      className="w-full rounded-full bg-fuchsia-400 px-3 py-1.5 text-xs font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      {activeCarId === focusedCar.id ? "Buying..." : focusedCar.priceToken > 0 ? "Buy with Race Cash + token" : "Buy with Race Cash"}
+                      {busy ? "Buying..." : car.priceToken > 0 ? "Buy with RC+TKN" : "Buy with RC"}
                     </button>
                   )}
-                  {selectedCarId === focusedCar.id && (
-                    <Link href="/race" className="rounded-full bg-fuchsia-400 px-5 py-2 text-sm font-black text-black hover:bg-fuchsia-300">Play</Link>
-                  )}
                 </div>
-              </div>
-
-              {/* Upgrades */}
-              {focusedOwnedCar && (
-                <div className="flex-1 border-t border-white/10 pt-4 lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-lime-200/80">Upgrades</p>
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    {UPGRADE_TYPES.map((upgradeType) => {
-                      const level = Number(focusedOwnedCar[`${upgradeType}_level` as keyof typeof focusedOwnedCar] || 1);
-                      const price = getUpgradePrice(level);
-                      const upgradeKey = `${focusedOwnedCar.id}:${upgradeType}`;
-                      const upgradeBusy = activeUpgradeKey === upgradeKey;
-                      const insufficientUpgradeRaceCash = Boolean(price && totalRaceCash < price.raceCash);
-                      const insufficientUpgradeToken = Boolean(price && !publicEnv.mockTokenMode && price.token > 0 && tokenBalance < price.token);
-                      return (
-                        <div key={upgradeType} className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-bold capitalize">{upgradeType}</span>
-                            <span className="text-xs text-white/60">Lv {level}/{MAX_UPGRADE_LEVEL}</span>
-                          </div>
-                          {price ? (
-                            <>
-                              <p className="mt-1 text-xs text-white/55">Next: {formatNumber(price.raceCash)} RC{price.token > 0 ? ` + ${formatNumber(price.token)} TKN` : ""}</p>
-                              <button
-                                onClick={() => void upgradeCar(focusedOwnedCar.id, upgradeType)}
-                                disabled={activeUpgradeKey !== null || status !== "ready" || insufficientUpgradeRaceCash || insufficientUpgradeToken}
-                                className="mt-2 w-full rounded-full border border-lime-300/40 px-3 py-1.5 text-xs font-black text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-45"
-                              >
-                                {upgradeBusy ? "Upgrading..." : price.token > 0 ? "Upgrade with RC + TKN" : "Upgrade with RC"}
-                              </button>
-                            </>
-                          ) : (
-                            <p className="mt-1 text-xs text-lime-200">Max level reached.</p>
-                          )}
-                        </div>
-                      );
-                    })}
+                {ownedCar && (
+                  <div className="mt-3 border-t border-white/10 pt-3">
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {UPGRADE_TYPES.map((upgradeType) => {
+                        const level = Number(ownedCar[`${upgradeType}_level` as keyof typeof ownedCar] || 1);
+                        const price = getUpgradePrice(level);
+                        const upgradeKey = `${ownedCar.id}:${upgradeType}`;
+                        const upgradeBusy = activeUpgradeKey === upgradeKey;
+                        return (
+                          <button
+                            key={upgradeType}
+                            onClick={() => void upgradeCar(ownedCar.id, upgradeType)}
+                            disabled={activeUpgradeKey !== null || status !== "ready" || !price}
+                            className="rounded-full border border-lime-300/30 px-2 py-1 text-[10px] font-bold text-lime-100 hover:bg-lime-300/10 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            {upgradeBusy ? "..." : `${upgradeType} Lv${level}`}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                )}
+              </article>
+            );
+          })}
+        </section>
 
         {/* Race Cash Shop */}
         {connected && (
@@ -623,7 +586,6 @@ export function GaragePageClient() {
             </div>
           </div>
         )}
-      </div>
     </main>
   );
 }

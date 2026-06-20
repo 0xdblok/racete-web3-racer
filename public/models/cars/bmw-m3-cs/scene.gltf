@@ -1,7 +1,27 @@
 {
+  "asset": {
+    "generator": "glTF-Transform v4.4.0",
+    "version": "2.0",
+    "extras": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2025-bmw-m3-cs-touring-ebda8c29a8ef4ec789391e918d52ef55",
+      "title": "2025 BMW M3 CS Touring"
+    }
+  },
   "accessors": [
     {
-      "bufferView": 2,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 6
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 6
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
       "count": 6,
       "max": [
@@ -13,66 +33,27 @@
         0.13425999879837036,
         -0.05586099997162819,
         -0.16847899556159973
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 72,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 6,
-      "max": [
-        0.999998927116394,
-        0.04992765933275223,
-        -0.0009554459247738123
-      ],
-      "min": [
-        0.9985531568527222,
-        -0.001198141137138009,
-        -0.01998003013432026
-      ],
-      "type": "VEC3"
+      "count": 6
     },
     {
-      "bufferView": 1,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 2181
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 6,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        -0.0,
-        0.0
-      ],
-      "type": "VEC2"
+      "count": 817
     },
     {
-      "bufferView": 1,
-      "byteOffset": 48,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 6,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        -0.0,
-        0.0
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "componentType": 5125,
-      "count": 6,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 144,
-      "componentType": 5126,
-      "count": 840,
+      "count": 817,
       "max": [
         0.13299299776554108,
         0.16639000177383423,
@@ -82,51 +63,25 @@
         -0.04754900187253952,
         -0.1968040019273758,
         -0.2269670069217682
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 10224,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 840,
-      "max": [
-        1.0,
-        0.9951850175857544,
-        0.9981551170349121
-      ],
-      "min": [
-        -0.9987026453018188,
-        -0.9968153834342957,
-        -0.9993506669998169
-      ],
-      "type": "VEC3"
+      "count": 817
     },
     {
-      "bufferView": 1,
-      "byteOffset": 96,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 978
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 840,
-      "max": [
-        0.8916019797325134,
-        1.9365229606628418
-      ],
-      "min": [
-        0.11639399826526642,
-        1.59375
-      ],
-      "type": "VEC2"
+      "count": 325
     },
     {
-      "bufferView": 0,
-      "byteOffset": 24,
-      "componentType": 5125,
-      "count": 2181,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 20304,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 325,
       "max": [
@@ -138,51 +93,25 @@
         -0.01730700023472309,
         -0.20910200476646423,
         -0.2124760001897812
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 24204,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 325,
-      "max": [
-        1.0,
-        0.9995504021644592,
-        0.9975589513778687
-      ],
-      "min": [
-        -0.9999499917030334,
-        -0.9909418821334839,
-        -0.9900990724563599
-      ],
-      "type": "VEC3"
+      "count": 325
     },
     {
-      "bufferView": 1,
-      "byteOffset": 6816,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 6
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 325,
-      "max": [
-        0.8686519861221313,
-        0.3666990101337433
-      ],
-      "min": [
-        0.1939699947834015,
-        0.09301800280809402
-      ],
-      "type": "VEC2"
+      "count": 4
     },
     {
-      "bufferView": 0,
-      "byteOffset": 8748,
-      "componentType": 5125,
-      "count": 978,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 28104,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 4,
       "max": [
@@ -194,68 +123,27 @@
         0.1342640072107315,
         -0.05586199834942818,
         0.1331000030040741
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 28152,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 4,
-      "max": [
-        0.9990015029907227,
-        0.04992765933275223,
-        0.01998003013432026
-      ],
-      "min": [
-        0.9985531568527222,
-        0.03996006026864052,
-        0.01997106336057186
-      ],
-      "type": "VEC3"
+      "count": 4
     },
     {
-      "bufferView": 1,
-      "byteOffset": 9416,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 2181
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 4,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        0.0,
-        0.0
-      ],
-      "type": "VEC2"
+      "count": 817
     },
     {
-      "bufferView": 1,
-      "byteOffset": 9448,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 4,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        0.0,
-        0.0
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 12660,
-      "componentType": 5125,
-      "count": 6,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 28200,
-      "componentType": 5126,
-      "count": 840,
+      "count": 817,
       "max": [
         0.13299299776554108,
         0.16639000177383423,
@@ -265,53 +153,27 @@
         -0.04754900187253952,
         -0.1968040019273758,
         -0.2269670069217682
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 38280,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 840,
-      "max": [
-        1.0,
-        0.9951850175857544,
-        0.9981551170349121
-      ],
-      "min": [
-        -0.9987524151802063,
-        -0.9968153834342957,
-        -0.9993506669998169
-      ],
-      "type": "VEC3"
+      "count": 817
     },
     {
-      "bufferView": 1,
-      "byteOffset": 9480,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 978
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 840,
-      "max": [
-        0.8916019797325134,
-        1.9365229606628418
-      ],
-      "min": [
-        0.11639399826526642,
-        1.59375
-      ],
-      "type": "VEC2"
+      "count": 327
     },
     {
-      "bufferView": 0,
-      "byteOffset": 12684,
-      "componentType": 5125,
-      "count": 2181,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 48360,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 326,
+      "count": 327,
       "max": [
         0.12341400235891342,
         0.211435005068779,
@@ -321,53 +183,27 @@
         -0.01730700023472309,
         -0.20910200476646423,
         -0.2124760001897812
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 52272,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 326,
-      "max": [
-        1.0,
-        0.9995504021644592,
-        0.9975589513778687
-      ],
-      "min": [
-        -0.9999499917030334,
-        -0.9909418821334839,
-        -0.9900990724563599
-      ],
-      "type": "VEC3"
+      "count": 327
     },
     {
-      "bufferView": 1,
-      "byteOffset": 16200,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 2508
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 326,
-      "max": [
-        0.8686519861221313,
-        0.3666990101337433
-      ],
-      "min": [
-        0.1939699947834015,
-        0.09301800280809402
-      ],
-      "type": "VEC2"
+      "count": 777
     },
     {
-      "bufferView": 0,
-      "byteOffset": 21408,
-      "componentType": 5125,
-      "count": 978,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 56184,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 776,
+      "count": 777,
       "max": [
         0.12679000198841095,
         0.08447399735450745,
@@ -377,51 +213,25 @@
         -0.04140099883079529,
         -0.09113200008869171,
         0.0728050023317337
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 65496,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 776,
-      "max": [
-        0.9999499917030334,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -0.9999001026153564,
-        -1.0,
-        -0.9999499917030334
-      ],
-      "type": "VEC3"
+      "count": 777
     },
     {
-      "bufferView": 1,
-      "byteOffset": 18808,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 783
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 776,
-      "max": [
-        0.5566409826278687,
-        1.9316409826278687
-      ],
-      "min": [
-        0.38134801387786865,
-        1.6972659826278687
-      ],
-      "type": "VEC2"
+      "count": 266
     },
     {
-      "bufferView": 0,
-      "byteOffset": 25320,
-      "componentType": 5125,
-      "count": 2508,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 74808,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 266,
       "max": [
@@ -433,53 +243,27 @@
         0.00559299997985363,
         -0.19790999591350555,
         -0.19435200095176697
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 78000,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 266,
-      "max": [
-        1.0,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -1.0,
-        -0.9999001026153564,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 266
     },
     {
-      "bufferView": 1,
-      "byteOffset": 25016,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 2508
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 266,
-      "max": [
-        0.8618159890174866,
-        0.27490198612213135
-      ],
-      "min": [
-        0.21374499797821045,
-        0.1545410007238388
-      ],
-      "type": "VEC2"
+      "count": 777
     },
     {
-      "bufferView": 0,
-      "byteOffset": 35352,
-      "componentType": 5125,
-      "count": 783,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 81192,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 776,
+      "count": 777,
       "max": [
         0.12679000198841095,
         0.08447399735450745,
@@ -489,53 +273,27 @@
         -0.04140099883079529,
         -0.09113200008869171,
         0.0728050023317337
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 90504,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 776,
-      "max": [
-        0.9999499917030334,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -0.9999001026153564,
-        -1.0,
-        -0.9999499917030334
-      ],
-      "type": "VEC3"
+      "count": 777
     },
     {
-      "bufferView": 1,
-      "byteOffset": 27144,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 783
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 776,
-      "max": [
-        0.5566409826278687,
-        1.9316409826278687
-      ],
-      "min": [
-        0.38134801387786865,
-        1.6972659826278687
-      ],
-      "type": "VEC2"
+      "count": 266
     },
     {
-      "bufferView": 0,
-      "byteOffset": 38484,
-      "componentType": 5125,
-      "count": 2508,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 99816,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 265,
+      "count": 266,
       "max": [
         0.09425999969244003,
         0.20014099776744843,
@@ -545,53 +303,27 @@
         0.00559299997985363,
         -0.19790999591350555,
         -0.19435200095176697
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 102996,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        1.0,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -1.0,
-        -0.9999001026153564,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 266
     },
     {
-      "bufferView": 1,
-      "byteOffset": 33352,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 39765
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.8618159890174866,
-        0.27490198612213135
-      ],
-      "min": [
-        0.21374499797821045,
-        0.1545410007238388
-      ],
-      "type": "VEC2"
+      "count": 9263
     },
     {
-      "bufferView": 0,
-      "byteOffset": 48516,
-      "componentType": 5125,
-      "count": 783,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 106176,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9424,
+      "count": 9263,
       "max": [
         0.206836998462677,
         0.33741000294685364,
@@ -601,86 +333,32 @@
         -0.07959900796413422,
         -0.33741000294685364,
         -0.3375380039215088
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 219264,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 9424,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 9263
     },
     {
-      "bufferView": 3,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 9424,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9999901652336121,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 9263
     },
     {
-      "bufferView": 1,
-      "byteOffset": 35472,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 39765
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9424,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
+      "count": 9311
     },
     {
-      "bufferView": 1,
-      "byteOffset": 110864,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9424,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 51648,
-      "componentType": 5125,
-      "count": 40728,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 332352,
-      "componentType": 5126,
-      "count": 9422,
+      "count": 9311,
       "max": [
         0.206836998462677,
         0.33741000294685364,
@@ -690,87 +368,32 @@
         -0.07959900796413422,
         -0.33741000294685364,
         -0.3375380039215088
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 445416,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 9422,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 9311
     },
     {
-      "bufferView": 3,
-      "byteOffset": 150784,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 9422,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9999901652336121,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 9311
     },
     {
-      "bufferView": 1,
-      "byteOffset": 186256,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 39213
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9422,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
+      "count": 9104
     },
     {
-      "bufferView": 1,
-      "byteOffset": 261632,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9422,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 214560,
-      "componentType": 5125,
-      "count": 40728,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 558480,
-      "componentType": 5126,
-      "count": 9249,
+      "count": 9104,
       "max": [
         0.212118998169899,
         0.33901700377464294,
@@ -780,179 +403,34 @@
         -0.07845599949359894,
         -0.3398680090904236,
         -0.3395470082759857
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 669468,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 9249,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 9104
     },
     {
-      "bufferView": 3,
-      "byteOffset": 301536,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 9249,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -0.9999999403953552,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 9104
     },
     {
-      "bufferView": 1,
-      "byteOffset": 337008,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 6645
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9249,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
+      "count": 1994
     },
     {
-      "bufferView": 1,
-      "byteOffset": 411000,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9249,
+      "count": 1994,
       "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 377472,
-      "componentType": 5125,
-      "count": 40089,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 780456,
-      "componentType": 5126,
-      "count": 9249,
-      "max": [
-        0.212118998169899,
-        0.33901700377464294,
-        0.3392859995365143
-      ],
-      "min": [
-        -0.07845599949359894,
-        -0.3398680090904236,
-        -0.3395470082759857
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 891444,
-      "componentType": 5126,
-      "count": 9249,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 3,
-      "byteOffset": 449520,
-      "componentType": 5126,
-      "count": 9249,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -0.9999999403953552,
-        -1.0
-      ],
-      "type": "VEC4"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 484992,
-      "componentType": 5126,
-      "count": 9249,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 558984,
-      "componentType": 5126,
-      "count": 9249,
-      "max": [
-        0.9926760196685791,
-        0.9960939884185791
-      ],
-      "min": [
-        0.015305000357329845,
-        0.010680999606847763
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 537828,
-      "componentType": 5125,
-      "count": 40089,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 1002432,
-      "componentType": 5126,
-      "count": 3860,
-      "max": [
-        0.9082289934158325,
+        0.9081699848175049,
         1.2492179870605469,
         2.3704349994659424
       ],
@@ -960,102 +438,32 @@
         -0.9077739715576172,
         0.1150600016117096,
         -2.343435049057007
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 1048752,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 3860,
-      "max": [
-        0.9995504021644592,
-        0.9999001026153564,
-        0.9995004534721375
-      ],
-      "min": [
-        -0.9996002316474915,
-        -0.9996002316474915,
-        -0.9996002912521362
-      ],
-      "type": "VEC3"
+      "count": 1994
     },
     {
-      "bufferView": 3,
-      "byteOffset": 597504,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 3860,
-      "max": [
-        1.0,
-        0.999968945980072,
-        0.9998729228973389,
-        1.0
-      ],
-      "min": [
-        -0.9999999403953552,
-        -0.9999126195907593,
-        -0.9998018145561218,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 1994
     },
     {
-      "bufferView": 1,
-      "byteOffset": 632976,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 7242
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 3860,
-      "max": [
-        0.9853519797325134,
-        0.9995120167732239
-      ],
-      "min": [
-        0.0027620000764727592,
-        0.010071000084280968
-      ],
-      "type": "VEC2"
+      "count": 2395
     },
     {
-      "bufferView": 1,
-      "byteOffset": 663856,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 3860,
-      "max": [
-        0.9853519797325134,
-        0.9995120167732239
-      ],
-      "min": [
-        0.0027620000764727592,
-        0.010071000084280968
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 694736,
-      "componentType": 5126,
-      "count": 3860,
-      "max": [
-        0.9853519797325134,
-        0.9995120167732239
-      ],
-      "min": [
-        0.0027620000764727592,
-        0.010071000084280968
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 698184,
-      "componentType": 5125,
-      "count": 14949,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 1095072,
-      "componentType": 5126,
-      "count": 2499,
+      "count": 2395,
       "max": [
         1.0351150035858154,
         1.2269840240478516,
@@ -1065,38 +473,27 @@
         -1.0351150035858154,
         0.01726599968969822,
         -2.2862660884857178
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 1125060,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 2499,
-      "max": [
-        1.0,
-        0.9999499917030334,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9999499917030334,
-        -0.9991511702537537
-      ],
-      "type": "VEC3"
+      "count": 2395
     },
     {
-      "bufferView": 0,
-      "byteOffset": 757980,
-      "componentType": 5125,
-      "count": 7755,
-      "type": "SCALAR"
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 31587
     },
     {
-      "bufferView": 2,
-      "byteOffset": 1155048,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9597,
+      "count": 6833
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 6833,
       "max": [
         1.0365740060806274,
         1.1319019794464111,
@@ -1106,87 +503,32 @@
         -1.0365740060806274,
         0.011164000257849693,
         -2.3953049182891846
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 1270212,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 9597,
-      "max": [
-        0.9997501373291016,
-        1.0,
-        0.9992009997367859
-      ],
-      "min": [
-        -0.9997501373291016,
-        -0.9999499917030334,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 6833
     },
     {
-      "bufferView": 3,
-      "byteOffset": 659264,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 9597,
-      "max": [
-        1.0,
-        0.9999744296073914,
-        0.9996179938316345,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9997865557670593,
-        -0.9998807311058044,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 6833
     },
     {
-      "bufferView": 1,
-      "byteOffset": 725616,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 103881
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9597,
-      "max": [
-        56.34375,
-        60.65625
-      ],
-      "min": [
-        -59.5625,
-        -55.3125
-      ],
-      "type": "VEC2"
+      "count": 27388
     },
     {
-      "bufferView": 1,
-      "byteOffset": 802392,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 9597,
-      "max": [
-        56.34375,
-        60.65625
-      ],
-      "min": [
-        -59.5625,
-        -55.3125
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 789000,
-      "componentType": 5125,
-      "count": 46107,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 1385376,
-      "componentType": 5126,
-      "count": 31331,
+      "count": 27388,
       "max": [
         1.0352909564971924,
         1.3386390209197998,
@@ -1196,55 +538,29 @@
         -1.0352909564971924,
         0.021897999569773674,
         -2.397890090942383
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 1761348,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 31331,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 27388
     },
     {
-      "bufferView": 1,
-      "byteOffset": 879168,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 83718
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 31331,
-      "max": [
-        0.9633790254592896,
-        0.9711909890174866
-      ],
-      "min": [
-        0.01637299917638302,
-        0.3989259898662567
-      ],
-      "type": "VEC2"
+      "count": 25058
     },
     {
-      "bufferView": 0,
-      "byteOffset": 973428,
-      "componentType": 5125,
-      "count": 123654,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2137320,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 26914,
+      "count": 25058,
       "max": [
-        0.803849995136261,
+        0.8036019802093506,
         0.9409210085868835,
         2.2729740142822266
       ],
@@ -1252,100 +568,30 @@
         -0.803849995136261,
         0.3921140134334564,
         -2.291106939315796
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2460288,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 26914,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 25058
     },
     {
-      "bufferView": 3,
-      "byteOffset": 812816,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 26914,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -1.0,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 25058
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1129816,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 42
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 26914,
-      "max": [
-        1.8535159826278687,
-        0.9892579913139343
-      ],
-      "min": [
-        -0.3425289988517761,
-        0.007565000094473362
-      ],
-      "type": "VEC2"
+      "count": 18
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1345128,
-      "componentType": 5126,
-      "count": 26914,
-      "max": [
-        1.8535159826278687,
-        0.9892579913139343
-      ],
-      "min": [
-        -0.3425289988517761,
-        0.007565000094473362
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 1560440,
-      "componentType": 5126,
-      "count": 26914,
-      "max": [
-        1.8535159826278687,
-        0.9892579913139343
-      ],
-      "min": [
-        -0.3425289988517761,
-        0.007565000094473362
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1468044,
-      "componentType": 5125,
-      "count": 93507,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2783256,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 18,
       "max": [
@@ -1357,102 +603,32 @@
         0.6523889899253845,
         0.5005120038986206,
         -2.0511789321899414
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2783472,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 18,
-      "max": [
-        -0.9924651384353638,
-        -0.07974522560834885,
-        0.0020254228729754686
-      ],
-      "min": [
-        -0.9968153834342957,
-        -0.12251047790050507,
-        -0.0
-      ],
-      "type": "VEC3"
+      "count": 18
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1243440,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 18,
-      "max": [
-        -0.00027616615989245474,
-        0.005287703592330217,
-        -0.9999859929084778,
-        -1.0
-      ],
-      "min": [
-        -0.0024575190618634224,
-        0.003376011736690998,
-        -0.9999940395355225,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 18
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1775752,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 1785
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 18,
-      "max": [
-        9.679547309875488,
-        4.116318225860596
-      ],
-      "min": [
-        -8.679547309875488,
-        -3.118959903717041
-      ],
-      "type": "VEC2"
+      "count": 443
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1775896,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 18,
-      "max": [
-        9.679547309875488,
-        4.116318225860596
-      ],
-      "min": [
-        -8.679547309875488,
-        -3.118959903717041
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 1776040,
-      "componentType": 5126,
-      "count": 18,
-      "max": [
-        9.679547309875488,
-        4.116318225860596
-      ],
-      "min": [
-        -8.679547309875488,
-        -3.118959903717041
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1842072,
-      "componentType": 5125,
-      "count": 42,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2783688,
-      "componentType": 5126,
-      "count": 440,
+      "count": 443,
       "max": [
         0.47659701108932495,
         1.1273260116577148,
@@ -1462,85 +638,30 @@
         -0.47659701108932495,
         0.27332600951194763,
         -1.18864905834198
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2788968,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 440,
-      "max": [
-        0.8097571730613708,
-        0.9987524151802063,
-        0.9959744215011597
-      ],
-      "min": [
-        -0.8097571730613708,
-        -0.9778024554252625,
-        -0.8670139908790588
-      ],
-      "type": "VEC3"
+      "count": 443
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1243728,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 440,
-      "max": [
-        1.0,
-        0.6414479613304138,
-        0.8142194747924805,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.6414484977722168,
-        -0.8159798383712769,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 443
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1776184,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 30
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 440,
-      "max": [
-        -1.519531011581421,
-        25.3125
-      ],
-      "min": [
-        -34.1875,
-        -1.3505860567092896
-      ],
-      "type": "VEC2"
+      "count": 22
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1779704,
-      "componentType": 5126,
-      "count": 440,
-      "max": [
-        -1.519531011581421,
-        25.3125
-      ],
-      "min": [
-        -34.1875,
-        -1.3505860567092896
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1842240,
-      "componentType": 5125,
-      "count": 1788,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2794248,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 22,
       "max": [
@@ -1552,85 +673,30 @@
         -0.68060702085495,
         0.10935100167989731,
         2.033267021179199
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2794512,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 22,
-      "max": [
-        0.050012510269880295,
-        0.3987261652946472,
-        0.9987757802009583
-      ],
-      "min": [
-        -0.050012510269880295,
-        0.013616844080388546,
-        0.9170700907707214
-      ],
-      "type": "VEC3"
+      "count": 22
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1250768,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 22,
-      "max": [
-        0.006535936612635851,
-        -6.318990131148894e-08,
-        0.12986820936203003,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.999907374382019,
-        2.7473870289895785e-08,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 22
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1783224,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 93
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 22,
-      "max": [
-        16.283449172973633,
-        9.836268424987793
-      ],
-      "min": [
-        -15.283445358276367,
-        -10.039891242980957
-      ],
-      "type": "VEC2"
+      "count": 35
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1783400,
-      "componentType": 5126,
-      "count": 22,
-      "max": [
-        16.283449172973633,
-        9.836268424987793
-      ],
-      "min": [
-        -15.283445358276367,
-        -10.039891242980957
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1849392,
-      "componentType": 5125,
-      "count": 30,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2794776,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 35,
       "max": [
@@ -1642,85 +708,30 @@
         -0.16117599606513977,
         0.840008020401001,
         0.6555219888687134
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2795196,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 35,
-      "max": [
-        -0.0,
-        0.9918099045753479,
-        -0.12759336829185486
-      ],
-      "min": [
-        -0.005768366623669863,
-        0.9871906042098999,
-        -0.15954594314098358
-      ],
-      "type": "VEC3"
+      "count": 35
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1251120,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 35,
-      "max": [
-        -0.9999762773513794,
-        -0.0006019891006872058,
-        -0.0030176371801644564,
-        1.0
-      ],
-      "min": [
-        -0.9999929070472717,
-        -0.0062040723860263824,
-        -0.003913771826773882,
-        1.0
-      ],
-      "type": "VEC4"
+      "count": 35
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1783576,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 102
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 35,
-      "max": [
-        0.9833019971847534,
-        0.9727990031242371
-      ],
-      "min": [
-        0.019680999219417572,
-        0.02404399961233139
-      ],
-      "type": "VEC2"
+      "count": 44
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1783856,
-      "componentType": 5126,
-      "count": 35,
-      "max": [
-        0.9833019971847534,
-        0.9727990031242371
-      ],
-      "min": [
-        0.019680999219417572,
-        0.02404399961233139
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1849512,
-      "componentType": 5125,
-      "count": 93,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2795616,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 44,
       "max": [
@@ -1732,87 +743,32 @@
         -0.6750059723854065,
         0.7163559794425964,
         0.9580810070037842
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2796144,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 44,
-      "max": [
-        0.2061634212732315,
-        0.9975093603134155,
-        0.4613630771636963
-      ],
-      "min": [
-        -0.20006005465984344,
-        0.8696088194847107,
-        0.049875471740961075
-      ],
-      "type": "VEC3"
+      "count": 44
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1251680,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 44,
-      "max": [
-        0.9975336194038391,
-        0.2083553820848465,
-        0.8870424032211304,
-        1.0
-      ],
-      "min": [
-        -0.9674575328826904,
-        -0.38263601064682007,
-        0.004623762797564268,
-        1.0
-      ],
-      "type": "VEC4"
+      "count": 44
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1784136,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 984
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 44,
-      "max": [
-        22.03030776977539,
-        8.587891578674316
-      ],
-      "min": [
-        -2.212357997894287,
-        -3.30354905128479
-      ],
-      "type": "VEC2"
+      "count": 246
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1784488,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 44,
-      "max": [
-        22.03030776977539,
-        8.587891578674316
-      ],
-      "min": [
-        -2.212357997894287,
-        -3.30354905128479
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1849884,
-      "componentType": 5125,
-      "count": 102,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2796672,
-      "componentType": 5126,
-      "count": 265,
+      "count": 246,
       "max": [
         0.7335420250892639,
         0.8825079798698425,
@@ -1822,85 +778,30 @@
         -0.7335420250892639,
         0.4921939969062805,
         -0.613834023475647
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2799852,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.9993506669998169,
-        0.6585200428962708,
-        0.8287578225135803
-      ],
-      "min": [
-        -0.9993506669998169,
-        -0.9793148040771484,
-        -0.8097571730613708
-      ],
-      "type": "VEC3"
+      "count": 246
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1252384,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.9668198823928833,
-        0.12700626254081726,
-        0.9999412298202515,
-        1.0
-      ],
-      "min": [
-        -0.9668198823928833,
-        -0.9860111474990845,
-        -0.9561306834220886,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 246
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1784840,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 24
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        57.37091064453125,
-        66.77587890625
-      ],
-      "min": [
-        -51.93265914916992,
-        -65.46723175048828
-      ],
-      "type": "VEC2"
+      "count": 14
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1786960,
-      "componentType": 5126,
-      "count": 265,
-      "max": [
-        57.37091064453125,
-        66.77587890625
-      ],
-      "min": [
-        -51.93265914916992,
-        -65.46723175048828
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1850292,
-      "componentType": 5125,
-      "count": 1068,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2803032,
+      "type": "VEC3",
       "componentType": 5126,
       "count": 14,
       "max": [
@@ -1912,87 +813,32 @@
         -0.6920760273933411,
         0.9493430256843567,
         -1.7077549695968628
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2803200,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 14,
-      "max": [
-        0.2397962510585785,
-        0.9917371869087219,
-        0.14987264573574066
-      ],
-      "min": [
-        -0.2397962510585785,
-        0.959185004234314,
-        0.10017547756433487
-      ],
-      "type": "VEC3"
+      "count": 14
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1256624,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 14,
-      "max": [
-        0.039947666227817535,
-        -0.10285674035549164,
-        0.9942421913146973,
-        1.0
-      ],
-      "min": [
-        -0.0500195175409317,
-        -0.16223600506782532,
-        0.9862146973609924,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 14
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1789080,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 1008
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 14,
-      "max": [
-        0.9601089954376221,
-        1.0192439556121826
-      ],
-      "min": [
-        0.0331449992954731,
-        -0.023855000734329224
-      ],
-      "type": "VEC2"
+      "count": 363
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1789192,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 14,
-      "max": [
-        0.9601089954376221,
-        1.0192439556121826
-      ],
-      "min": [
-        0.0331449992954731,
-        -0.023855000734329224
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1854564,
-      "componentType": 5125,
-      "count": 24,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2803368,
-      "componentType": 5126,
-      "count": 364,
+      "count": 363,
       "max": [
         0.5859919786453247,
         0.7798010110855103,
@@ -2002,87 +848,32 @@
         -0.6453070044517517,
         0.6991199851036072,
         0.9663450121879578
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 2807736,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 364,
-      "max": [
-        0.9986178874969482,
-        0.9840369820594788,
-        0.9894760251045227
-      ],
-      "min": [
-        -0.9911440014839172,
-        -0.5345959067344666,
-        -0.9840369820594788
-      ],
-      "type": "VEC3"
+      "count": 363
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1256848,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 364,
-      "max": [
-        1.0,
-        0.998617947101593,
-        0.9875186681747437,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9955819249153137,
-        -0.42303210496902466,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 363
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1789304,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 186804
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 364,
-      "max": [
-        1.6015620231628418,
-        0.9814450144767761
-      ],
-      "min": [
-        -9.617188453674316,
-        -0.8901370167732239
-      ],
-      "type": "VEC2"
+      "count": 46693
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1792216,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 364,
-      "max": [
-        1.6015620231628418,
-        0.9814450144767761
-      ],
-      "min": [
-        -9.617188453674316,
-        -0.8901370167732239
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1854660,
-      "componentType": 5125,
-      "count": 1020,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 2812104,
-      "componentType": 5126,
-      "count": 55261,
+      "count": 46693,
       "max": [
         0.8750560283660889,
         1.2816859483718872,
@@ -2092,102 +883,32 @@
         -0.8750560283660889,
         0.10631199926137924,
         -2.263079881668091
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 3475236,
+      "type": "VEC4",
       "componentType": 5126,
-      "count": 55261,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -0.9999499917030334
-      ],
-      "type": "VEC3"
+      "count": 46693
     },
     {
-      "bufferView": 3,
-      "byteOffset": 1262672,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 55261,
-      "max": [
-        1.0,
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -0.9999997615814209,
-        -1.0
-      ],
-      "type": "VEC4"
+      "count": 46693
     },
     {
-      "bufferView": 1,
-      "byteOffset": 1795128,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 7533
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 55261,
-      "max": [
-        3.023437976837158,
-        0.9960939884185791
-      ],
-      "min": [
-        -1.9619139432907104,
-        0.004292000085115433
-      ],
-      "type": "VEC2"
+      "count": 2237
     },
     {
-      "bufferView": 1,
-      "byteOffset": 2237216,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 55261,
-      "max": [
-        3.023437976837158,
-        0.9960939884185791
-      ],
-      "min": [
-        -1.9619139432907104,
-        0.004292000085115433
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 2679304,
-      "componentType": 5126,
-      "count": 55261,
-      "max": [
-        3.023437976837158,
-        0.9960939884185791
-      ],
-      "min": [
-        -1.9619139432907104,
-        0.004292000085115433
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 1858740,
-      "componentType": 5125,
-      "count": 233334,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 4138368,
-      "componentType": 5126,
-      "count": 2330,
+      "count": 2237,
       "max": [
         0.7423800230026245,
         1.1383440494537354,
@@ -2197,109 +918,57 @@
         -0.7423800230026245,
         0.2722820043563843,
         -1.3360790014266968
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 4166328,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 2330,
-      "max": [
-        0.9997501373291016,
-        1.0,
-        0.9991511702537537
-      ],
-      "min": [
-        -0.9997501373291016,
-        -0.9987524151802063,
-        -0.9995504021644592
-      ],
-      "type": "VEC3"
+      "count": 2237
     },
     {
-      "bufferView": 1,
-      "byteOffset": 3121392,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 44505
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 2330,
-      "max": [
-        2.271483898162842,
-        1.996093988418579
-      ],
-      "min": [
-        -1.1582030057907104,
-        1.0136719942092896
-      ],
-      "type": "VEC2"
+      "count": 13334
     },
     {
-      "bufferView": 0,
-      "byteOffset": 2792076,
-      "componentType": 5125,
-      "count": 8040,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 4194288,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 20354,
+      "count": 13334,
       "max": [
         1.0374449491500854,
         1.2134929895401,
         2.2823638916015625
       ],
       "min": [
-        -1.0374449491500854,
+        -1.0373510122299194,
         0.25663501024246216,
         -2.2834410667419434
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 4438536,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 20354,
-      "max": [
-        0.9999001026153564,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -0.9999001026153564,
-        -1.0,
-        -0.9991511702537537
-      ],
-      "type": "VEC3"
+      "count": 13334
     },
     {
-      "bufferView": 1,
-      "byteOffset": 3140032,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 372
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 20354,
-      "max": [
-        1.8583979606628418,
-        0.9960939884185791
-      ],
-      "min": [
-        -0.7436519861221313,
-        0.0014860000228509307
-      ],
-      "type": "VEC2"
+      "count": 92
     },
     {
-      "bufferView": 0,
-      "byteOffset": 2824236,
-      "componentType": 5125,
-      "count": 77712,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 4682784,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 96,
+      "count": 92,
       "max": [
         0.15240000188350677,
         0.7594709992408752,
@@ -2309,191 +978,57 @@
         -0.15240000188350677,
         0.6108419895172119,
         -2.271419048309326
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 4683936,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 96,
-      "max": [
-        0.9999499917030334,
-        0.9757162928581238,
-        0.9757162928581238
-      ],
-      "min": [
-        -0.9999499917030334,
-        -0.9757162928581238,
-        -0.9757162928581238
-      ],
-      "type": "VEC3"
+      "count": 92
     },
     {
-      "bufferView": 1,
-      "byteOffset": 3302864,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 75921
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 96,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        0.0,
-        0.0
-      ],
-      "type": "VEC2"
+      "count": 17543
     },
     {
-      "bufferView": 0,
-      "byteOffset": 3135084,
-      "componentType": 5125,
-      "count": 384,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 4685088,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 21505,
+      "count": 17543,
       "max": [
         0.9421790242195129,
         1.2985190153121948,
-        2.3969669342041016
+        2.396692991256714
       ],
       "min": [
         -0.9421790242195129,
         0.04583200067281723,
         -2.3832380771636963
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 4943148,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 21505,
-      "max": [
-        1.0,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -1.0,
-        -0.9999499917030334,
-        -1.0
-      ],
-      "type": "VEC3"
+      "count": 17543
     },
     {
-      "bufferView": 0,
-      "byteOffset": 3136620,
-      "componentType": 5125,
-      "count": 97458,
-      "type": "SCALAR"
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 3141
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5201208,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.662024974822998,
-        0.9941070079803467,
-        -0.14278599619865417
-      ],
-      "min": [
-        0.6105189919471741,
-        0.0971440002322197,
-        -0.33070701360702515
-      ],
-      "type": "VEC3"
+      "count": 884
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5204388,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.9974101185798645,
-        0.9702426791191101,
-        0.9987025260925293
-      ],
-      "min": [
-        -0.9975589513778687,
-        -0.979951024055481,
-        -0.9987025260925293
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 3303632,
-      "componentType": 5126,
-      "count": 265,
-      "max": [
-        0.7052270174026489,
-        0.9410650134086609
-      ],
-      "min": [
-        0.30122900009155273,
-        0.42002901434898376
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 3526452,
-      "componentType": 5125,
-      "count": 1104,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 5207568,
-      "componentType": 5126,
-      "count": 461,
-      "max": [
-        0.7718610167503357,
-        1.2269840240478516,
-        0.9016780257225037
-      ],
-      "min": [
-        -0.7718610167503357,
-        0.8188700079917908,
-        -2.237046003341675
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 5213100,
-      "componentType": 5126,
-      "count": 461,
-      "max": [
-        0.9531506896018982,
-        0.8799120783805847,
-        0.631676197052002
-      ],
-      "min": [
-        -0.9531506896018982,
-        -0.8485586643218994,
-        -0.05029001086950302
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 3530868,
-      "componentType": 5125,
-      "count": 1656,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 5218632,
-      "componentType": 5126,
-      "count": 458,
+      "count": 884,
       "max": [
         0.7766159772872925,
         1.2269840240478516,
@@ -2501,40 +1036,29 @@
       ],
       "min": [
         -0.7766159772872925,
-        0.8203889727592468,
+        0.8188700079917908,
         -2.239793062210083
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5224128,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 458,
-      "max": [
-        0.9474925398826599,
-        0.8799120783805847,
-        0.5291012525558472
-      ],
-      "min": [
-        -0.9474925398826599,
-        0.31882256269454956,
-        -0.6033275127410889
-      ],
-      "type": "VEC3"
+      "count": 884
     },
     {
-      "bufferView": 0,
-      "byteOffset": 3537492,
-      "componentType": 5125,
-      "count": 1647,
-      "type": "SCALAR"
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 4026
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5229624,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 1154,
+      "count": 834
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 834,
       "max": [
         1.0386929512023926,
         0.9185330271720886,
@@ -2543,39 +1067,28 @@
       "min": [
         -1.0386929512023926,
         0.4592300057411194,
-        -2.2834410667419434
-      ],
-      "type": "VEC3"
+        -2.282865047454834
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5243472,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 1154,
-      "max": [
-        0.9859658479690552,
-        0.9967657923698425,
-        0.9328964352607727
-      ],
-      "min": [
-        -0.9859658479690552,
-        -0.9987524151802063,
-        -0.979755163192749
-      ],
-      "type": "VEC3"
+      "count": 834
     },
     {
-      "bufferView": 0,
-      "byteOffset": 3544080,
-      "componentType": 5125,
-      "count": 5760,
-      "type": "SCALAR"
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 4935
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5257320,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 1188,
+      "count": 1117
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1117,
       "max": [
         0.8206509947776794,
         1.2070029973983765,
@@ -2585,38 +1098,27 @@
         -0.8206509947776794,
         0.25658801198005676,
         -2.2653250694274902
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5271576,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 1188,
-      "max": [
-        0.9998001456260681,
-        0.9897031784057617,
-        0.8711332082748413
-      ],
-      "min": [
-        -0.9998001456260681,
-        -0.9995004534721375,
-        -0.9982048869132996
-      ],
-      "type": "VEC3"
+      "count": 1117
     },
     {
-      "bufferView": 0,
-      "byteOffset": 3567120,
-      "componentType": 5125,
-      "count": 5328,
-      "type": "SCALAR"
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 191328
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5285832,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 53341,
+      "count": 44151
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 44151,
       "max": [
         0.8750560283660889,
         1.2816859483718872,
@@ -2626,977 +1128,1209 @@
         -0.8750560283660889,
         0.10631199926137924,
         -2.263079881668091
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 5925924,
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 43554
+    },
+    {
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 53341,
-      "max": [
-        1.0,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -1.0,
-        -0.9999499917030334
-      ],
-      "type": "VEC3"
+      "count": 12891
     },
     {
-      "bufferView": 1,
-      "byteOffset": 3305752,
+      "type": "VEC3",
       "componentType": 5126,
-      "count": 53341,
-      "max": [
-        1.0,
-        1.0
-      ],
-      "min": [
-        0.0,
-        -0.0
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 3588432,
-      "componentType": 5125,
-      "count": 241374,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 6566016,
-      "componentType": 5126,
-      "count": 19981,
+      "count": 12891,
       "max": [
         1.0374449491500854,
         1.2134929895401,
         2.2823638916015625
       ],
       "min": [
-        -1.0374449491500854,
+        -1.0373510122299194,
         0.25663501024246216,
         -2.2834410667419434
-      ],
-      "type": "VEC3"
+      ]
     },
     {
-      "bufferView": 2,
-      "byteOffset": 6805788,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 19981,
-      "max": [
-        0.9999001026153564,
-        1.0,
-        0.9999499917030334
-      ],
-      "min": [
-        -0.9999001026153564,
-        -1.0,
-        -0.9991511702537537
-      ],
-      "type": "VEC3"
+      "count": 12891
     },
     {
-      "bufferView": 1,
-      "byteOffset": 3732480,
+      "type": "VEC2",
       "componentType": 5126,
-      "count": 19981,
-      "max": [
-        0.9882810115814209,
-        0.9848629832267761
-      ],
-      "min": [
-        0.0,
-        0.0
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "byteOffset": 4553928,
-      "componentType": 5125,
-      "count": 77712,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 4,
-      "componentType": 5126,
-      "count": 7,
-      "max": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "min": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "type": "MAT4"
+      "count": 44151,
+      "sparse": {
+        "count": 13126,
+        "indices": {
+          "bufferView": 0,
+          "byteOffset": 0,
+          "componentType": 5123
+        },
+        "values": {
+          "bufferView": 1,
+          "byteOffset": 0
+        }
+      }
     }
   ],
-  "asset": {
-    "extras": {
-      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
-      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
-      "source": "https://sketchfab.com/3d-models/2025-bmw-m3-cs-touring-ebda8c29a8ef4ec789391e918d52ef55",
-      "title": "2025 BMW M3 CS Touring"
-    },
-    "generator": "Sketchfab-17.8.0",
-    "version": "2.0"
-  },
   "bufferViews": [
     {
       "buffer": 0,
-      "byteLength": 4864776,
-      "name": "floatBufferViews",
-      "target": 34963
+      "byteOffset": 0,
+      "byteLength": 26252
     },
     {
       "buffer": 0,
-      "byteLength": 3892328,
-      "byteOffset": 4864776,
-      "byteStride": 8,
-      "name": "floatBufferViews",
-      "target": 34962
+      "byteOffset": 26252,
+      "byteLength": 105008
     },
     {
       "buffer": 0,
-      "byteLength": 7045560,
-      "byteOffset": 8757104,
-      "byteStride": 12,
-      "name": "floatBufferViews",
-      "target": 34962
+      "byteOffset": 131260,
+      "byteLength": 192
     },
     {
       "buffer": 0,
-      "byteLength": 2146848,
-      "byteOffset": 15802664,
-      "byteStride": 16,
-      "name": "floatBufferViews",
-      "target": 34962
+      "byteOffset": 131452,
+      "byteLength": 3388
     },
     {
       "buffer": 0,
-      "byteLength": 448,
-      "byteOffset": 17949512,
-      "name": "floatBufferViews"
+      "byteOffset": 134840,
+      "byteLength": 2321
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 137161,
+      "byteLength": 194
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 137355,
+      "byteLength": 3394
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 140749,
+      "byteLength": 2317
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 143066,
+      "byteLength": 3667
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 146733,
+      "byteLength": 1881
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 148614,
+      "byteLength": 3664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 152278,
+      "byteLength": 1844
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 154122,
+      "byteLength": 97098
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 251220,
+      "byteLength": 97859
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 349079,
+      "byteLength": 96397
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 445476,
+      "byteLength": 23165
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 468641,
+      "byteLength": 12431
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 481072,
+      "byteLength": 79589
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 560661,
+      "byteLength": 149408
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 710069,
+      "byteLength": 220180
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 930249,
+      "byteLength": 466
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 930715,
+      "byteLength": 5904
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 936619,
+      "byteLength": 399
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 937018,
+      "byteLength": 644
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 937662,
+      "byteLength": 691
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 938353,
+      "byteLength": 3428
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 941781,
+      "byteLength": 395
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 942176,
+      "byteLength": 3580
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 945756,
+      "byteLength": 452010
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1397766,
+      "byteLength": 15104
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1412870,
+      "byteLength": 59182
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1472052,
+      "byteLength": 805
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1472857,
+      "byteLength": 83270
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1556127,
+      "byteLength": 5052
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1561179,
+      "byteLength": 4759
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1565938,
+      "byteLength": 5872
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1571810,
+      "byteLength": 624936
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2196746,
+      "byteLength": 58174
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    },
+    {
+      "magFilter": 9728,
+      "minFilter": 9728,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 0
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 1
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 2
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 3
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 4
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 5
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 6
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 7
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 8
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 9
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 10
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 11
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 12
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 13
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 14
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 15
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 16
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 17
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 18
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 19
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 20
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 21
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 22
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 23
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 24
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 25
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 26
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 27
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 28
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 29
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 30
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 31
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 32
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 33
+        }
+      }
+    },
+    {
+      "sampler": 1,
+      "extensions": {
+        "EXT_texture_webp": {
+          "source": 34
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_metallicRoughness.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Coloured_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_normal.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/red_Int_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025LightA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/emissBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_baseColor.webp"
+    },
+    {
+      "mimeType": "image/webp",
+      "uri": "textures/emissBMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1_baseColor.webp"
+    },
+    {
+      "name": "PaletteBaseColor",
+      "mimeType": "image/webp",
+      "uri": "PaletteBaseColor.webp"
     }
   ],
   "buffers": [
     {
-      "byteLength": 17949960,
-      "uri": "scene.bin"
-    }
-  ],
-  "extensionsUsed": [
-    "KHR_materials_specular",
-    "KHR_materials_clearcoat",
-    "KHR_materials_transmission",
-    "KHR_materials_emissive_strength"
-  ],
-  "images": [
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_metallicRoughness.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025Coloured_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_normal.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_normal.png"
-    },
-    {
-      "uri": "textures/red_Int_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025LightA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/m3csBMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/emissBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_baseColor.png"
-    },
-    {
-      "uri": "textures/emissBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_emissive.png"
-    },
-    {
-      "uri": "textures/emissBMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1_baseColor.png"
+      "uri": "scene.bin",
+      "byteLength": 2254920
     }
   ],
   "materials": [
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101",
       "alphaMode": "BLEND",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.18742914264119662
-        }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101",
       "pbrMetallicRoughness": {
+        "roughnessFactor": 0.6201923663005449,
+        "metallicFactor": 0.4373346661627921,
         "baseColorTexture": {
           "index": 0
-        },
-        "metallicFactor": 0.4373346661627921,
-        "roughnessFactor": 0.6201923663005449
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.18742914264119662
+        }
       }
     },
     {
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.1630481159561629
-        }
-      },
-      "name": "phong3",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.26651984652910465,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "metallicFactor": 0.7299069863831965,
-        "roughnessFactor": 0.3032390193951067
-      }
-    },
-    {
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.24228645268252244
-        }
-      },
       "name": "m3csBMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
+        "roughnessFactor": 0.565335056259219,
         "baseColorTexture": {
           "index": 1
         },
         "metallicRoughnessTexture": {
           "index": 2
-        },
-        "roughnessFactor": 0.565335056259219
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.24228645268252244
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.19352439931245502
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.3702868427789494,
+        "metallicFactor": 0.7664785264107471,
+        "baseColorTexture": {
+          "index": 3
         }
       },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1",
       "normalTexture": {
         "index": 4
       },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 3
-        },
-        "metallicFactor": 0.7664785264107471,
-        "roughnessFactor": 0.3702868427789494
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.19352439931245502
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1",
       "alphaMode": "BLEND",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.2118101693262303
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.1630481159561629,
+        "metallicFactor": 0.7116212163694212,
+        "baseColorTexture": {
+          "index": 5
         }
       },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025BadgeA_Material1",
       "normalTexture": {
         "index": 6
       },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 5
-        },
-        "metallicFactor": 0.7116212163694212,
-        "roughnessFactor": 0.1630481159561629
-      }
-    },
-    {
-      "doubleSided": true,
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.10819080591483707
+          "specularFactor": 0.2118101693262303
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025Base_Material1",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.0,
-          0.0,
-          0.0,
-          1.0
-        ],
-        "metallicFactor": 0.0,
-        "roughnessFactor": 0.7725737830820055
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1",
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.48,
+        "metallicFactor": 0.4,
+        "baseColorTexture": {
+          "index": 7
+        }
+      },
+      "normalTexture": {
+        "index": 8
+      },
       "extensions": {
         "KHR_materials_clearcoat": {
           "clearcoatFactor": 0.33981055942265725,
           "clearcoatRoughnessFactor": 0.04
         },
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.05
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025Carbon1_Material1",
-      "normalTexture": {
-        "index": 8
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 7
-        },
-        "metallicFactor": 0.4,
-        "roughnessFactor": 0.48
       }
     },
     {
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.16914337262742132
-        }
-      },
       "name": "m3csBMW_M3CSTouringRewardRecycled_2025Coloured_Material1",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
+        "roughnessFactor": 0.18742914264119662,
+        "metallicFactor": 0.9066694298496909,
         "baseColorTexture": {
           "index": 9
-        },
-        "metallicFactor": 0.9066694298496909,
-        "roughnessFactor": 0.18742914264119662
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.16914337262742132
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1",
       "alphaMode": "BLEND",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.18133388596993819
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.3520010727651741,
+        "metallicFactor": 0.7969548097670393,
+        "baseColorTexture": {
+          "index": 10
         }
       },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025EngineA_Material1",
       "normalTexture": {
         "index": 11
       },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 10
-        },
-        "metallicFactor": 0.7969548097670393,
-        "roughnessFactor": 0.3520010727651741
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.18133388596993819
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1",
       "alphaMode": "BLEND",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.29104850605258986
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.6811449330131292,
+        "metallicFactor": 0.6445733929855786,
+        "baseColorTexture": {
+          "index": 12
         }
       },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1",
       "normalTexture": {
         "index": 13
       },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 12
-        },
-        "metallicFactor": 0.6445733929855786,
-        "roughnessFactor": 0.6811449330131292
-      }
-    },
-    {
-      "doubleSided": true,
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.29104850605258986
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1",
-      "normalTexture": {
-        "index": 15
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 14
-        },
-        "metallicFactor": 0.4678109495190842,
-        "roughnessFactor": 0.6201923663005449
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1",
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.015996293361446288,
+          0.015996293361446288,
+          0.015996293361446288,
+          1
+        ],
+        "roughnessFactor": 0.6201923663005449,
+        "metallicFactor": 0.4678109495190842
+      },
+      "normalTexture": {
+        "index": 14
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
+          "specularFactor": 0.29104850605258986
+        }
+      }
+    },
+    {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.41295363947775837,
+        "metallicFactor": 0.9005741731784325,
+        "baseColorTexture": {
+          "index": 15
+        }
+      },
+      "normalTexture": {
+        "index": 16
+      },
+      "extensions": {
+        "KHR_materials_specular": {
           "specularFactor": 0.21790542599748874
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1",
-      "normalTexture": {
-        "index": 17
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 16
-        },
-        "metallicFactor": 0.9005741731784325,
-        "roughnessFactor": 0.41295363947775837
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1",
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.6689544196706123,
+        "metallicFactor": 0.6384781363143202,
+        "baseColorTexture": {
+          "index": 17
+        }
+      },
+      "normalTexture": {
+        "index": 18
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.278857992710073
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1",
-      "normalTexture": {
-        "index": 19
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 18
-        },
-        "metallicFactor": 0.6384781363143202,
-        "roughnessFactor": 0.6689544196706123
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1",
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.5043824895466348,
+        "metallicFactor": 0.7360022430544549,
+        "baseColorTexture": {
+          "index": 19
+        }
+      },
+      "normalTexture": {
+        "index": 20
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.19352439931245502
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1",
-      "normalTexture": {
-        "index": 21
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 20
-        },
-        "metallicFactor": 0.7360022430544549,
-        "roughnessFactor": 0.5043824895466348
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1",
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.650668649656837,
+        "metallicFactor": 0.7116212163694212,
+        "baseColorTexture": {
+          "index": 21
+        }
+      },
+      "normalTexture": {
+        "index": 22
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.3154295327376236
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1",
-      "normalTexture": {
-        "index": 23
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 22
-        },
-        "metallicFactor": 0.7116212163694212,
-        "roughnessFactor": 0.650668649656837
       }
     },
     {
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.2544769660250393
-        }
-      },
       "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1",
-      "normalTexture": {
-        "index": 25
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 24
-        },
-        "metallicFactor": 0.6201923663005449,
-        "roughnessFactor": 0.7725737830820055
-      }
-    },
-    {
       "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.7725737830820055,
+        "metallicFactor": 0.6201923663005449,
+        "baseColorTexture": {
+          "index": 23
+        }
+      },
+      "normalTexture": {
+        "index": 24
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.2544769660250393
         }
-      },
+      }
+    },
+    {
       "name": "m3csBMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1",
-      "normalTexture": {
-        "index": 27
-      },
+      "doubleSided": true,
       "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 26
-        },
+        "roughnessFactor": 0.5104777462178932,
         "metallicFactor": 0.8883836598359156,
-        "roughnessFactor": 0.5104777462178932
-      }
-    },
-    {
-      "alphaMode": "BLEND",
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.236191196011264
-        }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1",
-      "normalTexture": {
-        "index": 29
-      },
-      "pbrMetallicRoughness": {
         "baseColorTexture": {
-          "index": 28
-        },
-        "metallicFactor": 0.7420974997257134,
-        "roughnessFactor": 0.4678109495190842
+          "index": 25
+        }
+      },
+      "normalTexture": {
+        "index": 26
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.2544769660250393
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1",
       "alphaMode": "BLEND",
       "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.236191196011264
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.4678109495190842,
+        "metallicFactor": 0.7420974997257134,
+        "baseColorTexture": {
+          "index": 27
         }
       },
+      "normalTexture": {
+        "index": 28
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.236191196011264
+        }
+      }
+    },
+    {
       "name": "red_Int",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
         "baseColorFactor": [
           0.5,
           0.012999999999999986,
           0.012999999999999986,
-          1.0
+          1
         ],
+        "roughnessFactor": 0.4556204361765674,
+        "metallicFactor": 0.5470492862454438,
+        "baseColorTexture": {
+          "index": 29
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.236191196011264
+        }
+      }
+    },
+    {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025LightA_Material1",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.12647657592861233,
+        "metallicFactor": 0.821335836452073,
         "baseColorTexture": {
           "index": 30
-        },
-        "metallicFactor": 0.5470492862454438,
-        "roughnessFactor": 0.4556204361765674
+        }
       }
     },
     {
+      "name": "m3csBMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1",
       "doubleSided": true,
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025LightA_Material1",
       "pbrMetallicRoughness": {
+        "roughnessFactor": 0.6689544196706123,
+        "metallicFactor": 0,
         "baseColorTexture": {
           "index": 31
-        },
-        "metallicFactor": 0.821335836452073,
-        "roughnessFactor": 0.12647657592861233
-      }
-    },
-    {
-      "doubleSided": true,
+        }
+      },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
           "specularFactor": 0.09600029257232022
         }
-      },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1",
+      }
+    },
+    {
+      "name": "emissBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
+        "roughnessFactor": 0.3769969549419716,
+        "metallicFactor": 0.18742914264119662,
         "baseColorTexture": {
           "index": 32
-        },
-        "metallicFactor": 0.0,
-        "roughnessFactor": 0.6689544196706123
-      }
-    },
-    {
-      "doubleSided": true,
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025Paint_Material1",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.0016820681473392284,
-          0.08756462137077992,
-          0.03235520777292076,
-          1.0
-        ],
-        "metallicFactor": 0.6628591629993539,
-        "roughnessFactor": 0.0228572125172191
-      }
-    },
-    {
-      "alphaMode": "BLEND",
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.7908595530957808
-        },
-        "KHR_materials_transmission": {
-          "transmissionFactor": 1.0
         }
       },
-      "name": "m3csBMW_M3CSTouringRewardRecycled_2025Window_Material1",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.0,
-          0.0,
-          0.0,
-          0.25
-        ],
-        "metallicFactor": 0.0,
-        "roughnessFactor": 0.0
-      }
-    },
-    {
-      "alphaMode": "BLEND",
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_clearcoat": {
-          "clearcoatFactor": 1.0,
-          "clearcoatRoughnessFactor": 0.0
-        },
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 1.0
-        }
-      },
-      "name": "light_glasss",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.0,
-          0.0,
-          0.0,
-          0.41295363947775837
-        ],
-        "metallicFactor": 0.0,
-        "roughnessFactor": 0.0
-      }
-    },
-    {
-      "alphaMode": "BLEND",
-      "doubleSided": true,
-      "extensions": {
-        "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 1.0
-        },
-        "KHR_materials_transmission": {
-          "transmissionFactor": 1.0
-        }
-      },
-      "name": "red_glass",
-      "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          0.5,
-          0.0,
-          0.0,
-          0.25
-        ],
-        "metallicFactor": 0.0,
-        "roughnessFactor": 0.0
-      }
-    },
-    {
-      "doubleSided": true,
       "emissiveFactor": [
-        1.0,
-        1.0,
-        1.0
+        1,
+        1,
+        1
       ],
       "emissiveTexture": {
-        "index": 34
+        "index": 32
       },
       "extensions": {
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.0
+          "specularFactor": 0
         }
-      },
-      "name": "emissBMW_M3CSTouringRewardRecycled_2025InteriorA_Material1",
+      }
+    },
+    {
+      "name": "emissBMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          1,
+          1,
+          1,
+          0.8396216064658483
+        ],
+        "roughnessFactor": 0.3769969549419716,
+        "metallicFactor": 0.3337153027513988,
         "baseColorTexture": {
           "index": 33
-        },
-        "metallicFactor": 0.18742914264119662,
-        "roughnessFactor": 0.3769969549419716
-      }
-    },
-    {
-      "alphaMode": "BLEND",
-      "doubleSided": true,
+        }
+      },
       "emissiveFactor": [
-        1.0,
-        1.0,
-        1.0
+        1,
+        1,
+        1
       ],
       "emissiveTexture": {
-        "index": 35
+        "index": 33
       },
       "extensions": {
         "KHR_materials_emissive_strength": {
           "emissiveStrength": 4.312394094915336
         },
         "KHR_materials_specular": {
-          "specularColorFactor": [
-            1.0,
-            1.0,
-            1.0
-          ],
-          "specularFactor": 0.0
+          "specularFactor": 0
+        }
+      }
+    },
+    {
+      "name": "PaletteMaterial001",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.3032390193951067,
+        "metallicFactor": 0.7299069863831965,
+        "baseColorTexture": {
+          "index": 34
         }
       },
-      "name": "emissBMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1",
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.1630481159561629
+        }
+      }
+    },
+    {
+      "name": "PaletteMaterial002",
+      "doubleSided": true,
       "pbrMetallicRoughness": {
-        "baseColorFactor": [
-          1.0,
-          1.0,
-          1.0,
-          0.8396216064658483
-        ],
+        "roughnessFactor": 0.7725737830820055,
+        "metallicFactor": 0,
         "baseColorTexture": {
-          "index": 35
+          "index": 34
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.10819080591483707
+        }
+      }
+    },
+    {
+      "name": "PaletteMaterial003",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0.0228572125172191,
+        "metallicFactor": 0.6628591629993539,
+        "baseColorTexture": {
+          "index": 34
+        }
+      }
+    },
+    {
+      "name": "PaletteMaterial004",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0,
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 34
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {
+          "specularFactor": 0.7908595530957808
         },
-        "metallicFactor": 0.3337153027513988,
-        "roughnessFactor": 0.3769969549419716
+        "KHR_materials_transmission": {
+          "transmissionFactor": 1
+        }
+      }
+    },
+    {
+      "name": "PaletteMaterial005",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0,
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 34
+        }
+      },
+      "extensions": {
+        "KHR_materials_clearcoat": {
+          "clearcoatFactor": 1,
+          "clearcoatRoughnessFactor": 0
+        },
+        "KHR_materials_specular": {}
+      }
+    },
+    {
+      "name": "PaletteMaterial006",
+      "alphaMode": "BLEND",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "roughnessFactor": 0,
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 34
+        }
+      },
+      "extensions": {
+        "KHR_materials_specular": {},
+        "KHR_materials_transmission": {
+          "transmissionFactor": 1
+        }
       }
     }
   ],
@@ -3607,13 +2341,22 @@
         {
           "attributes": {
             "NORMAL": 1,
-            "POSITION": 0,
-            "TEXCOORD_0": 2,
-            "TEXCOORD_1": 3
+            "POSITION": 2,
+            "TEXCOORD_0": 3
           },
-          "indices": 4,
+          "mode": 4,
           "material": 0,
-          "mode": 4
+          "indices": 0,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 2,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3622,13 +2365,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 6,
-            "POSITION": 5,
+            "NORMAL": 5,
+            "POSITION": 6,
             "TEXCOORD_0": 7
           },
-          "indices": 8,
-          "material": 1,
-          "mode": 4
+          "mode": 4,
+          "material": 21,
+          "indices": 4,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 3,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3637,13 +2390,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 10,
-            "POSITION": 9,
+            "NORMAL": 9,
+            "POSITION": 10,
             "TEXCOORD_0": 11
           },
-          "indices": 12,
-          "material": 2,
-          "mode": 4
+          "mode": 4,
+          "material": 1,
+          "indices": 8,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 4,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3652,14 +2415,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 14,
-            "POSITION": 13,
-            "TEXCOORD_0": 15,
-            "TEXCOORD_1": 16
+            "NORMAL": 13,
+            "POSITION": 14,
+            "TEXCOORD_0": 15
           },
-          "indices": 17,
+          "mode": 4,
           "material": 0,
-          "mode": 4
+          "indices": 12,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 5,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3668,13 +2440,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 19,
+            "NORMAL": 17,
             "POSITION": 18,
-            "TEXCOORD_0": 20
+            "TEXCOORD_0": 19
           },
-          "indices": 21,
-          "material": 1,
-          "mode": 4
+          "mode": 4,
+          "material": 21,
+          "indices": 16,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 6,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3683,13 +2465,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 23,
+            "NORMAL": 21,
             "POSITION": 22,
-            "TEXCOORD_0": 24
+            "TEXCOORD_0": 23
           },
-          "indices": 25,
-          "material": 2,
-          "mode": 4
+          "mode": 4,
+          "material": 1,
+          "indices": 20,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 7,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3698,13 +2490,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 27,
+            "NORMAL": 25,
             "POSITION": 26,
-            "TEXCOORD_0": 28
+            "TEXCOORD_0": 27
           },
-          "indices": 29,
-          "material": 1,
-          "mode": 4
+          "mode": 4,
+          "material": 21,
+          "indices": 24,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 8,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3713,13 +2515,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 31,
+            "NORMAL": 29,
             "POSITION": 30,
-            "TEXCOORD_0": 32
+            "TEXCOORD_0": 31
           },
-          "indices": 33,
-          "material": 2,
-          "mode": 4
+          "mode": 4,
+          "material": 1,
+          "indices": 28,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 9,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3728,13 +2540,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 35,
+            "NORMAL": 33,
             "POSITION": 34,
-            "TEXCOORD_0": 36
+            "TEXCOORD_0": 35
           },
-          "indices": 37,
-          "material": 1,
-          "mode": 4
+          "mode": 4,
+          "material": 21,
+          "indices": 32,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 10,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3743,13 +2565,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 39,
+            "NORMAL": 37,
             "POSITION": 38,
-            "TEXCOORD_0": 40
+            "TEXCOORD_0": 39
           },
-          "indices": 41,
-          "material": 2,
-          "mode": 4
+          "mode": 4,
+          "material": 1,
+          "indices": 36,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 11,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3758,15 +2590,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 43,
+            "NORMAL": 41,
             "POSITION": 42,
-            "TANGENT": 44,
-            "TEXCOORD_0": 45,
-            "TEXCOORD_1": 46
+            "TANGENT": 43,
+            "TEXCOORD_0": 44
           },
-          "indices": 47,
-          "material": 3,
-          "mode": 4
+          "mode": 4,
+          "material": 2,
+          "indices": 40,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 12,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3775,15 +2617,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 49,
-            "POSITION": 48,
-            "TANGENT": 50,
-            "TEXCOORD_0": 51,
-            "TEXCOORD_1": 52
+            "NORMAL": 46,
+            "POSITION": 47,
+            "TANGENT": 48,
+            "TEXCOORD_0": 49
           },
-          "indices": 53,
-          "material": 3,
-          "mode": 4
+          "mode": 4,
+          "material": 2,
+          "indices": 45,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 13,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3792,32 +2644,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 55,
-            "POSITION": 54,
-            "TANGENT": 56,
-            "TEXCOORD_0": 57,
-            "TEXCOORD_1": 58
+            "NORMAL": 51,
+            "POSITION": 52,
+            "TANGENT": 53,
+            "TEXCOORD_0": 54
           },
-          "indices": 59,
-          "material": 3,
-          "mode": 4
-        }
-      ]
-    },
-    {
-      "name": "polySurface630_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0",
-      "primitives": [
-        {
-          "attributes": {
-            "NORMAL": 61,
-            "POSITION": 60,
-            "TANGENT": 62,
-            "TEXCOORD_0": 63,
-            "TEXCOORD_1": 64
-          },
-          "indices": 65,
-          "material": 3,
-          "mode": 4
+          "mode": 4,
+          "material": 2,
+          "indices": 50,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 14,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3826,16 +2671,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 67,
-            "POSITION": 66,
-            "TANGENT": 68,
-            "TEXCOORD_0": 69,
-            "TEXCOORD_1": 70,
-            "TEXCOORD_2": 71
+            "NORMAL": 56,
+            "POSITION": 57,
+            "TANGENT": 58,
+            "TEXCOORD_0": 59
           },
-          "indices": 72,
-          "material": 4,
-          "mode": 4
+          "mode": 4,
+          "material": 3,
+          "indices": 55,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 15,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3844,12 +2698,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 74,
-            "POSITION": 73
+            "NORMAL": 61,
+            "POSITION": 62,
+            "TEXCOORD_0": 63
           },
-          "indices": 75,
-          "material": 5,
-          "mode": 4
+          "mode": 4,
+          "material": 22,
+          "indices": 60,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 16,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3858,15 +2723,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 77,
-            "POSITION": 76,
-            "TANGENT": 78,
-            "TEXCOORD_0": 79,
-            "TEXCOORD_1": 80
+            "NORMAL": 65,
+            "POSITION": 66,
+            "TANGENT": 67,
+            "TEXCOORD_0": 68
           },
-          "indices": 81,
-          "material": 6,
-          "mode": 4
+          "mode": 4,
+          "material": 4,
+          "indices": 64,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 17,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3875,13 +2750,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 83,
-            "POSITION": 82,
-            "TEXCOORD_0": 84
+            "NORMAL": 70,
+            "POSITION": 71,
+            "TEXCOORD_0": 72
           },
-          "indices": 85,
-          "material": 7,
-          "mode": 4
+          "mode": 4,
+          "material": 5,
+          "indices": 69,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 18,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -3890,16 +2775,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 87,
-            "POSITION": 86,
-            "TANGENT": 88,
-            "TEXCOORD_0": 89,
-            "TEXCOORD_1": 90,
-            "TEXCOORD_2": 91
+            "NORMAL": 74,
+            "POSITION": 75,
+            "TANGENT": 76,
+            "TEXCOORD_0": 77
           },
-          "indices": 92,
-          "material": 8,
-          "mode": 4
+          "mode": 4,
+          "material": 6,
+          "indices": 73,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 19,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3908,16 +2802,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 94,
-            "POSITION": 93,
-            "TANGENT": 95,
-            "TEXCOORD_0": 96,
-            "TEXCOORD_1": 97,
-            "TEXCOORD_2": 98
+            "NORMAL": 79,
+            "POSITION": 80,
+            "TANGENT": 81,
+            "TEXCOORD_0": 82
           },
-          "indices": 99,
-          "material": 9,
-          "mode": 4
+          "mode": 4,
+          "material": 7,
+          "indices": 78,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 20,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3926,15 +2829,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 101,
-            "POSITION": 100,
-            "TANGENT": 102,
-            "TEXCOORD_0": 103,
-            "TEXCOORD_1": 104
+            "NORMAL": 84,
+            "POSITION": 85,
+            "TANGENT": 86,
+            "TEXCOORD_0": 87
           },
-          "indices": 105,
-          "material": 10,
-          "mode": 4
+          "mode": 4,
+          "material": 8,
+          "indices": 83,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 21,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3943,15 +2856,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 107,
-            "POSITION": 106,
-            "TANGENT": 108,
-            "TEXCOORD_0": 109,
-            "TEXCOORD_1": 110
+            "NORMAL": 89,
+            "POSITION": 90,
+            "TANGENT": 91,
+            "TEXCOORD_0": 92
           },
-          "indices": 111,
-          "material": 11,
-          "mode": 4
+          "mode": 4,
+          "material": 9,
+          "indices": 88,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 22,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3960,15 +2883,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 113,
-            "POSITION": 112,
-            "TANGENT": 114,
-            "TEXCOORD_0": 115,
-            "TEXCOORD_1": 116
+            "NORMAL": 94,
+            "POSITION": 95,
+            "TANGENT": 96,
+            "TEXCOORD_0": 97
           },
-          "indices": 117,
-          "material": 12,
-          "mode": 4
+          "mode": 4,
+          "material": 10,
+          "indices": 93,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 23,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3977,15 +2910,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 119,
-            "POSITION": 118,
-            "TANGENT": 120,
-            "TEXCOORD_0": 121,
-            "TEXCOORD_1": 122
+            "NORMAL": 99,
+            "POSITION": 100,
+            "TANGENT": 101,
+            "TEXCOORD_0": 102
           },
-          "indices": 123,
-          "material": 13,
-          "mode": 4
+          "mode": 4,
+          "material": 11,
+          "indices": 98,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 24,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -3994,15 +2937,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 125,
-            "POSITION": 124,
-            "TANGENT": 126,
-            "TEXCOORD_0": 127,
-            "TEXCOORD_1": 128
+            "NORMAL": 104,
+            "POSITION": 105,
+            "TANGENT": 106,
+            "TEXCOORD_0": 107
           },
-          "indices": 129,
-          "material": 14,
-          "mode": 4
+          "mode": 4,
+          "material": 12,
+          "indices": 103,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 25,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -4011,15 +2964,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 131,
-            "POSITION": 130,
-            "TANGENT": 132,
-            "TEXCOORD_0": 133,
-            "TEXCOORD_1": 134
+            "NORMAL": 109,
+            "POSITION": 110,
+            "TANGENT": 111,
+            "TEXCOORD_0": 112
           },
-          "indices": 135,
-          "material": 15,
-          "mode": 4
+          "mode": 4,
+          "material": 13,
+          "indices": 108,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 26,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -4028,15 +2991,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 137,
-            "POSITION": 136,
-            "TANGENT": 138,
-            "TEXCOORD_0": 139,
-            "TEXCOORD_1": 140
+            "NORMAL": 114,
+            "POSITION": 115,
+            "TANGENT": 116,
+            "TEXCOORD_0": 117
           },
-          "indices": 141,
-          "material": 16,
-          "mode": 4
+          "mode": 4,
+          "material": 14,
+          "indices": 113,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 27,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -4045,16 +3018,25 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 143,
-            "POSITION": 142,
-            "TANGENT": 144,
-            "TEXCOORD_0": 145,
-            "TEXCOORD_1": 146,
-            "TEXCOORD_2": 147
+            "NORMAL": 119,
+            "POSITION": 120,
+            "TANGENT": 121,
+            "TEXCOORD_0": 122
           },
-          "indices": 148,
-          "material": 17,
-          "mode": 4
+          "mode": 4,
+          "material": 15,
+          "indices": 118,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 28,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TANGENT": 2,
+                "TEXCOORD_0": 3
+              }
+            }
+          }
         }
       ]
     },
@@ -4063,13 +3045,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 150,
-            "POSITION": 149,
-            "TEXCOORD_0": 151
+            "NORMAL": 124,
+            "POSITION": 125,
+            "TEXCOORD_0": 126
           },
-          "indices": 152,
-          "material": 18,
-          "mode": 4
+          "mode": 4,
+          "material": 16,
+          "indices": 123,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 29,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4078,13 +3070,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 154,
-            "POSITION": 153,
-            "TEXCOORD_0": 155
+            "NORMAL": 128,
+            "POSITION": 129,
+            "TEXCOORD_0": 130
           },
-          "indices": 156,
-          "material": 19,
-          "mode": 4
+          "mode": 4,
+          "material": 17,
+          "indices": 127,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 30,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4093,13 +3095,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 158,
-            "POSITION": 157,
-            "TEXCOORD_0": 159
+            "NORMAL": 132,
+            "POSITION": 133,
+            "TEXCOORD_0": 134
           },
-          "indices": 160,
-          "material": 20,
-          "mode": 4
+          "mode": 4,
+          "material": 18,
+          "indices": 131,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 31,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4108,27 +3120,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 162,
-            "POSITION": 161
+            "NORMAL": 136,
+            "POSITION": 137,
+            "TEXCOORD_0": 138
           },
-          "indices": 163,
-          "material": 21,
-          "mode": 4
-        }
-      ]
-    },
-    {
-      "name": "m3cs:SeatBelt_Geo_lodA_SeatBelt_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025SeatBelt_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Coloured_Material1_0",
-      "primitives": [
-        {
-          "attributes": {
-            "NORMAL": 165,
-            "POSITION": 164,
-            "TEXCOORD_0": 166
-          },
-          "indices": 167,
-          "material": 7,
-          "mode": 4
+          "mode": 4,
+          "material": 23,
+          "indices": 135,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 32,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4137,26 +3145,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 169,
-            "POSITION": 168
+            "NORMAL": 140,
+            "POSITION": 141,
+            "TEXCOORD_0": 142
           },
-          "indices": 170,
-          "material": 22,
-          "mode": 4
-        }
-      ]
-    },
-    {
-      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Window_Material1_0",
-      "primitives": [
-        {
-          "attributes": {
-            "NORMAL": 172,
-            "POSITION": 171
-          },
-          "indices": 173,
-          "material": 22,
-          "mode": 4
+          "mode": 4,
+          "material": 24,
+          "indices": 139,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 33,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4165,12 +3170,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 175,
-            "POSITION": 174
+            "NORMAL": 144,
+            "POSITION": 145,
+            "TEXCOORD_0": 146
           },
-          "indices": 176,
-          "material": 23,
-          "mode": 4
+          "mode": 4,
+          "material": 25,
+          "indices": 143,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 34,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4179,12 +3195,23 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 178,
-            "POSITION": 177
+            "NORMAL": 148,
+            "POSITION": 149,
+            "TEXCOORD_0": 150
           },
-          "indices": 179,
-          "material": 24,
-          "mode": 4
+          "mode": 4,
+          "material": 26,
+          "indices": 147,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 35,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     },
@@ -4193,13 +3220,22 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 181,
-            "POSITION": 180,
-            "TEXCOORD_0": 182
+            "NORMAL": 152,
+            "POSITION": 153,
+            "TEXCOORD_0": 158
           },
-          "indices": 183,
-          "material": 25,
-          "mode": 4
+          "mode": 4,
+          "material": 19,
+          "indices": 151,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 36,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1
+              }
+            }
+          }
         }
       ]
     },
@@ -4208,1435 +3244,739 @@
       "primitives": [
         {
           "attributes": {
-            "NORMAL": 185,
-            "POSITION": 184,
-            "TEXCOORD_0": 186
+            "NORMAL": 155,
+            "POSITION": 156,
+            "TEXCOORD_0": 157
           },
-          "indices": 187,
-          "material": 26,
-          "mode": 4
+          "mode": 4,
+          "material": 20,
+          "indices": 154,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 37,
+              "attributes": {
+                "NORMAL": 0,
+                "POSITION": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
         }
       ]
     }
   ],
   "nodes": [
     {
+      "name": "_rootJoint",
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
+      ],
       "children": [
         1
-      ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        2.220446049250313e-16,
-        -1.0,
-        0.0,
-        0.0,
-        1.0,
-        2.220446049250313e-16,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "Sketchfab_model"
+      ]
     },
     {
+      "name": "Wheel1A_3D_00",
       "children": [
-        2
-      ],
-      "matrix": [
-        0.009999999776482582,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.009999999776482582,
-        0.0,
-        0.0,
-        -0.009999999776482582,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "FINAL_MODEL_3cs.fbx"
+        2,
+        29,
+        32,
+        35,
+        38
+      ]
     },
     {
+      "name": "Calliper1_A_A(Clone)_01",
       "children": [
-        3
-      ],
-      "name": "RootNode"
+        3,
+        11,
+        19,
+        24
+      ]
     },
     {
-      "children": [
-        4,
-        45,
-        47,
-        49,
-        51,
-        53,
-        55,
-        57,
-        59,
-        61,
-        63,
-        65,
-        67,
-        69,
-        71,
-        74,
-        76,
-        78,
-        80,
-        82,
-        84,
-        88,
-        90
-      ],
-      "name": "Object_3"
-    },
-    {
-      "children": [
-        5
-      ],
-      "name": "_rootJoint"
-    },
-    {
-      "children": [
-        6,
-        33,
-        36,
-        39,
-        42
-      ],
-      "name": "Wheel1A_3D_00"
-    },
-    {
-      "children": [
-        7,
-        15,
-        23,
-        28
-      ],
-      "name": "Calliper1_A_A(Clone)_01"
-    },
-    {
-      "children": [
-        8,
-        11
-      ],
       "name": "Calliper Front L_02",
-      "rotation": [
-        0.0,
-        0.0,
-        0.013089596293866634,
-        0.9999143481254578
-      ],
       "translation": [
         0.722000002861023,
         0.3370000123977661,
         1.534999966621399
+      ],
+      "rotation": [
+        0,
+        0,
+        0.013089596293866634,
+        0.9999143481254578
+      ],
+      "children": [
+        4,
+        7
       ]
     },
     {
+      "name": "CalliperBadge Front L",
       "children": [
-        9
-      ],
-      "name": "CalliperBadge Front L"
+        5
+      ]
     },
     {
+      "name": "polySurface853",
       "children": [
+        6
+      ]
+    },
+    {
+      "name": "polySurface853_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_0",
+      "mesh": 0
+    },
+    {
+      "name": "CalliperZone Front L",
+      "children": [
+        8
+      ]
+    },
+    {
+      "name": "polySurface855",
+      "children": [
+        9,
         10
-      ],
-      "matrix": [
-        1.0,
-        3.469446951953615e-18,
-        0.0,
-        0.0,
-        -3.469446951953615e-18,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface853"
+      ]
     },
     {
-      "mesh": 0,
-      "name": "polySurface853_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_0"
+      "name": "polySurface855_phong3_0",
+      "mesh": 1
     },
     {
-      "children": [
-        12
-      ],
-      "name": "CalliperZone Front L"
+      "name": "polySurface855_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0",
+      "mesh": 2
     },
     {
-      "children": [
-        13,
-        14
-      ],
-      "matrix": [
-        1.0,
-        3.469446951953616e-18,
-        0.0,
-        0.0,
-        -3.469446951953616e-18,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface855"
-    },
-    {
-      "mesh": 1,
-      "name": "polySurface855_phong3_0"
-    },
-    {
-      "mesh": 2,
-      "name": "polySurface855_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0"
-    },
-    {
-      "children": [
-        16,
-        19
-      ],
       "name": "Calliper Front R_03",
-      "rotation": [
-        0.01308972854167223,
-        0.9999143481254578,
-        -5.719740792109462e-10,
-        4.369266548565065e-08
-      ],
       "translation": [
         -0.722000002861023,
         0.3370000123977661,
         1.534999966621399
+      ],
+      "rotation": [
+        0.01308972854167223,
+        0.9999143481254578,
+        -5.719740792109462e-10,
+        4.369266548565065e-8
+      ],
+      "children": [
+        12,
+        15
       ]
     },
     {
+      "name": "CalliperBadge Front R",
       "children": [
-        17
-      ],
-      "matrix": [
-        1.0,
-        -1.0702533132523476e-23,
-        0.0,
-        0.0,
-        1.0702533132523476e-23,
-        1.0,
-        8.109375967359777e-25,
-        0.0,
-        -8.679086497475763e-48,
-        -8.109375967359777e-25,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "CalliperBadge Front R"
+        13
+      ]
     },
     {
+      "name": "polySurface854",
       "children": [
-        18
-      ],
-      "matrix": [
-        1.0,
-        -1.0702533168668298e-23,
-        0.0,
-        0.0,
-        1.0702533168668298e-23,
-        1.0,
-        3.329806532841179e-26,
-        0.0,
-        -3.5637364862981105e-49,
-        -3.329806532841179e-26,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface854"
+        14
+      ]
     },
     {
-      "mesh": 3,
-      "name": "polySurface854_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_0"
+      "name": "polySurface854_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperBad_9b0d101_0",
+      "mesh": 3
     },
     {
-      "children": [
-        20
-      ],
-      "matrix": [
-        1.0,
-        -1.2246467991473532e-16,
-        -0.0,
-        -0.0,
-        1.2246467991473532e-16,
-        1.0,
-        8.109375967359777e-25,
-        -0.0,
-        9.931121321509623e-41,
-        8.109375967359777e-25,
-        -1.0,
-        -0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "CalliperZone Front R"
-    },
-    {
-      "children": [
-        21,
-        22
-      ],
-      "matrix": [
-        1.0,
-        -1.0702533168668295e-23,
-        0.0,
-        0.0,
-        1.0702533168668295e-23,
-        1.0,
-        7.708751231010056e-26,
-        0.0,
-        -8.250316573889768e-49,
-        -7.708751231010056e-26,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface968"
-    },
-    {
-      "mesh": 4,
-      "name": "polySurface968_phong3_0"
-    },
-    {
-      "mesh": 5,
-      "name": "polySurface968_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0"
-    },
-    {
-      "children": [
-        24
-      ],
-      "name": "Calliper Rear L_04",
+      "name": "CalliperZone Front R",
       "rotation": [
-        0.0,
-        0.0,
-        0.00872653629630804,
-        0.9999619126319885
+        6.123233995736766e-17,
+        1,
+        4.0546879836798886e-25,
+        2.4827803303774056e-41
       ],
+      "scale": [
+        -1,
+        1,
+        1
+      ],
+      "children": [
+        16
+      ]
+    },
+    {
+      "name": "polySurface968",
+      "children": [
+        17,
+        18
+      ]
+    },
+    {
+      "name": "polySurface968_phong3_0",
+      "mesh": 4
+    },
+    {
+      "name": "polySurface968_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0",
+      "mesh": 5
+    },
+    {
+      "name": "Calliper Rear L_04",
       "translation": [
         0.7229999899864197,
         0.3409999907016754,
         -1.3240000009536743
+      ],
+      "rotation": [
+        0,
+        0,
+        0.00872653629630804,
+        0.9999619126319885
+      ],
+      "children": [
+        20
       ]
     },
     {
+      "name": "CalliperZone Rear L",
       "children": [
-        25
-      ],
-      "name": "CalliperZone Rear L"
+        21
+      ]
     },
     {
+      "name": "polySurface1081",
       "children": [
-        26,
-        27
-      ],
-      "name": "polySurface1081"
+        22,
+        23
+      ]
     },
     {
-      "mesh": 6,
-      "name": "polySurface1081_phong3_0"
+      "name": "polySurface1081_phong3_0",
+      "mesh": 6
     },
     {
-      "mesh": 7,
-      "name": "polySurface1081_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0"
+      "name": "polySurface1081_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0",
+      "mesh": 7
     },
     {
-      "children": [
-        29
-      ],
       "name": "Calliper Rear R_05",
+      "translation": [
+        -0.7229999899864197,
+        0.3409999907016754,
+        -1.3240000009536743
+      ],
       "rotation": [
         0.008726668544113636,
         0.9999619126319885,
         -3.813966364951682e-10,
-        4.37030642785885e-08
+        4.37030642785885e-8
       ],
-      "translation": [
-        -0.7229999899864197,
-        0.3409999907016754,
-        -1.3240000009536743
+      "children": [
+        25
       ]
     },
     {
+      "name": "CalliperZone Rear R",
+      "rotation": [
+        -6.123233995736766e-17,
+        1,
+        1.5745684622329108e-25,
+        -1.3234889800848443e-23
+      ],
+      "scale": [
+        -1,
+        1,
+        1
+      ],
       "children": [
-        30
-      ],
-      "matrix": [
-        1.0,
-        1.2246467991473532e-16,
-        -2.6469779601696886e-23,
-        -0.0,
-        -1.2246467991473532e-16,
-        1.0,
-        3.1491369244658377e-25,
-        -0.0,
-        -2.6469779601696886e-23,
-        3.1491369244658055e-25,
-        -1.0,
-        -0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "CalliperZone Rear R"
+        26
+      ]
     },
     {
+      "name": "polySurface1184",
       "children": [
-        31,
-        32
-      ],
-      "matrix": [
-        1.0,
-        3.469436247382236e-18,
-        2.64697796016969e-23,
-        0.0,
-        -3.469436247382236e-18,
-        1.0,
-        -6.13655391209491e-26,
-        0.0,
-        -2.64697796016969e-23,
-        6.1365539120949e-26,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface1184"
+        27,
+        28
+      ]
     },
     {
-      "mesh": 8,
-      "name": "polySurface1184_phong3_0"
+      "name": "polySurface1184_phong3_0",
+      "mesh": 8
     },
     {
-      "mesh": 9,
-      "name": "polySurface1184_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0"
+      "name": "polySurface1184_m3cs:BMW_M3CSTouringRewardRecycled_2025_CallipersCalliperA_Z_790c80a1_0",
+      "mesh": 9
     },
     {
-      "children": [
-        34
-      ],
-      "matrix": [
-        0.9996573249210937,
-        0.026176950387754788,
-        0.0,
-        0.0,
-        -0.026176950387754788,
-        0.9996573249210937,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
+      "name": "3DWheel Front L",
+      "translation": [
         0.7260000109672546,
         0.335999995470047,
-        1.534999966621399,
-        1.0
+        1.534999966621399
       ],
-      "name": "3DWheel Front L"
-    },
-    {
+      "rotation": [
+        0,
+        0,
+        0.013089596611552618,
+        0.9999143275603899
+      ],
       "children": [
-        35
-      ],
-      "name": "polySurface203"
+        30
+      ]
     },
     {
-      "mesh": 10,
-      "name": "polySurface203_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0"
-    },
-    {
+      "name": "polySurface203",
       "children": [
-        37
-      ],
-      "matrix": [
-        -0.999657318004175,
-        0.02617721453272124,
-        -8.739281486470012e-08,
-        0.0,
-        0.026177214532721337,
-        0.9996573180041788,
-        1.2246467967504765e-16,
-        0.0,
-        8.736286692368765e-08,
-        -2.28770034090894e-09,
-        -0.9999999999999962,
-        0.0,
+        31
+      ]
+    },
+    {
+      "name": "polySurface203_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0",
+      "mesh": 10
+    },
+    {
+      "name": "3DWheel Front R",
+      "translation": [
         -0.7260000109672546,
         0.335999995470047,
-        1.534999966621399,
-        1.0
+        1.534999966621399
       ],
-      "name": "3DWheel Front R"
-    },
-    {
+      "rotation": [
+        0.013089728717990834,
+        0.9999143258310121,
+        -5.71974058013168e-10,
+        4.369266377975714e-8
+      ],
       "children": [
-        38
-      ],
-      "matrix": [
-        1.0,
-        -1.0702533132523476e-23,
-        0.0,
-        0.0,
-        1.0702533132523476e-23,
-        1.0,
-        8.109375967359777e-25,
-        0.0,
-        -8.679086497475763e-48,
-        -8.109375967359777e-25,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface204"
+        33
+      ]
     },
     {
-      "mesh": 11,
-      "name": "polySurface204_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0"
-    },
-    {
+      "name": "polySurface204",
       "children": [
-        40
-      ],
-      "matrix": [
-        0.9993908239694004,
-        0.034899584034241544,
-        0.0,
-        0.0,
-        -0.034899584034241544,
-        0.9993908239694004,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
+        34
+      ]
+    },
+    {
+      "name": "polySurface204_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0",
+      "mesh": 11
+    },
+    {
+      "name": "3DWheel Rear L",
+      "translation": [
         0.7229999899864197,
         0.3375000059604645,
-        -1.3240000009536743,
-        1.0
+        -1.3240000009536743
       ],
-      "name": "3DWheel Rear L"
-    },
-    {
+      "rotation": [
+        0,
+        0,
+        0.017452450123115554,
+        0.9998476943938512
+      ],
       "children": [
-        41
-      ],
-      "name": "polySurface407"
+        36
+      ]
     },
     {
-      "mesh": 12,
-      "name": "polySurface407_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0"
-    },
-    {
+      "name": "polySurface407",
       "children": [
-        43
-      ],
-      "matrix": [
-        -0.9993908270190919,
-        0.034899496702501004,
-        -8.7369520243592e-08,
-        0.0,
-        0.03489949670250114,
-        0.9993908270190958,
-        1.2246467967504765e-16,
-        0.0,
-        8.731629709677898e-08,
-        -3.049152161250268e-09,
-        -0.9999999999999962,
-        0.0,
+        37
+      ]
+    },
+    {
+      "name": "polySurface407_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0",
+      "mesh": 12
+    },
+    {
+      "name": "3DWheel Rear R",
+      "translation": [
         -0.7229999899864197,
         0.3375000059604645,
-        -1.3240000009536743,
-        1.0
+        -1.3240000009536743
       ],
-      "name": "3DWheel Rear R"
-    },
-    {
+      "rotation": [
+        0.01745240643728358,
+        0.9998476951563903,
+        -7.624041275378092e-10,
+        4.367810672230626e-8
+      ],
       "children": [
-        44
-      ],
-      "matrix": [
-        1.0,
-        -1.0699680328061676e-23,
-        -2.6469779601696886e-23,
-        0.0,
-        1.0699680328061676e-23,
-        1.0,
-        7.2850399872309765e-25,
-        0.0,
-        2.6469779601696886e-23,
-        -7.2850399872309765e-25,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "polySurface630"
+        39
+      ]
     },
     {
-      "mesh": 13,
-      "name": "polySurface630_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0"
-    },
-    {
+      "name": "polySurface630",
       "children": [
-        46
+        40
+      ]
+    },
+    {
+      "name": "polySurface630_m3cs:BMW_M3CSTouringRewardRecycled_2025_Wheel1A_3D_3DWheel1B_6d36bae1_0",
+      "mesh": 12
+    },
+    {
+      "name": "m3cs:Badge_Geo_lodA_Badge_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025BadgeA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Badge_Geo_lodA_Badge_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025BadgeA_Material"
+      "mesh": 13
     },
     {
-      "mesh": 14,
-      "name": "m3cs:Badge_Geo_lodA_Badge_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025BadgeA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025BadgeA_Material1_0"
-    },
-    {
-      "children": [
-        48
+      "name": "m3cs:Base_Geo_lodA_Base_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Base_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Base_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Base_Geo_lodA_Base_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Base_Material"
+      "mesh": 14
     },
     {
-      "mesh": 15,
-      "name": "m3cs:Base_Geo_lodA_Base_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Base_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Base_Material1_0"
-    },
-    {
-      "children": [
-        50
+      "name": "m3cs:Carbon1_Geo_lodA_Carbon1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Carbon1_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Carbon1_Geo_lodA_Carbon1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Carbon1_Material"
+      "mesh": 15
     },
     {
-      "mesh": 16,
-      "name": "m3cs:Carbon1_Geo_lodA_Carbon1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Carbon1_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Carbon1_Material1_0"
-    },
-    {
-      "children": [
-        52
+      "name": "m3cs:Coloured_Geo_lodA_Coloured_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Coloured_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Coloured_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Coloured_Geo_lodA_Coloured_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Coloured_Material"
+      "mesh": 16
     },
     {
-      "mesh": 17,
-      "name": "m3cs:Coloured_Geo_lodA_Coloured_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Coloured_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Coloured_Material1_0"
-    },
-    {
-      "children": [
-        54
+      "name": "m3cs:Engine_Geo_lodA_Engine_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025EngineA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025EngineA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Engine_Geo_lodA_Engine_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025EngineA_Material"
+      "mesh": 17
     },
     {
-      "mesh": 18,
-      "name": "m3cs:Engine_Geo_lodA_Engine_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025EngineA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025EngineA_Material1_0"
-    },
-    {
-      "children": [
-        56
+      "name": "m3cs:GrilleAlpha5_Geo_lodA_GrilleAlpha5_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleAlpha5_Geo_lodA_GrilleAlpha5_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material"
+      "mesh": 18
     },
     {
-      "mesh": 19,
-      "name": "m3cs:GrilleAlpha5_Geo_lodA_GrilleAlpha5_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleAlpha5A_Material1_0"
-    },
-    {
-      "children": [
-        58
+      "name": "m3cs:GrilleAlpha6_Geo_lodA_GrilleAlpha6_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleAlpha6_Geo_lodA_GrilleAlpha6_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material"
+      "mesh": 19
     },
     {
-      "mesh": 20,
-      "name": "m3cs:GrilleAlpha6_Geo_lodA_GrilleAlpha6_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleAlpha6A_Material1_0"
-    },
-    {
-      "children": [
-        60
+      "name": "m3cs:GrilleNoAlpha1_Geo_lodA_GrilleNoAlpha1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha1_Geo_lodA_GrilleNoAlpha1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material"
+      "mesh": 20
     },
     {
-      "mesh": 21,
-      "name": "m3cs:GrilleNoAlpha1_Geo_lodA_GrilleNoAlpha1_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha1A_Material1_0"
-    },
-    {
-      "children": [
-        62
+      "name": "m3cs:GrilleNoAlpha2_Geo_lodA_GrilleNoAlpha2_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha2_Geo_lodA_GrilleNoAlpha2_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material"
+      "mesh": 21
     },
     {
-      "mesh": 22,
-      "name": "m3cs:GrilleNoAlpha2_Geo_lodA_GrilleNoAlpha2_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha2A_Material1_0"
-    },
-    {
-      "children": [
-        64
+      "name": "m3cs:GrilleNoAlpha3_Geo_lodA_GrilleNoAlpha3_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha3_Geo_lodA_GrilleNoAlpha3_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material"
+      "mesh": 22
     },
     {
-      "mesh": 23,
-      "name": "m3cs:GrilleNoAlpha3_Geo_lodA_GrilleNoAlpha3_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha3A_Material1_0"
-    },
-    {
-      "children": [
-        66
+      "name": "m3cs:GrilleNoAlpha4_Geo_lodA_GrilleNoAlpha4_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha4_Geo_lodA_GrilleNoAlpha4_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material"
+      "mesh": 23
     },
     {
-      "mesh": 24,
-      "name": "m3cs:GrilleNoAlpha4_Geo_lodA_GrilleNoAlpha4_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha4A_Material1_0"
-    },
-    {
-      "children": [
-        68
+      "name": "m3cs:GrilleNoAlpha7_Geo_lodA_GrilleNoAlpha7_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha7_Geo_lodA_GrilleNoAlpha7_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material"
+      "mesh": 24
     },
     {
-      "mesh": 25,
-      "name": "m3cs:GrilleNoAlpha7_Geo_lodA_GrilleNoAlpha7_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha7A_Material1_0"
-    },
-    {
-      "children": [
-        70
+      "name": "m3cs:GrilleNoAlpha8_Geo_lodA_GrilleNoAlpha8_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:GrilleNoAlpha8_Geo_lodA_GrilleNoAlpha8_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material"
+      "mesh": 25
     },
     {
-      "mesh": 26,
-      "name": "m3cs:GrilleNoAlpha8_Geo_lodA_GrilleNoAlpha8_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025GrilleNoAlpha8A_Material1_0"
-    },
-    {
-      "children": [
-        72,
-        73
+      "name": "m3cs:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material"
+      "mesh": 26
     },
     {
-      "mesh": 27,
-      "name": "m3cs:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_0"
-    },
-    {
-      "mesh": 28,
-      "name": "m3cs:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_red_Int_0"
-    },
-    {
-      "children": [
-        75
+      "name": "m3cs:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_red_Int_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Light_Geo_lodA_Light_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightA_Material"
+      "mesh": 27
     },
     {
-      "mesh": 29,
-      "name": "m3cs:Light_Geo_lodA_Light_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025LightA_Material1_0"
-    },
-    {
-      "children": [
-        77
+      "name": "m3cs:Light_Geo_lodA_Light_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025LightA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:ManufacturerPlate_Geo_lodA_ManufacturerPlate_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material"
+      "mesh": 28
     },
     {
-      "mesh": 30,
-      "name": "m3cs:ManufacturerPlate_Geo_lodA_ManufacturerPlate_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1_0"
-    },
-    {
-      "children": [
-        79
+      "name": "m3cs:ManufacturerPlate_Geo_lodA_ManufacturerPlate_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025ManufacturerPlateA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Paint_Geo_lodA_Paint_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Paint_Material"
+      "mesh": 29
     },
     {
-      "mesh": 31,
-      "name": "m3cs:Paint_Geo_lodA_Paint_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Paint_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Paint_Material1_0"
-    },
-    {
-      "children": [
-        81
+      "name": "m3cs:Paint_Geo_lodA_Paint_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Paint_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Paint_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:SeatBelt_Geo_lodA_SeatBelt_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025SeatBelt_Material"
+      "mesh": 30
     },
     {
-      "mesh": 32,
-      "name": "m3cs:SeatBelt_Geo_lodA_SeatBelt_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025SeatBelt_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Coloured_Material1_0"
-    },
-    {
-      "children": [
-        83
+      "name": "m3cs:WindowInside_Geo_lodA_WindowInside_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025WindowInside_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Window_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:WindowInside_Geo_lodA_WindowInside_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025WindowInside_Material"
+      "mesh": 31
     },
     {
-      "mesh": 33,
-      "name": "m3cs:WindowInside_Geo_lodA_WindowInside_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025WindowInside_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Window_Material1_0"
-    },
-    {
-      "children": [
-        85,
-        86,
-        87
+      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_light_glasss_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material"
+      "mesh": 32
     },
     {
-      "mesh": 34,
-      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_m3cs:BMW_M3CSTouringRewardRecycled_2025Window_Material1_0"
-    },
-    {
-      "mesh": 35,
-      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_light_glasss_0"
-    },
-    {
-      "mesh": 36,
-      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_red_glass_0"
-    },
-    {
-      "children": [
-        89
+      "name": "m3cs:Window_Geo_lodA_Window_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025Window_Material_red_glass_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "emiss:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material"
+      "mesh": 33
     },
     {
-      "mesh": 37,
-      "name": "emiss:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_emiss:BMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_0"
+      "name": "emiss:Interior_Geo_lodA_Interior_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025InteriorA_Material_emiss:BMW_M3CSTouringRewardRecycled_2025InteriorA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
+      ],
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
+      ],
+      "mesh": 34
     },
     {
-      "children": [
-        91
+      "name": "emiss:LightEmissive_Geo_lodA_LightEmissive_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material_emiss:BMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1_0",
+      "translation": [
+        0,
+        0.0011277559147531702,
+        0
       ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0,
-        0.0,
-        0.0,
-        0.11277559399604797,
-        0.0,
-        1.0
+      "scale": [
+        0.009999999776482582,
+        0.009999999776482582,
+        0.009999999776482582
       ],
-      "name": "emiss:LightEmissive_Geo_lodA_LightEmissive_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material"
-    },
-    {
-      "mesh": 38,
-      "name": "emiss:LightEmissive_Geo_lodA_LightEmissive_Geo_lodA_BMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material_emiss:BMW_M3CSTouringRewardRecycled_2025LightEmissiveA_Material1_0"
+      "mesh": 35
     }
   ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987,
-      "wrapS": 10497,
-      "wrapT": 10497
-    }
-  ],
-  "scene": 0,
   "scenes": [
     {
       "name": "Sketchfab_Scene",
       "nodes": [
-        0
+        0,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63
       ]
     }
   ],
-  "skins": [
-    {
-      "inverseBindMatrices": 188,
-      "joints": [
-        4,
-        5,
-        6,
-        7,
-        15,
-        23,
-        28
-      ],
-      "skeleton": 4
-    }
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_texture_webp",
+    "KHR_draco_mesh_compression",
+    "KHR_materials_clearcoat",
+    "KHR_materials_emissive_strength",
+    "KHR_materials_specular",
+    "KHR_materials_transmission"
   ],
-  "textures": [
-    {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
-    },
-    {
-      "sampler": 0,
-      "source": 3
-    },
-    {
-      "sampler": 0,
-      "source": 4
-    },
-    {
-      "sampler": 0,
-      "source": 5
-    },
-    {
-      "sampler": 0,
-      "source": 6
-    },
-    {
-      "sampler": 0,
-      "source": 7
-    },
-    {
-      "sampler": 0,
-      "source": 8
-    },
-    {
-      "sampler": 0,
-      "source": 9
-    },
-    {
-      "sampler": 0,
-      "source": 10
-    },
-    {
-      "sampler": 0,
-      "source": 11
-    },
-    {
-      "sampler": 0,
-      "source": 12
-    },
-    {
-      "sampler": 0,
-      "source": 13
-    },
-    {
-      "sampler": 0,
-      "source": 14
-    },
-    {
-      "sampler": 0,
-      "source": 15
-    },
-    {
-      "sampler": 0,
-      "source": 16
-    },
-    {
-      "sampler": 0,
-      "source": 17
-    },
-    {
-      "sampler": 0,
-      "source": 18
-    },
-    {
-      "sampler": 0,
-      "source": 19
-    },
-    {
-      "sampler": 0,
-      "source": 20
-    },
-    {
-      "sampler": 0,
-      "source": 21
-    },
-    {
-      "sampler": 0,
-      "source": 22
-    },
-    {
-      "sampler": 0,
-      "source": 23
-    },
-    {
-      "sampler": 0,
-      "source": 24
-    },
-    {
-      "sampler": 0,
-      "source": 25
-    },
-    {
-      "sampler": 0,
-      "source": 26
-    },
-    {
-      "sampler": 0,
-      "source": 27
-    },
-    {
-      "sampler": 0,
-      "source": 28
-    },
-    {
-      "sampler": 0,
-      "source": 29
-    },
-    {
-      "sampler": 0,
-      "source": 30
-    },
-    {
-      "sampler": 0,
-      "source": 31
-    },
-    {
-      "sampler": 0,
-      "source": 32
-    },
-    {
-      "sampler": 0,
-      "source": 33
-    },
-    {
-      "sampler": 0,
-      "source": 34
-    },
-    {
-      "sampler": 0,
-      "source": 35
-    }
+  "extensionsRequired": [
+    "EXT_texture_webp",
+    "KHR_draco_mesh_compression"
   ]
 }
