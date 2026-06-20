@@ -184,8 +184,8 @@ function MultiplayerRaceClientInner() {
     );
   }
 
-  // Loading
-  if (status === "loading") {
+  // Loading (also guard the initial idle state when wallet is already connected)
+  if (status === "loading" || (connected && status === "idle")) {
     return <MultiplayerShell><Panel>Loading garage state...</Panel></MultiplayerShell>;
   }
 
@@ -207,13 +207,25 @@ function MultiplayerRaceClientInner() {
     );
   }
 
-  // Matchmaking view
+  // Matchmaking view — extra guard against incomplete state
   if (view === "matchmaking") {
+    if (!selectedCatalogCar || !playerState?.selectedCar) {
+      return (
+        <MultiplayerShell>
+          <div className="mx-auto max-w-xl rounded-[2rem] border border-amber-300/25 bg-amber-300/10 p-8 text-center text-white">
+            <p className="text-sm font-bold uppercase tracking-[0.35em] text-amber-200">No selected car</p>
+            <h1 className="mt-3 text-4xl font-black">Select a car in garage first.</h1>
+            <Link href="/garage" className="mt-6 inline-flex rounded-full bg-lime-300 px-5 py-3 text-sm font-black text-black hover:bg-lime-200">Back to garage</Link>
+          </div>
+        </MultiplayerShell>
+      );
+    }
+
     return (
       <MultiplayerShell>
         <MatchmakingPanel
-          selectedCar={{ ...selectedCatalogCar!, powerRating: playerState!.selectedCar!.power_rating ?? selectedCatalogCar!.basePowerRating }}
-          playerCar={playerState!.selectedCar!}
+          selectedCar={{ ...selectedCatalogCar, powerRating: playerState.selectedCar.power_rating ?? selectedCatalogCar.basePowerRating }}
+          playerCar={playerState.selectedCar}
           onStateChange={handleLobbyStateChange}
         />
       </MultiplayerShell>
