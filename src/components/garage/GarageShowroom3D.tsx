@@ -57,11 +57,23 @@ const CAR_OVERRIDES: Record<
   { rotationY?: number; scaleMultiplier?: number; positionOffset?: [number, number, number]; labelOffset?: [number, number, number] }
 > = {};
 
-// Bavaro Sport: model normalizes small, increase scale
-CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.5 };
+// Scale overrides: cars the user wants "zoomed" (larger in showroom)
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.8 };
+CAR_OVERRIDES["zephyr-z8"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["bavaro-m5"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["valor-gt"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["toro-se"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["volt-c5"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["bavaro-cs"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["warp-x1"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["nova-spider"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["volt-w6"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["furia-gt"] = { scaleMultiplier: 1.3 };
+CAR_OVERRIDES["nova-s1"] = { scaleMultiplier: 1.2 };
+CAR_OVERRIDES["toro-x"] = { scaleMultiplier: 1.2 };
 
-// Street Rat / Tesla Cybertruck: model pivot is off-center, nudge forward
-CAR_OVERRIDES["street-rat"] = { positionOffset: [0, 0, 0.5] };
+// Street Rat: center via Box3 (no manual offset needed)
+// Box3 normalization already centers the model at its bounding-box center
 
 /* ------------------------------------------------------------------ */
 /*  ShowroomCamera — OrbitControls with smooth focus transitions       */
@@ -159,7 +171,7 @@ function Floor() {
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
         <planeGeometry args={[40, 20]} />
-        <meshStandardMaterial color="#1e1e28" roughness={0.4} metalness={0.1} />
+        <meshStandardMaterial color="#2e2e3a" roughness={0.35} metalness={0.05} />
       </mesh>
       <gridHelper args={[40, 40, "#2a2a3a", "#1a1a25"]} position={[0, 0, 0]} />
     </group>
@@ -389,12 +401,13 @@ class GltfErrorBoundary extends React.Component<
 function ShowroomLighting() {
   return (
     <>
-      <ambientLight intensity={1.8} color="#ffffff" />
-      <directionalLight position={[0, 10, 15]} intensity={3.5} color="#ffffff" />
-      <directionalLight position={[-10, 5, -5]} intensity={1.5} color="#e0e0ff" />
-      <directionalLight position={[10, 5, -5]} intensity={1.5} color="#ffe0e0" />
-      <directionalLight position={[0, 3, -12]} intensity={2.0} color="#ffffff" />
-      <directionalLight position={[0, 10, 0]} intensity={0.8} color="#ffffff" />
+      <ambientLight intensity={3.0} color="#ffffff" />
+      <directionalLight position={[0, 10, 15]} intensity={5.0} color="#ffffff" />
+      <directionalLight position={[-10, 5, -5]} intensity={2.5} color="#e0e0ff" />
+      <directionalLight position={[10, 5, -5]} intensity={2.5} color="#ffe0e0" />
+      <directionalLight position={[0, 3, -12]} intensity={3.5} color="#ffffff" />
+      <directionalLight position={[0, 10, 0]} intensity={1.5} color="#ffffff" />
+      <directionalLight position={[0, 2, 10]} intensity={2.0} color="#ffffff" />
     </>
   );
 }
