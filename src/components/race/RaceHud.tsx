@@ -12,6 +12,8 @@ type RaceHudProps = {
   car: CarConfig;
   selectedCar: PlayerCar;
   track: TrackConfig;
+  /** Show multiplayer label instead of solo */
+  multiplayer?: boolean;
   /** Live race telemetry (updated every frame from controller) */
   telemetry?: {
     speed: number;
@@ -27,6 +29,7 @@ export function RaceHud({
   selectedCar,
   track,
   telemetry,
+  multiplayer = false,
 }: RaceHudProps) {
   const stats = useMemo(
     () => resolveCarGameplayStats(car, selectedCar),
@@ -41,7 +44,7 @@ export function RaceHud({
       <div className="mx-auto flex max-w-7xl flex-wrap items-start justify-between gap-3">
         {/* Track info */}
         <div className="rounded-3xl border border-white/10 bg-black/60 p-4 shadow-2xl shadow-black/40 backdrop-blur">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-lime-300">Solo shell</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-lime-300">{multiplayer ? "Multiplayer" : "Solo shell"}</p>
           <h1 className="mt-1 text-2xl font-black text-white">{track.name}</h1>
           <p className="mt-1 max-w-sm text-sm text-white/60">{track.description}</p>
         </div>
