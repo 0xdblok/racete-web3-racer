@@ -17,6 +17,7 @@ import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerInitResponse } from "@/types/game";
 import { HeroShowroom, HeroShowroomPlaceholder } from "@/components/garage/HeroShowroom";
+import { StaticCarPreview } from "@/components/garage/StaticCarPreview";
 
 type Status = "idle" | "loading" | "ready" | "error";
 type PaymentStatus = { tone: "normal" | "error" | "success"; message: string } | null;
@@ -589,9 +590,9 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
                   onClick={() => setShowroomCarId(car.id)}
                   className={`rounded-3xl border p-5 shadow-lg shadow-black/30 flex flex-col cursor-pointer transition-colors hover:border-white/25 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}
                 >
-                  {/* 2D-only preview — no Canvas, no WebGL, no 3D ever */}
+                  {/* Static 3D preview — lazy load, shared component */}
                   <div className="mb-4 shrink-0">
-                    <CarSilhouette2D car={car} />
+                    <StaticCarPreview car={car} ownedCar={ownedCar} />
                   </div>
 
                   <div className="flex items-start justify-between gap-4">
@@ -682,38 +683,6 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
         </section>
       </section>
     </main>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  CarSilhouette2D — pure HTML/CSS, no Canvas, no WebGL              */
-/* ------------------------------------------------------------------ */
-
-function CarSilhouette2D({ car }: { car: { id: string; name: string; class: string; modelUrl: string } }) {
-  const accent = car.class === "S" || car.class === "A" ? "#f97316"
-    : car.class.startsWith("B") ? "#d946ef"
-    : "#84cc16";
-  const isMissing = !car.modelUrl;
-
-  return (
-    <div className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center group">
-      <div className="flex flex-col items-center justify-center w-full h-full px-4">
-        <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
-          <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
-          <rect x="25" y="8" width="70" height="16" rx="6" fill={accent} />
-          <circle cx="30" cy="34" r="6" fill={accent} />
-          <circle cx="90" cy="34" r="6" fill={accent} />
-        </svg>
-        <p className="mt-2 text-xs text-white/30 font-bold">{car.name}</p>
-        <p className="text-[10px] text-white/20">Class {car.class}</p>
-      </div>
-      {isMissing && (
-        <p className="absolute bottom-2 text-[10px] font-bold text-amber-300/80">Model not uploaded yet</p>
-      )}
-      <div className="absolute inset-0 flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <span className="text-[10px] text-white/40 font-bold">Click to preview</span>
-      </div>
-    </div>
   );
 }
 

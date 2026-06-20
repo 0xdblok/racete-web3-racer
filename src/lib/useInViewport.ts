@@ -4,18 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * Tracks whether the element is currently in the viewport.
- * Unlike the old one-shot version, this updates `inView` to false
- * when the element leaves the viewport, allowing Canvases to unmount
- * and free WebGL contexts.
  */
 export function useInViewport(options?: IntersectionObserverInit) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [inView, setInView] = useState(false);
 
-  // Memoize options to avoid recreating observer on every render
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const rootMargin = options?.rootMargin ?? "200px";
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const threshold = options?.threshold ?? 0;
 
   const handleIntersection = useCallback(([entry]: IntersectionObserverEntry[]) => {
@@ -25,12 +19,7 @@ export function useInViewport(options?: IntersectionObserverInit) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const observer = new IntersectionObserver(handleIntersection, {
-      rootMargin,
-      threshold,
-    });
-
+    const observer = new IntersectionObserver(handleIntersection, { rootMargin, threshold });
     observer.observe(el);
     return () => observer.disconnect();
   }, [handleIntersection, rootMargin, threshold]);
@@ -38,12 +27,16 @@ export function useInViewport(options?: IntersectionObserverInit) {
   return { ref, inView };
 }
 
-/**
- * Simple counter to limit simultaneous WebGL Canvases.
- * Browsers typically allow 8-16 contexts; we limit to 4.
- */
+/* ------------------------------------------------------------------ */
+/*  WebGL Slot Pool with Queue (increased to 6 for static previews)    */
+/* ------------------------------------------------------------------ */
+
+const MAX_CANVASES = 6;
+
+type SlotListener = () => void;
+
 let _activeCanvases = 0;
-const MAX_CANVASES = 4;
+const _waitQueue: SlotListener[] = [];
 
 export function tryAcquireCanvasSlot(): boolean {
   if (_activeCanvases >= MAX_CANVASES) return false;
@@ -52,5 +45,26 @@ export function tryAcquireCanvasSlot(): boolean {
 }
 
 export function releaseCanvasSlot(): void {
-  _activeCanvases = Math.max(0, _activeCanvases - 1);
+  if (_activeCanvases <= 0) return;
+  _activeCanvases--;
+  // Notify next waiter
+  const next = _waitQueue.shift();
+  if (next) {
+    // Defer to avoid cascading setState in effects
+    setTimeout(next, 0);
+  }
+}
+
+/** Register a callback to be called when a slot becomes available */
+export function waitForCanvasSlot(cb: SlotListener): () => void {
+  _waitQueue.push(cb);
+  return () => {
+    const idx = _waitQueue.indexOf(cb);
+    if (idx >= 0) _waitQueue.splice(idx, 1);
+  };
+}
+
+/** Current active canvas count (for debugging) */
+export function getActiveCanvasCount(): number {
+  return _activeCanvases;
 }

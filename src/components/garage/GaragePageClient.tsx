@@ -16,7 +16,7 @@ import { getUpgradePrice, UPGRADE_TYPES, type UpgradeType } from "@/config/upgra
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerCar, PlayerInitResponse } from "@/types/game";
-import { LazyCarPreview } from "@/components/garage/LazyCarPreview";
+import { StaticCarPreview } from "@/components/garage/StaticCarPreview";
 
 type Status = "idle" | "loading" | "ready" | "error";
 type PaymentStatus = { tone: "normal" | "error" | "success"; message: string } | null;
@@ -615,7 +615,7 @@ function Card({
       }`}
     >
       <div className="shrink-0">
-        <LazyCarPreview car={car} ownedCar={ownedCar} />
+        <StaticCarPreview car={car} ownedCar={ownedCar} />
       </div>
 
       <div className="mt-3 flex items-start justify-between gap-4">

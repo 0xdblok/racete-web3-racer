@@ -7,7 +7,7 @@ import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 
 /* ------------------------------------------------------------------ */
-/*  Auto-normalization (same logic as LazyCarPreview)                  */
+/*  Auto-normalization (shared via StaticCarPreview)                  */
 /* ------------------------------------------------------------------ */
 
 const TARGET_SIZE = 3.5; // slightly larger for the hero showroom
