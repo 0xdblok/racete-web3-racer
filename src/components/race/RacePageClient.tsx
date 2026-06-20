@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -9,16 +9,45 @@ import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
 import { RaceScene } from "@/components/race/RaceScene";
+import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 
 type Status = "idle" | "loading" | "ready" | "error";
+
+type Telemetry = {
+  speed: number;
+  nitroFuel: number;
+  nitroCooldown: boolean;
+  drifting: boolean;
+};
 
 export function RacePageClient() {
   const { publicKey, connected } = useWallet();
   const [state, setState] = useState<PlayerInitResponse | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [telemetry, setTelemetry] = useState<Telemetry | null>(null);
+  const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
+
+  // Bridge: poll carStateRef every frame to push telemetry to React state
+  useEffect(() => {
+    let raf = 0;
+    function poll() {
+      const cs = carStateRef.current;
+      if (cs) {
+        setTelemetry({
+          speed: cs.speed,
+          nitroFuel: 0, // updated from controller separately if needed
+          nitroCooldown: false,
+          drifting: cs.drifting,
+        });
+      }
+      raf = requestAnimationFrame(poll);
+    }
+    raf = requestAnimationFrame(poll);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const selectedCatalogCar = useMemo(() => {
     if (!state?.selectedCar) return null;
@@ -94,12 +123,12 @@ export function RacePageClient() {
   if (state?.selectedCar && selectedCatalogCar) {
     return (
       <main className="relative min-h-screen bg-[#050509] p-2 text-white">
-        <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} />
+        <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} telemetry={telemetry} />
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <Link href="/garage" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Garage</Link>
           <button onClick={() => void loadPlayer()} className="rounded-full border border-lime-300/35 bg-black/50 px-4 py-2 text-sm font-bold text-lime-100 backdrop-blur hover:bg-lime-300/10">Refresh car</button>
         </div>
-        <RaceScene car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} />
+        <RaceScene car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} carRef={carStateRef} />
       </main>
     );
   }

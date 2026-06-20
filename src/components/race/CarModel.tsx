@@ -10,6 +10,8 @@ type CarModelProps = {
   car: CarConfig;
   selectedCar: PlayerCar;
   gameplayStats?: CarGameplayStats;
+  /** When true, car renders at origin (parent <CarController> handles position) */
+  isDriving?: boolean;
 };
 
 export function CarModel({ car, selectedCar }: CarModelProps) {
@@ -29,23 +31,25 @@ function ModelOrFallback({ car, selectedCar }: CarModelProps) {
   );
 }
 
-function LoadedGltfCar({ car, selectedCar }: CarModelProps) {
+function LoadedGltfCar({ car, selectedCar, isDriving }: CarModelProps) {
   const gltf = useGLTF(car.modelUrl);
   const scale = getModelScale(car.id);
   const rotationY = getModelRotationY(car.id);
+  const basePos: [number, number, number] = isDriving ? [0, 0, 0] : [0, 0.18, -5.8];
 
   return (
-    <group position={[0, 0.18, -5.8]} rotation-y={rotationY} scale={scale}>
+    <group position={basePos} rotation-y={rotationY} scale={scale}>
       <Clone object={gltf.scene} castShadow receiveShadow />
-      <PowerBar car={car} selectedCar={selectedCar} />
+      <PowerBar car={car} selectedCar={selectedCar} gameplayStats={undefined} />
     </group>
   );
 }
 
-function FallbackCar({ car, selectedCar, loading = false }: CarModelProps & { loading?: boolean }) {
+function FallbackCar({ car, selectedCar, loading = false, isDriving }: CarModelProps & { loading?: boolean }) {
   const accent = car.class === "S" || car.class === "A" ? "#f97316" : car.class.startsWith("B") ? "#d946ef" : "#84cc16";
+  const basePos: [number, number, number] = isDriving ? [0, 0.55, 0] : [0, 0.55, -5.8];
   return (
-    <group position={[0, 0.55, -5.8]} rotation-y={Math.PI}>
+    <group position={basePos} rotation-y={Math.PI}>
       <mesh castShadow>
         <boxGeometry args={[2.3, 0.55, 4.2]} />
         <meshStandardMaterial color="#18181b" roughness={0.35} metalness={0.65} />
