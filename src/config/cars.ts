@@ -12,47 +12,230 @@ export type CarConfig = {
 };
 
 export const CARS: CarConfig[] = [
-  // === ORIGINAL 6 ===
-  { id: "street-rat", name: "Street Rat", class: "D", modelUrl: "/models/cars/street-rat/scene.gltf", basePowerRating: 120, priceRaceCash: 0, priceToken: 0, isStarter: true, vibe: "Free starter street build", stats: { speed: 35, acceleration: 40, handling: 50, nitro: 25 } },
-  { id: "bavaro-coupe", name: "Bavaro Coupe", class: "C", modelUrl: "/models/cars/bavaro-coupe/scene.gltf", basePowerRating: 240, priceRaceCash: 40000, priceToken: 0, isStarter: false, vibe: "Sharp sports coupe", stats: { speed: 48, acceleration: 50, handling: 58, nitro: 40 } },
-  { id: "aurox-v10", name: "Aurox V10", class: "B", modelUrl: "", basePowerRating: 390, priceRaceCash: 120000, priceToken: 0, isStarter: false, vibe: "Mid-engine V10 supercar", stats: { speed: 62, acceleration: 62, handling: 64, nitro: 58 } },
-  { id: "sturm-rs", name: "Sturm RS", class: "B+", modelUrl: "", basePowerRating: 520, priceRaceCash: 250000, priceToken: 25000, isStarter: false, vibe: "Track-focused precision build", stats: { speed: 70, acceleration: 68, handling: 78, nitro: 66 } },
-  { id: "furia-gt", name: "Furia GT", class: "A", modelUrl: "/models/cars/furia-gt/scene.gltf", basePowerRating: 720, priceRaceCash: 500000, priceToken: 75000, isStarter: false, vibe: "Redline exotic GT", stats: { speed: 84, acceleration: 82, handling: 78, nitro: 82 } },
-  { id: "toro-x", name: "Toro X", class: "S", modelUrl: "/models/cars/toro-x/scene.gltf", basePowerRating: 900, priceRaceCash: 1000000, priceToken: 200000, isStarter: false, vibe: "Aggressive hypercar monster", stats: { speed: 96, acceleration: 92, handling: 86, nitro: 95 } },
+  // === ORIGINAL 6 — renamed to real models ===
 
-  // === NEW 11 FROM SKETCHFAB ===
-  // Audi Novulari → Nova S1
-  { id: "nova-s1", name: "Nova S1", class: "B", modelUrl: "/models/cars/audi-novulari/scene.gltf", basePowerRating: 410, priceRaceCash: 140000, priceToken: 0, isStarter: false, vibe: "Futuristic German performance concept", stats: { speed: 65, acceleration: 64, handling: 66, nitro: 60 } },
+  {
+    id: "street-rat",
+    name: "Tesla Cybertruck",
+    class: "C",
+    modelUrl: "/models/cars/street-rat/scene.gltf",
+    basePowerRating: 280,
+    priceRaceCash: 0,
+    priceToken: 0,
+    isStarter: true,
+    vibe: "Free starter electric truck",
+    stats: { speed: 50, acceleration: 72, handling: 48, nitro: 55 },
+  },
 
-  // BMW 330i → Bavaro Sport
-  { id: "bavaro-sport", name: "Bavaro Sport", class: "C", modelUrl: "/models/cars/bmw-330i/scene.gltf", basePowerRating: 260, priceRaceCash: 50000, priceToken: 0, isStarter: false, vibe: "Precision sport sedan", stats: { speed: 50, acceleration: 52, handling: 60, nitro: 42 } },
+  {
+    id: "bavaro-coupe",
+    name: "BMW M4 Competition",
+    class: "B",
+    modelUrl: "/models/cars/bavaro-coupe/scene.gltf",
+    basePowerRating: 480,
+    priceRaceCash: 40000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Precision German sports coupe",
+    stats: { speed: 68, acceleration: 58, handling: 72, nitro: 62 },
+  },
 
-  // Subaru BRZ → Zephyr Z8
-  { id: "zephyr-z8", name: "Zephyr Z8", class: "C", modelUrl: "/models/cars/subaru-brz/scene.gltf", basePowerRating: 250, priceRaceCash: 45000, priceToken: 0, isStarter: false, vibe: "Lightweight drift coupe", stats: { speed: 46, acceleration: 48, handling: 68, nitro: 38 } },
+  {
+    id: "aurox-v10",
+    name: "Audi e-tron GT quattro",
+    class: "B",
+    modelUrl: "",
+    basePowerRating: 450,
+    priceRaceCash: 120000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Electric grand tourer",
+    stats: { speed: 62, acceleration: 56, handling: 68, nitro: 55 },
+  },
 
-  // BMW M5 2025 → Bavaro M5
-  { id: "bavaro-m5", name: "Bavaro M5", class: "B+", modelUrl: "/models/cars/bmw-m5-sedan/scene.gltf", basePowerRating: 550, priceRaceCash: 300000, priceToken: 30000, isStarter: false, vibe: "Executive autobahn missile", stats: { speed: 74, acceleration: 72, handling: 72, nitro: 70 } },
+  {
+    id: "sturm-rs",
+    name: "Bugatti Chiron Pur Sport",
+    class: "S",
+    modelUrl: "",
+    basePowerRating: 940,
+    priceRaceCash: 250000,
+    priceToken: 25000,
+    isStarter: false,
+    vibe: "Ultimate hypercar — 1,500 hp quad-turbo W16",
+    stats: { speed: 96, acceleration: 90, handling: 80, nitro: 94 },
+  },
 
-  // Lambo Urus SE 2025 → Toro SE
-  { id: "toro-se", name: "Toro SE", class: "A", modelUrl: "/models/cars/lambo-urus-se/scene.gltf", basePowerRating: 740, priceRaceCash: 600000, priceToken: 80000, isStarter: false, vibe: "Super SUV dominance", stats: { speed: 82, acceleration: 80, handling: 72, nitro: 78 } },
+  {
+    id: "furia-gt",
+    name: "Ferrari SF90 Spider",
+    class: "S",
+    modelUrl: "/models/cars/furia-gt/scene.gltf",
+    basePowerRating: 900,
+    priceRaceCash: 500000,
+    priceToken: 75000,
+    isStarter: false,
+    vibe: "Hybrid V8 hypercar from Maranello",
+    stats: { speed: 92, acceleration: 88, handling: 84, nitro: 90 },
+  },
 
-  // Aston Martin Valiant 2025 → Valor GT
-  { id: "valor-gt", name: "Valor GT", class: "A", modelUrl: "/models/cars/aston-martin-valiant/scene.gltf", basePowerRating: 760, priceRaceCash: 650000, priceToken: 85000, isStarter: false, vibe: "British racing aristocracy", stats: { speed: 86, acceleration: 84, handling: 76, nitro: 80 } },
+  {
+    id: "toro-x",
+    name: "Lamborghini Urus",
+    class: "A",
+    modelUrl: "/models/cars/toro-x/scene.gltf",
+    basePowerRating: 720,
+    priceRaceCash: 1000000,
+    priceToken: 200000,
+    isStarter: false,
+    vibe: "Super SUV — 641 hp twin-turbo V8",
+    stats: { speed: 76, acceleration: 66, handling: 62, nitro: 72 },
+  },
 
-  // McLaren W1 2025 → Warp X1
-  { id: "warp-x1", name: "Warp X1", class: "S", modelUrl: "/models/cars/mclaren-w1/scene.gltf", basePowerRating: 950, priceRaceCash: 1200000, priceToken: 250000, isStarter: false, vibe: "Ultimate hybrid hypercar", stats: { speed: 98, acceleration: 96, handling: 88, nitro: 98 } },
+  // === NEW 11 FROM SKETCHFAB — renamed to real models ===
 
-  // McLaren Artura Spider 2025 → Nova Spider
-  { id: "nova-spider", name: "Nova Spider", class: "A", modelUrl: "/models/cars/mclaren-artura/scene.gltf", basePowerRating: 710, priceRaceCash: 550000, priceToken: 70000, isStarter: false, vibe: "Open-top hybrid supercar", stats: { speed: 80, acceleration: 78, handling: 82, nitro: 76 } },
+  {
+    id: "nova-s1",
+    name: "Audi Nuvolari concept",
+    class: "B+",
+    modelUrl: "/models/cars/audi-novulari/scene.gltf",
+    basePowerRating: 620,
+    priceRaceCash: 140000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Futuristic performance concept — estimated specs",
+    stats: { speed: 72, acceleration: 62, handling: 74, nitro: 68 },
+  },
 
-  // BYD Seal 6 DM-i Touring → Volt W6
-  { id: "volt-w6", name: "Volt W6", class: "C", modelUrl: "/models/cars/byd-seal-6/scene.gltf", basePowerRating: 230, priceRaceCash: 35000, priceToken: 0, isStarter: false, vibe: "Electric touring efficiency", stats: { speed: 44, acceleration: 46, handling: 56, nitro: 36 } },
+  {
+    id: "bavaro-sport",
+    name: "BMW 330i",
+    class: "C+",
+    modelUrl: "/models/cars/bmw-330i/scene.gltf",
+    basePowerRating: 380,
+    priceRaceCash: 50000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Precision sport sedan — 255 hp",
+    stats: { speed: 58, acceleration: 42, handling: 66, nitro: 45 },
+  },
 
-  // BYD Seal 5 DM-i Chazor → Volt C5
-  { id: "volt-c5", name: "Volt C5", class: "C", modelUrl: "/models/cars/byd-seal-5/scene.gltf", basePowerRating: 220, priceRaceCash: 30000, priceToken: 0, isStarter: false, vibe: "Electric sedan disruptor", stats: { speed: 42, acceleration: 44, handling: 54, nitro: 34 } },
+  {
+    id: "zephyr-z8",
+    name: "Subaru BRZ",
+    class: "C",
+    modelUrl: "/models/cars/subaru-brz/scene.gltf",
+    basePowerRating: 350,
+    priceRaceCash: 45000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Lightweight rear-drive drift coupe",
+    stats: { speed: 52, acceleration: 36, handling: 78, nitro: 40 },
+  },
 
-  // BMW M3 CS Touring → Bavaro CS
-  { id: "bavaro-cs", name: "Bavaro CS", class: "B+", modelUrl: "/models/cars/bmw-m3-cs/scene.gltf", basePowerRating: 580, priceRaceCash: 350000, priceToken: 40000, isStarter: false, vibe: "Wagon with supercar DNA", stats: { speed: 76, acceleration: 74, handling: 74, nitro: 72 } },
+  {
+    id: "bavaro-m5",
+    name: "BMW M5 2025",
+    class: "A",
+    modelUrl: "/models/cars/bmw-m5-sedan/scene.gltf",
+    basePowerRating: 730,
+    priceRaceCash: 300000,
+    priceToken: 30000,
+    isStarter: false,
+    vibe: "Executive autobahn missile — 717 hp hybrid V8",
+    stats: { speed: 78, acceleration: 68, handling: 72, nitro: 72 },
+  },
+
+  {
+    id: "toro-se",
+    name: "Lamborghini Urus SE 2025",
+    class: "A",
+    modelUrl: "/models/cars/lambo-urus-se/scene.gltf",
+    basePowerRating: 760,
+    priceRaceCash: 600000,
+    priceToken: 80000,
+    isStarter: false,
+    vibe: "Hybrid super SUV — 789 hp",
+    stats: { speed: 82, acceleration: 70, handling: 66, nitro: 76 },
+  },
+
+  {
+    id: "valor-gt",
+    name: "Aston Martin Valiant",
+    class: "S",
+    modelUrl: "/models/cars/aston-martin-valiant/scene.gltf",
+    basePowerRating: 850,
+    priceRaceCash: 650000,
+    priceToken: 85000,
+    isStarter: false,
+    vibe: "Limited-edition V12 manual track weapon — 734 hp",
+    stats: { speed: 90, acceleration: 72, handling: 84, nitro: 84 },
+  },
+
+  {
+    id: "warp-x1",
+    name: "McLaren W1 2025",
+    class: "S",
+    modelUrl: "/models/cars/mclaren-w1/scene.gltf",
+    basePowerRating: 980,
+    priceRaceCash: 1200000,
+    priceToken: 250000,
+    isStarter: false,
+    vibe: "Ultimate hybrid hypercar — 1,258 hp",
+    stats: { speed: 98, acceleration: 86, handling: 90, nitro: 98 },
+  },
+
+  {
+    id: "nova-spider",
+    name: "McLaren Artura Spider",
+    class: "S",
+    modelUrl: "/models/cars/mclaren-artura/scene.gltf",
+    basePowerRating: 820,
+    priceRaceCash: 550000,
+    priceToken: 70000,
+    isStarter: false,
+    vibe: "Open-top hybrid supercar — 690 hp",
+    stats: { speed: 86, acceleration: 78, handling: 86, nitro: 82 },
+  },
+
+  {
+    id: "volt-w6",
+    name: "BYD Seal 6 DM-i Touring",
+    class: "D",
+    modelUrl: "/models/cars/byd-seal-6/scene.gltf",
+    basePowerRating: 200,
+    priceRaceCash: 35000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Hybrid electric touring wagon — 215 hp combined",
+    stats: { speed: 38, acceleration: 32, handling: 52, nitro: 30 },
+  },
+
+  {
+    id: "volt-c5",
+    name: "BYD Seal 5 DM-i",
+    class: "D",
+    modelUrl: "/models/cars/byd-seal-5/scene.gltf",
+    basePowerRating: 190,
+    priceRaceCash: 30000,
+    priceToken: 0,
+    isStarter: false,
+    vibe: "Plug-in hybrid sedan — 212 hp",
+    stats: { speed: 36, acceleration: 30, handling: 50, nitro: 28 },
+  },
+
+  {
+    id: "bavaro-cs",
+    name: "BMW M3 CS Touring",
+    class: "A",
+    modelUrl: "/models/cars/bmw-m3-cs/scene.gltf",
+    basePowerRating: 700,
+    priceRaceCash: 350000,
+    priceToken: 40000,
+    isStarter: false,
+    vibe: "Wagon with supercar DNA — 543 hp",
+    stats: { speed: 76, acceleration: 66, handling: 76, nitro: 72 },
+  },
 ];
 
 export const STARTER_CAR_ID = "street-rat";
