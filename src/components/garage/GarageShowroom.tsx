@@ -16,10 +16,10 @@ const SHOWROOM_SLOTS: { carId: string; position: [number, number, number]; rotat
 ];
 
 const CAR_SHOWROOM_CONFIG: Record<string, { scale: number; positionOffset: [number, number, number]; rotationOffset: [number, number, number] }> = {
-  "street-rat": { scale: 0.55, positionOffset: [0, 0.35, 0], rotationOffset: [0, 0, 0] },
-  "bavaro-coupe": { scale: 0.7, positionOffset: [0, 0.15, 0], rotationOffset: [0, 0, 0] },
-  "furia-gt": { scale: 0.7, positionOffset: [0, 0.2, 0], rotationOffset: [0, 0, 0] },
-  "toro-x": { scale: 0.65, positionOffset: [0, 0.4, 0], rotationOffset: [0, 0, 0] },
+  "street-rat": { scale: 0.35, positionOffset: [0, 0.3, 0], rotationOffset: [0, 0, 0] },
+  "bavaro-coupe": { scale: 0.4, positionOffset: [0, 0.1, 0], rotationOffset: [0, 0, 0] },
+  "furia-gt": { scale: 0.45, positionOffset: [0, 0.15, 0], rotationOffset: [0, 0, 0] },
+  "toro-x": { scale: 0.4, positionOffset: [0, 0.35, 0], rotationOffset: [0, 0, 0] },
 };
 
 function isModelAvailable(car: CarConfig): boolean {
@@ -128,7 +128,7 @@ function CarSlot({
   const [hovered, setHovered] = useState(false);
   const hasModel = isModelAvailable(car);
   const config = CAR_SHOWROOM_CONFIG[car.id];
-  const scale = config?.scale ?? 0.7;
+  const scale = config?.scale ?? 0.4;
   const posOffset = config?.positionOffset ?? [0, 0.2, 0];
   const rotOffset = config?.rotationOffset ?? [0, 0, 0];
 
