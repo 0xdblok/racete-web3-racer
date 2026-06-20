@@ -4,10 +4,12 @@ import React, { Suspense } from "react";
 import { Clone, useGLTF } from "@react-three/drei";
 import type { CarConfig } from "@/config/cars";
 import type { PlayerCar } from "@/types/game";
+import type { CarGameplayStats } from "@/lib/car-gameplay-stats";
 
 type CarModelProps = {
   car: CarConfig;
   selectedCar: PlayerCar;
+  gameplayStats?: CarGameplayStats;
 };
 
 export function CarModel({ car, selectedCar }: CarModelProps) {
@@ -71,7 +73,7 @@ function FallbackCar({ car, selectedCar, loading = false }: CarModelProps & { lo
   );
 }
 
-function PowerBar({ car, selectedCar }: CarModelProps) {
+function PowerBar({ car, selectedCar, gameplayStats }: CarModelProps) {
   const accent = car.class === "S" || car.class === "A" ? "#f97316" : car.class.startsWith("B") ? "#d946ef" : "#84cc16";
   return (
     <group position={[0, 1.05, 0]}>
@@ -83,6 +85,22 @@ function PowerBar({ car, selectedCar }: CarModelProps) {
         <boxGeometry args={[Math.min(3.6, selectedCar.power_rating / 110), 0.04, 0.04]} />
         <meshBasicMaterial color="#bef264" />
       </mesh>
+      {/* Upgrade level indicators */}
+      {gameplayStats && (
+        <group position={[0, 0.35, 0]}>
+          {[
+            { label: "⚙", level: gameplayStats.engineLevel, color: "#f87171" },
+            { label: "◉", level: gameplayStats.tiresLevel, color: "#60a5fa" },
+            { label: "⚡", level: gameplayStats.nitroLevel, color: "#facc15" },
+            { label: "↺", level: gameplayStats.handlingLevel, color: "#a78bfa" },
+          ].map(({ label, level, color }, i) => (
+            <mesh key={label} position={[-1.2 + i * 0.8, 0, 0]}>
+              <boxGeometry args={[0.18, 0.04, 0.04]} />
+              <meshBasicMaterial color={color} />
+            </mesh>
+          ))}
+        </group>
+      )}
     </group>
   );
 }

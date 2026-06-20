@@ -1,10 +1,12 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Environment, Grid, OrbitControls } from "@react-three/drei";
+import { Environment, Grid, OrbitControls, Html } from "@react-three/drei";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
+import type { CarGameplayStats } from "@/lib/car-gameplay-stats";
+import { resolveCarGameplayStats } from "@/lib/car-gameplay-stats";
 import { CarModel } from "@/components/race/CarModel";
 
 type RaceSceneProps = {
@@ -14,6 +16,9 @@ type RaceSceneProps = {
 };
 
 export function RaceScene({ car, selectedCar, track }: RaceSceneProps) {
+  // Resolve final driving stats from base config + upgrade levels
+  const gameplayStats = resolveCarGameplayStats(car, selectedCar);
+
   return (
     <div className="h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
       <Canvas camera={{ position: [7, 5, 9], fov: 48 }} shadows>
@@ -24,7 +29,24 @@ export function RaceScene({ car, selectedCar, track }: RaceSceneProps) {
         <pointLight position={[-4, 3, -6]} intensity={18} color="#d946ef" />
         <pointLight position={[5, 3, 5]} intensity={14} color="#bef264" />
         <PlaceholderTrack trackName={track.name} />
-        <CarModel car={car} selectedCar={selectedCar} />
+        <CarModel car={car} selectedCar={selectedCar} gameplayStats={gameplayStats} />
+
+        {/* Debug: show resolved stats in-scene (remove when driving controller ready) */}
+        <Html position={[-6, 3, -3]} style={{ pointerEvents: "none" }}>
+          <div className="rounded-2xl border border-lime-300/25 bg-black/70 px-3 py-2 text-[10px] text-lime-200 backdrop-blur">
+            <p className="font-black">Resolved gameplay stats</p>
+            <p>maxSpeed: {gameplayStats.maxSpeed}</p>
+            <p>accel: {gameplayStats.acceleration}</p>
+            <p>brake: {gameplayStats.brakeForce}</p>
+            <p>steer: {gameplayStats.steering}</p>
+            <p>grip: {gameplayStats.grip}</p>
+            <p>drift: {gameplayStats.driftFactor}</p>
+            <p>nitroPwr: {gameplayStats.nitroPower}</p>
+            <p>nitroDur: {gameplayStats.nitroDuration}s</p>
+            <p>nitroCd: {gameplayStats.nitroCooldown}s</p>
+          </div>
+        </Html>
+
         <Environment preset="night" />
         <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.05} minDistance={5} maxDistance={16} />
       </Canvas>
@@ -62,7 +84,6 @@ function PlaceholderTrack({ trackName }: { trackName: string }) {
     </group>
   );
 }
-
 
 function TextBillboard({ label }: { label: string }) {
   return (
