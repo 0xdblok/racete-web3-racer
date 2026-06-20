@@ -1,21 +1,30 @@
 # Active Context
 
-Current milestone: Wallet + Player Init foundation
+Current milestone: Pump.fun token payment foundation
 
 Completed:
-- Created Next.js App Router project with Tailwind.
-- Installed Solana wallet adapter, web3.js, SPL token, and Supabase client.
-- Inspected official/recommended repo options for Solana wallet patterns.
+- Confirmed git worktree clean before payment work.
+- Confirmed GitHub repo `0xdblok/racete-web3-racer` exists and `main` is pushed.
+- Confirmed `.env.local` and `/root/racete-secrets.env` are untracked; only `.env.example` is committed.
+- Confirmed Vercel production env names exist for Supabase, Solana RPC, token mint/decimals, treasury, and buy URL.
+- Added config-driven Race Cash packs.
+- Added `/api/payments/create-intent` for backend-priced token payment intents.
+- Added `/api/payments/confirm` with SPL transfer verification and purchased Race Cash accounting.
+- Added frontend Race Cash shop with wallet SPL `TransferChecked` to treasury ATA.
 
 Next task:
-- Wire wallet connect to `/api/player/init`, token balance lookup, balances, and garage.
+- Deploy payment foundation and test with a real token mint/treasury once the Pump.fun token exists.
 
 Important files:
 - `src/components/WalletGameDashboard.tsx`
-- `src/components/SolanaWalletProvider.tsx`
-- `src/app/api/player/init/route.ts`
-- `src/config/cars.ts`
+- `src/app/api/payments/create-intent/route.ts`
+- `src/app/api/payments/confirm/route.ts`
+- `src/lib/solana-payments.ts`
+- `src/config/economy.ts`
+- `src/lib/env.ts`
+- `src/lib/server-env.ts`
 - `supabase/schema.sql`
 
 Open blockers:
-- Real Supabase env values and Pump.fun token mint/treasury must be configured before live testing against Supabase/Solana.
+- Current token mint is still placeholder until the real Pump.fun SPL token is created.
+- End-to-end successful payment requires wallet with the real token and treasury ATA creation/payment on-chain.

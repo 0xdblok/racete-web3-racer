@@ -2,25 +2,48 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { PublicKey } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { PublicKey, Transaction } from "@solana/web3.js";
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync,
+} from "@solana/spl-token";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CARS } from "@/config/cars";
+import { RACE_CASH_PACKS, type RaceCashPack } from "@/config/economy";
 import { publicEnv } from "@/lib/env";
 import { formatNumber, shortWallet } from "@/lib/format";
 import type { PlayerInitResponse } from "@/types/game";
 
 type Status = "idle" | "loading" | "ready" | "error";
+type PaymentStatus = { tone: "normal" | "error" | "success"; message: string } | null;
+
+type CreateIntentResponse = {
+  paymentIntentId: string;
+  tokenAmount: number;
+  tokenMint: string;
+  treasuryWallet: string;
+  raceCashAmount: number;
+  packName: string;
+};
+
+function tokenAmountToRaw(amount: number, decimals: number) {
+  const [whole, fraction = ""] = String(amount).split(".");
+  const normalizedFraction = fraction.padEnd(decimals, "0").slice(0, decimals);
+  return BigInt(whole || "0") * BigInt(10) ** BigInt(decimals) + BigInt(normalizedFraction || "0");
+}
 
 export function WalletGameDashboard() {
   const { connection } = useConnection();
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, sendTransaction } = useWallet();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [state, setState] = useState<PlayerInitResponse | null>(null);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [tokenBalanceStatus, setTokenBalanceStatus] = useState("idle");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(null);
+  const [activePackId, setActivePackId] = useState<string | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
   const ownedCarIds = useMemo(() => new Set(state?.ownedCars.map((car) => car.car_id) || []), [state]);
@@ -70,6 +93,73 @@ export function WalletGameDashboard() {
     }
   }, [refreshTokenBalance, walletAddress]);
 
+  const buyRaceCashPack = useCallback(
+    async (pack: RaceCashPack) => {
+      if (!publicKey || !walletAddress) return;
+      if (!publicEnv.tokenMint || !publicEnv.treasuryWallet) {
+        setPaymentStatus({ tone: "error", message: "Token mint or treasury wallet is not configured." });
+        return;
+      }
+      if (tokenBalance < pack.tokenAmount) {
+        setPaymentStatus({ tone: "error", message: `Not enough token balance for ${pack.name}.` });
+        return;
+      }
+
+      setActivePackId(pack.id);
+      setPaymentStatus({ tone: "normal", message: `Creating payment intent for ${pack.name}...` });
+
+      try {
+        const intentRes = await fetch("/api/payments/create-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletAddress,
+            actionType: "buy_race_cash",
+            itemId: pack.id,
+          }),
+        });
+        const intent = (await intentRes.json()) as CreateIntentResponse & { error?: string };
+        if (!intentRes.ok) throw new Error(intent.error || "Create payment intent failed");
+
+        setPaymentStatus({ tone: "normal", message: "Open your wallet and approve the SPL token transfer..." });
+
+        const mint = new PublicKey(intent.tokenMint);
+        const treasury = new PublicKey(intent.treasuryWallet);
+        const sourceAta = getAssociatedTokenAddressSync(mint, publicKey);
+        const treasuryAta = getAssociatedTokenAddressSync(mint, treasury);
+        const rawAmount = tokenAmountToRaw(intent.tokenAmount, publicEnv.tokenDecimals);
+
+        const transaction = new Transaction().add(
+          createAssociatedTokenAccountIdempotentInstruction(publicKey, treasuryAta, treasury, mint),
+          createTransferCheckedInstruction(sourceAta, mint, treasuryAta, publicKey, rawAmount, publicEnv.tokenDecimals),
+        );
+
+        const signature = await sendTransaction(transaction, connection);
+        setPaymentStatus({ tone: "normal", message: "Transaction sent. Waiting for confirmation..." });
+
+        const latestBlockhash = await connection.getLatestBlockhash("confirmed");
+        await connection.confirmTransaction({ signature, ...latestBlockhash }, "confirmed");
+
+        setPaymentStatus({ tone: "normal", message: "Verifying payment on backend..." });
+        const confirmRes = await fetch("/api/payments/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentIntentId: intent.paymentIntentId, signature }),
+        });
+        const confirmation = await confirmRes.json();
+        if (!confirmRes.ok) throw new Error(confirmation.error || "Payment verification failed");
+
+        setPaymentStatus({ tone: "success", message: `${intent.packName} confirmed. Added ${formatNumber(intent.raceCashAmount)} purchased Race Cash.` });
+        await initPlayer();
+      } catch (err) {
+        setPaymentStatus({ tone: "error", message: err instanceof Error ? err.message : "Payment failed" });
+      } finally {
+        setActivePackId(null);
+      }
+    },
+    [connection, initPlayer, publicKey, sendTransaction, tokenBalance, walletAddress],
+  );
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (connected && walletAddress) void initPlayer();
@@ -77,6 +167,7 @@ export function WalletGameDashboard() {
         setState(null);
         setStatus("idle");
         setTokenBalance(0);
+        setPaymentStatus(null);
       }
     }, 0);
 
@@ -97,8 +188,8 @@ export function WalletGameDashboard() {
 
         <header className="rounded-[2rem] border border-fuchsia-400/25 bg-[radial-gradient(circle_at_top_left,#5b21b6,transparent_35%),linear-gradient(135deg,#10101a,#050509)] p-8 shadow-2xl shadow-fuchsia-950/40">
           <p className="text-sm font-bold uppercase tracking-[0.4em] text-lime-300">Web3 racing foundation</p>
-          <h1 className="mt-4 max-w-3xl text-5xl font-black leading-tight md:text-7xl">Connect wallet. Claim Street Rat. Build the garage.</h1>
-          <p className="mt-5 max-w-2xl text-lg text-white/70">Starter foundation: wallet identity, Supabase player profile, earned/purchased Race Cash split, Pump.fun SPL token balance, and six-car garage.</p>
+          <h1 className="mt-4 max-w-3xl text-5xl font-black leading-tight md:text-7xl">Connect wallet. Buy Race Cash. Build the garage.</h1>
+          <p className="mt-5 max-w-2xl text-lg text-white/70">Starter foundation: wallet identity, Supabase player profile, purchased/earned Race Cash split, verified SPL token payments, and six-car garage.</p>
         </header>
 
         {!connected && (
@@ -119,6 +210,39 @@ export function WalletGameDashboard() {
 
         {status === "loading" && <Panel>Creating/loading player profile and starter car...</Panel>}
         {error && <Panel tone="error">{error}</Panel>}
+        {paymentStatus && <Panel tone={paymentStatus.tone}>{paymentStatus.message}</Panel>}
+
+        {connected && (
+          <section className="rounded-[2rem] border border-lime-300/20 bg-lime-300/[0.04] p-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.3em] text-lime-300">Race Cash shop</p>
+                <h2 className="mt-2 text-3xl font-black">Buy Race Cash with token</h2>
+                <p className="mt-2 text-sm text-white/60">Purchased Race Cash is tracked separately and is not eligible for future cashout.</p>
+              </div>
+              <button onClick={() => void refreshTokenBalance()} className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10">Refresh token balance</button>
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {RACE_CASH_PACKS.map((pack) => (
+                <article key={pack.id} className="rounded-3xl border border-white/10 bg-black/30 p-5">
+                  <h3 className="text-xl font-black">{pack.name}</h3>
+                  <p className="mt-2 text-sm text-white/55">{pack.description}</p>
+                  <div className="mt-4 space-y-1 text-sm text-white/75">
+                    <p>Race Cash: <span className="font-bold text-lime-300">{formatNumber(pack.raceCashAmount)}</span></p>
+                    <p>Token cost: <span className="font-bold text-fuchsia-200">{formatNumber(pack.tokenAmount)}</span></p>
+                  </div>
+                  <button
+                    onClick={() => void buyRaceCashPack(pack)}
+                    disabled={activePackId !== null || status !== "ready"}
+                    className="mt-5 w-full rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {activePackId === pack.id ? "Processing..." : "Buy with token"}
+                  </button>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {CARS.map((car) => {
@@ -159,6 +283,12 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-function Panel({ children, tone = "normal" }: { children: React.ReactNode; tone?: "normal" | "error" }) {
-  return <div className={`rounded-3xl border p-5 ${tone === "error" ? "border-red-400/30 bg-red-500/10 text-red-100" : "border-white/10 bg-white/[0.04] text-white/70"}`}>{children}</div>;
+function Panel({ children, tone = "normal" }: { children: React.ReactNode; tone?: "normal" | "error" | "success" }) {
+  const className = tone === "error"
+    ? "border-red-400/30 bg-red-500/10 text-red-100"
+    : tone === "success"
+      ? "border-lime-300/30 bg-lime-300/10 text-lime-100"
+      : "border-white/10 bg-white/[0.04] text-white/70";
+
+  return <div className={`rounded-3xl border p-5 ${className}`}>{children}</div>;
 }
