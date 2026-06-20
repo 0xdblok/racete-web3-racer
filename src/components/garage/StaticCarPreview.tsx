@@ -31,10 +31,14 @@ function computeBox(scene: THREE.Group) {
 
 // Per-car overrides — only for models that need tuning.
 // No blanket rotation; cars use their natural model forward direction.
-const CAR_OVERRIDES: Record<string, { rotationY?: number; scaleMultiplier?: number }> = {};
+// Position offsets are ON TOP of automatic Box3 horizontal centering.
+const CAR_OVERRIDES: Record<
+  string,
+  { rotationY?: number; scaleMultiplier?: number; positionOffset?: [number, number, number] }
+> = {};
 
 // Scale overrides: match GarageShowroom3D for consistent preview sizing
-CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 1.8 };
+CAR_OVERRIDES["bavaro-sport"] = { scaleMultiplier: 2.2 };
 CAR_OVERRIDES["zephyr-z8"] = { scaleMultiplier: 1.3 };
 CAR_OVERRIDES["bavaro-m5"] = { scaleMultiplier: 1.3 };
 CAR_OVERRIDES["valor-gt"] = { scaleMultiplier: 1.3 };
@@ -47,6 +51,10 @@ CAR_OVERRIDES["volt-w6"] = { scaleMultiplier: 1.3 };
 CAR_OVERRIDES["furia-gt"] = { scaleMultiplier: 1.3 };
 CAR_OVERRIDES["nova-s1"] = { scaleMultiplier: 1.2 };
 CAR_OVERRIDES["toro-x"] = { scaleMultiplier: 1.2 };
+
+// Street Rat / Cybertruck: Box3 center may be offset — manual nudge if needed
+// Box3 auto-centering handles most; positionOffset is extra tuning
+CAR_OVERRIDES["street-rat"] = {};
 
 /* ------------------------------------------------------------------ */
 /*  Status type                                                        */
@@ -221,21 +229,21 @@ function StaticCanvas({
     <>
       <StatusLabel text="Loading 3D…" tone="yellow" />
       <Canvas
-        camera={{ position: [0, 1.5, 4.5], fov: 40 }}
+        camera={{ position: [0, 1.8, 3.8], fov: 48 }}
         gl={{ antialias: false }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={2.5} />
-        <directionalLight position={[0, 6, 6]} intensity={4.0} />
-        <directionalLight position={[-4, 3, -3]} intensity={2.0} />
-        <directionalLight position={[4, 2, -3]} intensity={1.5} />
-        <directionalLight position={[0, 2, -5]} intensity={2.5} />
-        <directionalLight position={[0, 2, 5]} intensity={1.5} />
+        <ambientLight intensity={3.0} />
+        <directionalLight position={[0, 6, 6]} intensity={5.0} />
+        <directionalLight position={[-4, 3, -3]} intensity={2.5} />
+        <directionalLight position={[4, 2, -3]} intensity={2.0} />
+        <directionalLight position={[0, 2, -5]} intensity={3.0} />
+        <directionalLight position={[0, 2, 5]} intensity={2.0} />
 
         {/* Light floor — lighter so dark cars stand out */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.25, 0]}>
           <planeGeometry args={[10, 10]} />
-          <meshStandardMaterial color="#2a2a38" roughness={0.5} />
+          <meshStandardMaterial color="#383844" roughness={0.45} />
         </mesh>
 
         <Suspense fallback={null}>
@@ -276,10 +284,14 @@ function NormalizedModel({
   const scale = TARGET_SIZE / box.maxDim;
   const finalScale = scale * (override.scaleMultiplier ?? 1);
   const rotationY = override.rotationY ?? 0;
-  const floorY = -box.center.y * finalScale + box.size.y * 0.5 * finalScale;
+
+  // Horizontal centering via Box3 (fixes Street Rat / off-pivot models)
+  const offsetX = -box.center.x * finalScale + (override.positionOffset?.[0] ?? 0);
+  const floorY = -box.center.y * finalScale + box.size.y * 0.5 * finalScale + (override.positionOffset?.[1] ?? 0);
+  const offsetZ = -box.center.z * finalScale + (override.positionOffset?.[2] ?? 0);
 
   return (
-    <group position={[0, floorY, 0]} scale={finalScale} rotation-y={rotationY}>
+    <group position={[offsetX, floorY, offsetZ]} scale={finalScale} rotation-y={rotationY}>
       <Clone object={gltf.scene} />
     </group>
   );
@@ -307,7 +319,7 @@ class CanvasErrorBoundary extends React.Component<
 
 function Silhouette2D({ car, accent }: { car: CarConfig; accent: string }) {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center px-4 bg-gradient-to-br from-zinc-800 to-zinc-900">
+    <div className="absolute inset-0 flex flex-col items-center justify-center px-4 bg-gradient-to-br from-zinc-700 to-zinc-800">
       <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
         <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
         <rect x="25" y="8" width="70" height="16" rx="6" fill={accent} />
@@ -359,7 +371,7 @@ function StatusLabel({
 /* ------------------------------------------------------------------ */
 
 const containerClass =
-  "h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-800 to-zinc-900 overflow-hidden relative";
+  "h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-700 to-zinc-800 overflow-hidden relative";
 
 function getAccent(carClass: string) {
   if (carClass === "S" || carClass === "A") return "#f97316";
