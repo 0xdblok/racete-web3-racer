@@ -1,25 +1,25 @@
 "use client";
 
-import React, { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import React, { Suspense, useMemo, useState } from "react";
+import { Canvas } from "@react-three/fiber";
 import { Clone, OrbitControls, Environment, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 
 const SHOWROOM_SLOTS: { carId: string; position: [number, number, number]; rotation: [number, number, number] }[] = [
-  { carId: "street-rat", position: [-8, 0, -3], rotation: [0, Math.PI * 0.15, 0] },
-  { carId: "bavaro-coupe", position: [-4.8, 0, -2.5], rotation: [0, Math.PI * 0.08, 0] },
-  { carId: "aurox-v10", position: [-1.6, 0, -2], rotation: [0, 0, 0] },
-  { carId: "sturm-rs", position: [1.6, 0, -2], rotation: [0, -Math.PI * 0.08, 0] },
-  { carId: "furia-gt", position: [4.8, 0, -2.5], rotation: [0, -Math.PI * 0.15, 0] },
-  { carId: "toro-x", position: [8, 0, -3], rotation: [0, -Math.PI * 0.2, 0] },
+  { carId: "street-rat", position: [-10, 0, 0], rotation: [0, 0.3, 0] },
+  { carId: "bavaro-coupe", position: [-6, 0, 0], rotation: [0, 0.15, 0] },
+  { carId: "aurox-v10", position: [-2, 0, 0], rotation: [0, 0, 0] },
+  { carId: "sturm-rs", position: [2, 0, 0], rotation: [0, -0.15, 0] },
+  { carId: "furia-gt", position: [6, 0, 0], rotation: [0, -0.3, 0] },
+  { carId: "toro-x", position: [10, 0, 0], rotation: [0, -0.4, 0] },
 ];
 
 const CAR_SHOWROOM_CONFIG: Record<string, { scale: number; positionOffset: [number, number, number]; rotationOffset: [number, number, number] }> = {
-  "street-rat": { scale: 0.55, positionOffset: [0, 0.25, 0], rotationOffset: [0, 0, 0] },
-  "bavaro-coupe": { scale: 1.4, positionOffset: [0, 0.05, 0], rotationOffset: [0, 0, 0] },
-  "furia-gt": { scale: 1.3, positionOffset: [0, 0.15, 0], rotationOffset: [0, 0, 0] },
-  "toro-x": { scale: 0.85, positionOffset: [0, 0.35, 0], rotationOffset: [0, 0, 0] },
+  "street-rat": { scale: 0.55, positionOffset: [0, 0.35, 0], rotationOffset: [0, 0, 0] },
+  "bavaro-coupe": { scale: 0.7, positionOffset: [0, 0.15, 0], rotationOffset: [0, 0, 0] },
+  "furia-gt": { scale: 0.7, positionOffset: [0, 0.2, 0], rotationOffset: [0, 0, 0] },
+  "toro-x": { scale: 0.65, positionOffset: [0, 0.4, 0], rotationOffset: [0, 0, 0] },
 };
 
 function isModelAvailable(car: CarConfig): boolean {
@@ -32,32 +32,42 @@ export function GarageShowroom({
   selectedCarId,
   focusedCarId,
   onCarClick,
-  devToolsEnabled,
 }: {
   cars: CarConfig[];
   ownedCarIds: Set<string>;
   selectedCarId: string | null;
   focusedCarId: string | null;
   onCarClick: (carId: string) => void;
-  devToolsEnabled: boolean;
 }) {
   return (
     <div className="h-full w-full">
-      <Canvas shadows camera={{ position: [0, 3, 10], fov: 50 }} gl={{ antialias: true, alpha: false }} style={{ background: "#0a0a0f" }}>
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[10, 12, 8]} intensity={1.5} castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
-        <directionalLight position={[-8, 8, -6]} intensity={0.6} />
-        <pointLight position={[0, 6, 0]} intensity={0.8} color="#f0e6ff" />
-        <pointLight position={[-8, 4, -3]} intensity={0.4} color="#d946ef" />
-        <pointLight position={[8, 4, -3]} intensity={0.4} color="#d946ef" />
+      <Canvas
+        shadows
+        camera={{ position: [0, 5, 20], fov: 65 }}
+        gl={{ antialias: true, alpha: false }}
+        style={{ background: "#111118" }}
+      >
+        {/* Bright ambient light so everything is visible */}
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[0, 15, 10]} intensity={2.5} castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
+        <directionalLight position={[-15, 10, -5]} intensity={1.2} />
+        <directionalLight position={[15, 10, -5]} intensity={1.2} />
+        <pointLight position={[0, 6, 5]} intensity={2} color="#ffffff" />
+
         <Suspense fallback={null}>
           <Environment preset="city" />
         </Suspense>
 
-        {/* Floor */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-          <planeGeometry args={[40, 20]} />
-          <meshStandardMaterial color="#0f0f14" roughness={0.6} metalness={0.3} />
+        {/* Floor - brighter */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
+          <planeGeometry args={[50, 25]} />
+          <meshStandardMaterial color="#1a1a2e" roughness={0.4} metalness={0.5} />
+        </mesh>
+
+        {/* Back wall for depth */}
+        <mesh position={[0, 4, -8]} receiveShadow>
+          <planeGeometry args={[50, 10]} />
+          <meshStandardMaterial color="#16162a" roughness={0.5} metalness={0.4} />
         </mesh>
 
         {/* Showroom grid lines */}
@@ -80,7 +90,6 @@ export function GarageShowroom({
               selected={selected}
               focused={focused}
               onClick={() => onCarClick(car.id)}
-              devToolsEnabled={devToolsEnabled}
             />
           );
         })}
@@ -88,11 +97,11 @@ export function GarageShowroom({
         <OrbitControls
           enablePan={true}
           enableZoom={true}
-          minDistance={4}
-          maxDistance={20}
+          minDistance={5}
+          maxDistance={40}
           maxPolarAngle={Math.PI / 2.1}
-          minPolarAngle={0.2}
-          target={[0, 1, -2]}
+          minPolarAngle={0.3}
+          target={[0, 1.2, 0]}
         />
       </Canvas>
     </div>
@@ -107,7 +116,6 @@ function CarSlot({
   selected,
   focused,
   onClick,
-  devToolsEnabled,
 }: {
   car: CarConfig;
   position: [number, number, number];
@@ -116,28 +124,18 @@ function CarSlot({
   selected: boolean;
   focused: boolean;
   onClick: () => void;
-  devToolsEnabled: boolean;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.15;
-    }
-  });
-
   const hasModel = isModelAvailable(car);
   const config = CAR_SHOWROOM_CONFIG[car.id];
-  const scale = config?.scale ?? 1;
-  const posOffset = config?.positionOffset ?? [0, 0, 0];
+  const scale = config?.scale ?? 0.7;
+  const posOffset = config?.positionOffset ?? [0, 0.2, 0];
   const rotOffset = config?.rotationOffset ?? [0, 0, 0];
 
   const statusColor = selected ? "#bef264" : owned ? "#d946ef" : "#71717a";
 
   return (
     <group
-      ref={groupRef}
       position={position}
       rotation={rotation}
       onClick={(e) => {
@@ -155,21 +153,27 @@ function CarSlot({
       }}
     >
       {/* Platform */}
-      <mesh position={[0, 0.02, 0]} receiveShadow>
-        <cylinderGeometry args={[1.6, 1.8, 0.04, 32]} />
+      <mesh position={[0, 0.01, 0]} receiveShadow>
+        <cylinderGeometry args={[2.2, 2.4, 0.06, 32]} />
         <meshStandardMaterial
-          color={focused ? "#2a2a35" : hovered ? "#1e1e28" : "#14141a"}
-          roughness={0.4}
-          metalness={0.6}
+          color={focused ? "#3a3a45" : hovered ? "#2a2a35" : "#1c1c28"}
+          roughness={0.3}
+          metalness={0.7}
           emissive={focused ? statusColor : "#000000"}
-          emissiveIntensity={focused ? 0.3 : 0}
+          emissiveIntensity={focused ? 0.25 : 0}
         />
       </mesh>
 
       {/* Status ring */}
-      <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[1.65, 1.75, 64]} />
-        <meshBasicMaterial color={statusColor} transparent opacity={focused ? 0.8 : hovered ? 0.5 : 0.25} />
+      <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.25, 2.35, 64]} />
+        <meshBasicMaterial color={statusColor} transparent opacity={focused ? 0.9 : hovered ? 0.6 : 0.3} />
+      </mesh>
+
+      {/* Spotlight cone */}
+      <mesh position={[0, 4, 0]}>
+        <cylinderGeometry args={[0.3, 2.8, 4, 16, 1, true]} />
+        <meshBasicMaterial color={focused ? statusColor : "#ffffff"} transparent opacity={focused ? 0.12 : hovered ? 0.06 : 0.02} depthWrite={false} />
       </mesh>
 
       {/* Car model or fallback */}
@@ -185,19 +189,15 @@ function CarSlot({
         )}
       </group>
 
-      {/* Label */}
-      <Html position={[0, 2.8, 0]} center distanceFactor={8}>
-        <div className="pointer-events-none select-none text-center">
-          <div className={`rounded-full px-3 py-1 text-xs font-black ${selected ? "bg-lime-300 text-black" : owned ? "bg-fuchsia-300 text-black" : "bg-white/10 text-white/70"}`}>
+      {/* Label - high above the car so it doesn't block it */}
+      <Html position={[0, 3.5, 0]} center distanceFactor={12}>
+        <div className="pointer-events-none select-none text-center whitespace-nowrap">
+          <div className={`rounded-full px-4 py-1.5 text-sm font-black ${selected ? "bg-lime-400 text-black" : owned ? "bg-fuchsia-400 text-black" : "bg-white/15 text-white/80"}`}>
             {car.name}
           </div>
+          <div className="mt-1 text-xs font-bold text-white/50">Class {car.class} · PR {car.basePowerRating}</div>
           {!hasModel && (
             <div className="mt-1 text-[10px] font-bold text-amber-300">Model not uploaded yet</div>
-          )}
-          {devToolsEnabled && (
-            <div className="mt-1 text-[9px] text-white/40">
-              {car.id} · {hasModel ? "loaded" : "fallback"}
-            </div>
           )}
         </div>
       </Html>
@@ -243,11 +243,11 @@ function FallbackMesh({ car }: { car: CarConfig }) {
 function ShowroomGrid() {
   const lines = useMemo(() => {
     const result: { start: [number, number, number]; end: [number, number, number] }[] = [];
-    for (let x = -12; x <= 12; x += 2) {
-      result.push({ start: [x, 0.01, -6], end: [x, 0.01, 2] });
+    for (let x = -12; x <= 12; x += 2.5) {
+      result.push({ start: [x, 0.01, -4], end: [x, 0.01, 4] });
     }
-    for (let z = -6; z <= 2; z += 2) {
-      result.push({ start: [-12, 0.01, z], end: [12, 0.01, z] });
+    for (let z = -4; z <= 4; z += 2) {
+      result.push({ start: [-12.5, 0.01, z], end: [12.5, 0.01, z] });
     }
     return result;
   }, []);
@@ -260,7 +260,7 @@ function ShowroomGrid() {
             new THREE.Vector3(...line.start),
             new THREE.Vector3(...line.end),
           ]),
-          new THREE.LineBasicMaterial({ color: "#1a1a24" })
+          new THREE.LineBasicMaterial({ color: "#25253a" })
         )} />
       ))}
     </group>

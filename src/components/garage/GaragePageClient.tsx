@@ -433,7 +433,6 @@ export function GaragePageClient() {
           selectedCarId={selectedCarId}
           focusedCarId={focusedCarId}
           onCarClick={setFocusedCarId}
-          devToolsEnabled={devToolsEnabled}
         />
       </div>
 
