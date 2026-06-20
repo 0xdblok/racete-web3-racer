@@ -1,11 +1,18 @@
 "use client";
 
 import React, { useMemo } from "react";
+import {
+  getGuardrailDebugLines,
+  getWorldBoundDebugLines,
+} from "./track-collisions";
 
 /* ================================================================== */
 /*  RaceMap — Procedural neon night racing circuit                      */
 /*  2000×2000 playable area, closed-loop track with environment props   */
 /* ================================================================== */
+
+/** Set true to show collision wireframes in dev */
+const SHOW_COLLISION_DEBUG = true;
 
 /* ── Track path (waypoints defining the circuit) ── */
 // Circuit goes clockwise: start at z=0, go north, east, south, return west
@@ -67,6 +74,9 @@ export function RaceMap() {
 
       {/* World boundary walls */}
       <WorldBounds />
+
+      {/* Collision debug wireframes (dev) */}
+      {SHOW_COLLISION_DEBUG && <CollisionDebug />}
     </group>
   );
 }
@@ -561,5 +571,60 @@ function Wall({
       <boxGeometry args={size} />
       <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} opacity={opacity} transparent roughness={0.5} />
     </mesh>
+  );
+}
+
+/* ================================================================== */
+/*  Collision debug wireframes (dev)                                    */
+/* ================================================================== */
+
+function CollisionDebug() {
+  const guardrailLines = useMemo(() => getGuardrailDebugLines(), []);
+  const worldLines = useMemo(() => getWorldBoundDebugLines(), []);
+
+  return (
+    <group>
+      {/* Guardrail collision boundaries */}
+      {guardrailLines.map((line, i) => {
+        const dx = line.x2 - line.x1;
+        const dz = line.z2 - line.z1;
+        const len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 0.01) return null;
+        const cx = (line.x1 + line.x2) / 2;
+        const cz = (line.z1 + line.z2) / 2;
+        const angle = Math.atan2(dx, dz);
+        return (
+          <mesh
+            key={`g-debug-${i}`}
+            position={[cx, 0.4, cz]}
+            rotation-y={angle}
+          >
+            <boxGeometry args={[0.05, 0.05, len]} />
+            <meshBasicMaterial color="#ff4444" opacity={0.8} transparent />
+          </mesh>
+        );
+      })}
+
+      {/* World boundary debug */}
+      {worldLines.map((line, i) => {
+        const dx = line.x2 - line.x1;
+        const dz = line.z2 - line.z1;
+        const len = Math.sqrt(dx * dx + dz * dz);
+        if (len < 0.01) return null;
+        const cx = (line.x1 + line.x2) / 2;
+        const cz = (line.z1 + line.z2) / 2;
+        const angle = Math.atan2(dx, dz);
+        return (
+          <mesh
+            key={`w-debug-${i}`}
+            position={[cx, 0.4, cz]}
+            rotation-y={angle}
+          >
+            <boxGeometry args={[0.08, 0.08, len]} />
+            <meshBasicMaterial color="#ff8800" opacity={0.7} transparent />
+          </mesh>
+        );
+      })}
+    </group>
   );
 }

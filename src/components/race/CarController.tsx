@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { CarGameplayStats } from "@/lib/car-gameplay-stats";
 import { useKeyboard } from "@/components/race/useKeyboard";
+import { resolveTrackCollision, SPAWN_POSITION, SPAWN_ROTATION_Y } from "@/components/race/track-collisions";
 
 /* ------------------------------------------------------------------ */
 /*  Arcade car controller — smoothed steering, max yaw rate, drift lerp */
@@ -39,7 +40,7 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
   // Physics state
   const speed = useRef(0);
   const rotation = useRef(0);       // y-rotation (radians)
-  const worldPos = useRef(new THREE.Vector3(0, 0.3, -80)); // RaceMap start line
+  const worldPos = useRef(SPAWN_POSITION.clone()); // track start line
 
   // Smoothed steering
   const currentSteer = useRef(0);   // lerped steering (-1..1)
@@ -68,11 +69,11 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     // --- Reset ---
     if (resetKey) {
       speed.current = 0;
-      rotation.current = 0;
+      rotation.current = SPAWN_ROTATION_Y;
       currentSteer.current = 0;
       driftAngle.current = 0;
       driftFactor.current = 0;
-      worldPos.current.set(0, 0.3, -80); // reset to RaceMap start line
+      worldPos.current.copy(SPAWN_POSITION);
       nitroFuel.current = stats.nitroDuration;
       nitroOnCooldown.current = false;
       nitroCooldownRemaining.current = 0;
@@ -207,9 +208,27 @@ export function CarController({ stats, children, carRef }: CarControllerProps) {
     );
     worldPos.current.add(forward.clone().multiplyScalar(speed.current * dt));
 
-    // --- Clamp bounds (1000×1000 arena) ---
-    worldPos.current.x = THREE.MathUtils.clamp(worldPos.current.x, -490, 490);
-    worldPos.current.z = THREE.MathUtils.clamp(worldPos.current.z, -490, 490);
+    // --- Track collision resolution (guardrails, off-track, world bounds) ---
+    const velVec = forward.clone().multiplyScalar(speed.current);
+    const result = resolveTrackCollision(worldPos.current, velVec);
+
+    // Apply position pushback
+    worldPos.current.x = result.position[0];
+    worldPos.current.z = result.position[1];
+
+    // Apply terrain speed reduction (off-road / shoulder)
+    speed.current *= result.info.terrainSpeedMult;
+
+    // If guardrail hit, slide along wall by aligning with resolved velocity
+    if (result.info.hitGuardrail) {
+      const rvx = result.velocity[0];
+      const rvz = result.velocity[1];
+      const rSpeed = Math.sqrt(rvx * rvx + rvz * rvz);
+      if (rSpeed > 0.5) {
+        rotation.current = Math.atan2(rvx, rvz);
+        speed.current = rSpeed * Math.sign(speed.current);
+      }
+    }
 
     // --- Update group transform ---
     if (groupRef.current) {
