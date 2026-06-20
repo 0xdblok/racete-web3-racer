@@ -7,6 +7,11 @@ import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
 
+/** Convert internal game speed to display km/h.
+ *  Internal maxSpeed ranges ~30 (starter) to ~130 (Bugatti).
+ *  Multiply by ~2.5 to get believable km/h: 75 → 325 km/h. */
+const SPEED_TO_KMH = 2.5;
+
 type RaceHudProps = {
   walletAddress: string;
   car: CarConfig;
@@ -36,7 +41,8 @@ export function RaceHud({
     [car, selectedCar],
   );
 
-  const currentSpeed = telemetry ? Math.round(Math.abs(telemetry.speed)) : 0;
+  const currentSpeedRaw = telemetry ? Math.abs(telemetry.speed) : 0;
+  const currentSpeed = Math.round(currentSpeedRaw * SPEED_TO_KMH);
   const speedPct = telemetry ? Math.min(Math.abs(telemetry.speed) / stats.maxSpeed, 1) : 0;
 
   return (
@@ -68,7 +74,7 @@ export function RaceHud({
           <div className="border-t border-white/10 pt-2">
             <div className="flex justify-between items-end mb-1">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">Speed</span>
-              <span className="text-lg font-black text-lime-300">{currentSpeed}</span>
+              <span className="text-lg font-black text-lime-300">{currentSpeed} <span className="text-xs text-lime-300/60">km/h</span></span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
               <div
@@ -78,7 +84,7 @@ export function RaceHud({
             </div>
             {telemetry && (
               <div className="flex justify-between mt-1 text-[9px] text-white/40">
-                <span>Max: {stats.maxSpeed}</span>
+                <span>Max: {Math.round(stats.maxSpeed * SPEED_TO_KMH)} km/h</span>
                 <span>
                   {telemetry.drifting ? "🌀 Drift" : telemetry.nitroCooldown ? "⏳ Nitro CD" : telemetry.nitroFuel > 0 ? "⚡ Nitro ready" : ""}
                 </span>

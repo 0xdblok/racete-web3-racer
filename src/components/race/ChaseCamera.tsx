@@ -5,11 +5,27 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 /* ------------------------------------------------------------------ */
-/*  Chase camera — follows car, smooth lerp, speed FOV, nitro shake    */
+/*  Classic third-person racing camera                                 */
+/*  Behind the car, looking forward over the vehicle, smooth follow     */
 /*  Mouse wheel / +/- keys zoom support                                */
 /* ------------------------------------------------------------------ */
 
-type CarState = {
+/* ── Tuning constants ── */
+const BASE_DISTANCE = 6;        // default distance behind car
+const BASE_HEIGHT = 2.8;        // camera height above car
+const LOOK_AHEAD = 8;           // how far ahead of car to look (meters)
+const FOLLOW_SMOOTHNESS = 4;    // position catch-up speed
+const ROTATION_SMOOTHNESS = 5;  // lookAt catch-up speed
+const SPEED_PULLBACK = 4;       // extra distance added at max speed
+const NITRO_PULLBACK = 2;       // extra distance during nitro
+const MIN_ZOOM = 2.5;           // closest zoom (mouse wheel)
+const MAX_ZOOM = 50;            // farthest zoom
+const ZOOM_SPEED = 0.6;         // wheel sensitivity
+const DRIFT_OFFSET = 1.2;       // how far camera shifts sideways in drift
+const NITRO_SHAKE = 0.12;       // nitro camera shake intensity
+
+/* Export the type so the controller can use it */
+export type ChaseCarState = {
   position: THREE.Vector3;
   rotation: THREE.Euler;
   speed: number;
@@ -18,33 +34,33 @@ type CarState = {
 } | null;
 
 type ChaseCameraProps = {
-  carState: React.MutableRefObject<CarState>;
-  /** Base distance behind car */
+  carState: React.MutableRefObject<ChaseCarState>;
+  /** Base distance behind car (overridden by wheel zoom after init) */
   distance?: number;
   /** Height above car */
   height?: number;
-  /** How fast the camera catches up (higher = snappier) */
+  /** Position catch-up speed */
   smoothness?: number;
-  /** Zoom limits */
   minDistance?: number;
   maxDistance?: number;
-  /** Zoom speed (wheel sensitivity) */
   zoomSpeed?: number;
 };
 
 export function ChaseCamera({
   carState,
-  distance = 7,
-  height = 3.5,
-  smoothness = 3,
-  minDistance = 3,
-  maxDistance = 25,
-  zoomSpeed = 0.5,
+  distance = BASE_DISTANCE,
+  height = BASE_HEIGHT,
+  smoothness = FOLLOW_SMOOTHNESS,
+  minDistance = MIN_ZOOM,
+  maxDistance = MAX_ZOOM,
+  zoomSpeed = ZOOM_SPEED,
 }: ChaseCameraProps) {
   const { camera, gl } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
-  const currentLookAt = useRef(new THREE.Vector3(0, 1, 0));
-  const shakeOffset = useRef(new THREE.Vector3());
+
+  // Smooth camera state
+  const currentPos = useRef(new THREE.Vector3(0, height, distance));
+  const currentLookAt = useRef(new THREE.Vector3(0, 0.8, 5));
   const baseFov = useRef(cam.fov);
   const zoomDistance = useRef(distance);
 
@@ -81,49 +97,63 @@ export function ChaseCamera({
     const car = carState.current;
     const dt = Math.min(delta, 0.1);
 
-    const desiredLookAt = new THREE.Vector3(0, 1, 0);
-    const desiredPos = new THREE.Vector3(0, height, zoomDistance.current);
+    // Default: look forward and down from origin
+    let desiredPos = new THREE.Vector3(0, height, zoomDistance.current);
+    let desiredLookAt = new THREE.Vector3(0, 0.8, 5);
 
     if (car) {
       const carForward = new THREE.Vector3(0, 0, 1).applyEuler(car.rotation);
-      const speedFactor = THREE.MathUtils.clamp(Math.abs(car.speed) / 200, 0, 1);
-      const dynamicDist = zoomDistance.current + speedFactor * 3;
+      const absSpeed = Math.abs(car.speed);
+      const speedFactor = THREE.MathUtils.clamp(absSpeed / 130, 0, 1); // 130 = reference max speed for camera
+
+      // Distance: base + speed pullback + nitro pullback
+      const dynamicDist =
+        zoomDistance.current +
+        speedFactor * SPEED_PULLBACK +
+        (car.nitroActive ? NITRO_PULLBACK : 0);
+
+      // Position: behind car
       const behindCar = carForward.clone().multiplyScalar(-dynamicDist);
+      desiredPos = car.position.clone().add(behindCar).add(new THREE.Vector3(0, height, 0));
 
-      desiredPos.copy(car.position).add(behindCar).add(new THREE.Vector3(0, height, 0));
-      desiredLookAt.copy(car.position).add(carForward.clone().multiplyScalar(4));
+      // Look at: ahead of the car
+      desiredLookAt = car.position.clone().add(carForward.clone().multiplyScalar(LOOK_AHEAD));
 
-      // Drift camera offset
+      // Drift: shift camera sideways
       if (car.drifting) {
         const carRight = new THREE.Vector3(1, 0, 0).applyEuler(car.rotation);
-        desiredPos.add(carRight.clone().multiplyScalar(1.5));
-        desiredLookAt.add(carRight.clone().multiplyScalar(1.5));
+        desiredPos.add(carRight.clone().multiplyScalar(DRIFT_OFFSET));
+        desiredLookAt.add(carRight.clone().multiplyScalar(DRIFT_OFFSET * 0.7));
       }
 
       // Nitro shake
-      shakeOffset.current.set(0, 0, 0);
       if (car.nitroActive) {
-        shakeOffset.current.set(
-          (Math.random() - 0.5) * 0.15,
-          (Math.random() - 0.5) * 0.1,
-          (Math.random() - 0.5) * 0.15,
+        desiredPos.add(
+          new THREE.Vector3(
+            (Math.random() - 0.5) * NITRO_SHAKE * 2,
+            (Math.random() - 0.5) * NITRO_SHAKE,
+            (Math.random() - 0.5) * NITRO_SHAKE * 2,
+          ),
         );
-        desiredPos.add(shakeOffset.current);
       }
 
-      // Speed-based FOV
-      const targetFov = baseFov.current + speedFactor * 12 + (car.nitroActive ? 4 : 0);
+      // Speed FOV
+      const targetFov = baseFov.current + speedFactor * 10 + (car.nitroActive ? 5 : 0);
       // eslint-disable-next-line
       cam.fov += (targetFov - cam.fov) * 4 * dt;
     }
 
-    // Smooth lerp (frame-rate independent)
-    const t = 1 - Math.exp(-smoothness * dt);
-    currentLookAt.current.lerp(desiredLookAt, t);
-    camera.position.lerp(desiredPos, t);
+    // Smooth position
+    const posT = 1 - Math.exp(-smoothness * dt);
+    currentPos.current.lerp(desiredPos, posT);
+
+    // Smooth lookAt (separate speed so it doesn't lag too much)
+    const lookT = 1 - Math.exp(-ROTATION_SMOOTHNESS * dt);
+    currentLookAt.current.lerp(desiredLookAt, lookT);
+
+    camera.position.copy(currentPos.current);
     camera.lookAt(currentLookAt.current);
   });
 
-  // Inline zoom indicator — zoom state is managed internally via ref
   return null;
 }

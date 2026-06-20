@@ -56,16 +56,23 @@ export function resolveCarGameplayStats(
   const handling = ownedCar.handling_level;
 
   /* ---- base conversions (car config 0–100 → driving units) ---- */
-  let maxSpeed = s.speed * 2;
-  let accelForce = s.acceleration * 0.35;
-  let brakeF = s.handling * 0.4;
-  const reverseSpeed = 18;
+  // Speed tuning: s.speed is 0-100 (real-world inspired). Multiply by SCALE
+  // to get game units. Lower = more controllable, Higher = more extreme.
+  const MAX_SPEED_SCALE = 1.3;      // was 2.0 — reduced for controllable feel
+  const ACCELERATION_SCALE = 0.22;  // was 0.35
+  const NITRO_POWER_SCALE = 0.35;   // was 0.45
+  const STEERING_SCALE = 0.22;      // was 0.32
 
-  let steer = s.handling * 0.32;
+  let maxSpeed = s.speed * MAX_SPEED_SCALE;
+  let accelForce = s.acceleration * ACCELERATION_SCALE;
+  let brakeF = s.handling * 0.4;
+  const reverseSpeed = 15;
+
+  let steer = s.handling * STEERING_SCALE;
   let grip = s.handling * 0.55;
   let drift = (100 - s.handling) * 0.12;
 
-  let nitroPwr = s.nitro * 0.45;
+  let nitroPwr = s.nitro * NITRO_POWER_SCALE;
   let nitroDur = 2 + s.nitro * 0.06;
   let nitroCd = 10 - s.nitro * 0.07;
 

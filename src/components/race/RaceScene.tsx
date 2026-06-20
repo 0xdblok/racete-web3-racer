@@ -3,13 +3,12 @@
 import { useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
-import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";
 import { resolveCarGameplayStats } from "@/lib/car-gameplay-stats";
 import { CarController } from "@/components/race/CarController";
-import { ChaseCamera } from "@/components/race/ChaseCamera";
+import { ChaseCamera, type ChaseCarState } from "@/components/race/ChaseCamera";
 import { CarModel } from "@/components/race/CarModel";
 import { TestTrack } from "@/components/race/TestTrack";
 
@@ -17,13 +16,8 @@ import { TestTrack } from "@/components/race/TestTrack";
 /*  Car state type (shared between controller and camera)              */
 /* ------------------------------------------------------------------ */
 
-export type CarState = {
-  position: THREE.Vector3;
-  rotation: THREE.Euler;
-  speed: number;
-  drifting: boolean;
-  nitroActive: boolean;
-};
+export type CarState = ChaseCarState extends infer T ? T : never;
+// Alias — keep CarState name for backward compat with RacePageClient
 
 /* ------------------------------------------------------------------ */
 /*  RaceScene                                                          */
@@ -60,8 +54,8 @@ export function RaceScene({ car, selectedCar, carRef }: RaceSceneProps) {
           <CarModel car={car} selectedCar={selectedCar} gameplayStats={gameplayStats} isDriving />
         </CarController>
 
-        {/* Chase camera follows the car */}
-        <ChaseCamera carState={activeCarRef} distance={7} height={3.5} smoothness={3} minDistance={3} maxDistance={60} />
+        {/* Chase camera follows the car — uses tuned defaults */}
+        <ChaseCamera carState={activeCarRef} />
 
         <Environment preset="night" />
       </Canvas>
