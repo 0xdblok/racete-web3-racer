@@ -1,30 +1,21 @@
 # Active Context
 
-Current milestone: Prototype Sketchfab real-name asset mapping
+Current milestone: Sketchfab realistic car asset download
 
 Completed:
-- Updated asset docs to keep real Sketchfab model/brand names in prototype/test mode.
-- Final prototype mapping:
-  - Street Rat → Tesla Cybertruck
-  - Bavaro Coupe → BMW M4 Competition
-  - Aurox V10 → Audi e-tron GT quattro 2022
-  - Sturm RS → Bugatti Chiron Pur Sport 2021
-  - Furia GT → Ferrari SF90 Spider 2021
-  - Toro X → Lamborghini Urus SDC Carbone Edition
-- Kept existing fictional DB/UI car names unchanged for now.
-- Kept fallback mesh path unchanged for missing GLB files.
+- Downloaded 4 Sketchfab assets via authenticated API:
+  - Tesla Cybertruck → street-rat/scene.gltf (420K)
+  - BMW M4 Competition → bavaro-coupe/scene.gltf (14M)
+  - Ferrari SF90 Spider 2021 → furia-gt/scene.gltf (19M)
+  - Lamborghini Urus SDC Carbone Edition → toro-x/scene.gltf (30M)
+- Fixed TypeScript type conflict by removing @types/web package.
+- Updated car config modelUrl paths to glTF packages.
+- Updated docs/assets.md and public/models/cars/README.md.
 
-Missing GLB files:
-- `public/models/cars/street-rat.glb`
-- `public/models/cars/bavaro-coupe.glb`
-- `public/models/cars/aurox-v10.glb`
-- `public/models/cars/sturm-rs.glb`
-- `public/models/cars/furia-gt.glb`
-- `public/models/cars/toro-x.glb`
+Blocked assets:
+- Audi e-tron GT quattro 2022 (Editorial, not downloadable)
+- Bugatti Chiron Pur Sport 2021 (Editorial, not downloadable)
 
-Next task:
-- Add actual GLB files once downloaded/provided, then run race scene smoke test with real models.
-
-Important files:
-- `docs/assets.md`
-- `public/models/cars/README.md`
+Next:
+- Run local smoke test with a real downloaded model.
+- Commit, push, verify Vercel deployment.

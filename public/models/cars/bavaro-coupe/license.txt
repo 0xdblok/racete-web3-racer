@@ -1,0 +1,11 @@
+Model Information:
+* title:	Bmw m4 competition
+* source:	https://sketchfab.com/3d-models/bmw-m4-competition-6b4d1393bd7c437eb6fc37bf937d96b2
+* author:	RES1N (https://sketchfab.com/Resinnnn)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Bmw m4 competition" (https://sketchfab.com/3d-models/bmw-m4-competition-6b4d1393bd7c437eb6fc37bf937d96b2) by RES1N (https://sketchfab.com/Resinnnn) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
