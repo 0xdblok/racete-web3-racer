@@ -1,8 +1,9 @@
 "use client";
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Clone, useGLTF } from "@react-three/drei";
+import * as THREE from "three";
 import type { CarConfig } from "@/config/cars";
 import type { PlayerCar } from "@/types/game";
 import { useInViewport, tryAcquireCanvasSlot, releaseCanvasSlot } from "@/lib/useInViewport";
@@ -12,15 +13,53 @@ type CardPreviewProps = {
   ownedCar?: PlayerCar;
 };
 
-const SCALES: Record<string, number> = {
-  "bavaro-coupe": 0.06,
-  "toro-x": 0.85,
-  "street-rat": 0.55,
-  "furia-gt": 0.7,
+const hasModel = (car: CarConfig) => Boolean(car.modelUrl);
+
+/* ------------------------------------------------------------------ */
+/*  Per-car overrides (only needed when auto-fit isn't enough)         */
+/* ------------------------------------------------------------------ */
+
+type CarOverride = {
+  rotationY?: number;
+  scaleMultiplier?: number;
+  yOffset?: number;
 };
 
-function getScale(carId: string) { return SCALES[carId] ?? 1; }
-const hasModel = (car: CarConfig) => Boolean(car.modelUrl);
+const CAR_OVERRIDES: Record<string, CarOverride> = {
+  // bavaro-coupe model is huge (~160m) → auto-fit handles it
+  // but some models may need rotation tweaks
+  "bavaro-coupe": { rotationY: Math.PI },
+  "toro-x": { rotationY: Math.PI },
+  "furia-gt": { rotationY: Math.PI },
+  "nova-s1": { rotationY: Math.PI },
+  "bavaro-sport": { rotationY: Math.PI },
+  "zephyr-z8": { rotationY: Math.PI },
+  "bavaro-m5": { rotationY: Math.PI },
+  "toro-se": { rotationY: Math.PI },
+  "valor-gt": { rotationY: Math.PI },
+  "warp-x1": { rotationY: Math.PI },
+  "nova-spider": { rotationY: Math.PI },
+  "volt-w6": { rotationY: Math.PI },
+  "volt-c5": { rotationY: Math.PI },
+  "bavaro-cs": { rotationY: Math.PI },
+  "street-rat": { rotationY: Math.PI },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Auto-normalization: Box3 → center, scale, floor                    */
+/* ------------------------------------------------------------------ */
+
+const TARGET_SIZE = 3.0; // normalized max dimension in world units
+
+function computeBox(scene: THREE.Group): { center: THREE.Vector3; size: THREE.Vector3; maxDim: number } {
+  const box = new THREE.Box3().setFromObject(scene);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  return { center, size, maxDim };
+}
 
 /* ------------------------------------------------------------------ */
 /*  Canvas3D — isolated 3D preview (only mounted when slot available)  */
@@ -33,18 +72,102 @@ function Canvas3D({ modelUrl, carId, accent }: { modelUrl: string; carId: string
 
   return (
     <Canvas
-      camera={{ position: [0, 1.5, 4.5], fov: 40 }}
-      gl={{ antialias: false }}
+      camera={{ position: [0, 1.6, 5.2], fov: 38 }}
+      gl={{ antialias: true }}
       style={{ background: "transparent" }}
     >
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[3, 6, 4]} intensity={1.5} />
+      {/* Brighter 3-point lighting */}
+      <ambientLight intensity={1.2} />
+      <directionalLight position={[4, 5, 5]} intensity={2.0} />
+      <directionalLight position={[-3, 2, -2]} intensity={0.8} />
+      <directionalLight position={[0, 1, -4]} intensity={0.5} />
+
+      {/* Light floor to see dark cars */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.25, 0]} receiveShadow>
+        <planeGeometry args={[12, 12]} />
+        <meshStandardMaterial color="#1a1a20" roughness={0.6} metalness={0.1} />
+      </mesh>
+
       <Suspense fallback={<LoadingPlaceholder accent={accent} />}>
         <GltfBoundary fallback={<FallbackMesh accent={accent} />}>
-          <LoadedModel modelUrl={modelUrl} carId={carId} />
+          <NormalizedModel modelUrl={modelUrl} carId={carId} accent={accent} />
         </GltfBoundary>
       </Suspense>
     </Canvas>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  NormalizedModel — auto-fit + debug overlay                         */
+/* ------------------------------------------------------------------ */
+
+type NormalizeState =
+  | { status: "computing" }
+  | { status: "ready"; scale: number; maxDim: number; size: THREE.Vector3 }
+  | { status: "failed"; reason: string };
+
+function NormalizedModel({ modelUrl, carId, accent }: { modelUrl: string; carId: string; accent: string }) {
+  const gltf = useGLTF(modelUrl);
+  const [normalizeState, setNormalizeState] = useState<NormalizeState>({ status: "computing" });
+
+  const override = CAR_OVERRIDES[carId] ?? {};
+
+  useEffect(() => {
+    try {
+      // Clone scene to compute Box3 without modifying original
+      const clone = gltf.scene.clone(true);
+      const { center, maxDim } = computeBox(clone);
+
+      if (maxDim <= 0 || !isFinite(maxDim)) {
+        setNormalizeState({ status: "failed", reason: "Empty bounding box" });
+        return;
+      }
+
+      const scale = TARGET_SIZE / maxDim;
+      // Debug: log normalization for founder verification
+      console.debug(`[Normalize] ${carId}: maxDim=${maxDim.toFixed(2)}, scale=${scale.toFixed(4)}, rawScale=${scale.toFixed(4)}${override.scaleMultiplier ? `, multiplier=${override.scaleMultiplier}` : ""}`);
+      setNormalizeState({
+        status: "ready",
+        scale,
+        maxDim,
+        size: new THREE.Vector3(), // not needed for positioning, stored for debug
+      });
+    } catch (err) {
+      setNormalizeState({ status: "failed", reason: err instanceof Error ? err.message : "Box3 failed" });
+    }
+  }, [gltf]);
+
+  const box = useMemo(() => {
+    if (normalizeState.status !== "ready") return null;
+    return computeBox(gltf.scene);
+  }, [gltf, normalizeState]);
+
+  if (normalizeState.status === "failed") {
+    return <FallbackMesh accent={accent} />;
+  }
+
+  if (normalizeState.status === "computing" || !box) {
+    return <LoadingPlaceholder accent={accent} />;
+  }
+
+  const { scale } = normalizeState;
+  const finalScale = scale * (override.scaleMultiplier ?? 1);
+  const rotationY = override.rotationY ?? 0;
+  const yOffset = override.yOffset ?? 0;
+
+  // Floor the model: bottom of bounding box sits at y=0
+  const floorY = -box.center.y * finalScale + box.size.y * 0.5 * finalScale + yOffset;
+
+  return (
+    <group>
+      <group
+        position={[0, floorY, 0]}
+        scale={finalScale}
+        rotation-y={rotationY}
+      >
+        <Clone object={gltf.scene} />
+      </group>
+    </group>
   );
 }
 
@@ -53,7 +176,6 @@ function Canvas3D({ modelUrl, carId, accent }: { modelUrl: string; carId: string
 /* ------------------------------------------------------------------ */
 
 function CanvasSlot({ car, accent }: { car: CarConfig; accent: string }) {
-  // Try once on mount; never re-try for this component instance
   const acquired = useRef(false);
   const [, setMounted] = useState(false);
 
@@ -70,7 +192,6 @@ function CanvasSlot({ car, accent }: { car: CarConfig; accent: string }) {
   }, []);
 
   if (!acquired.current) {
-    // Couldn't get a WebGL slot — show fallback
     return <Silhouette car={car} />;
   }
 
@@ -115,7 +236,6 @@ export function LazyCarPreview({ car, ownedCar }: CardPreviewProps) {
   const [show3D, setShow3D] = useState(false);
   const accent = getAccent(car.class);
 
-  // No model → always 2D silhouette, no Canvas ever
   if (!hasModel(car)) {
     return (
       <div ref={ref} className="h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center">
@@ -128,7 +248,6 @@ export function LazyCarPreview({ car, ownedCar }: CardPreviewProps) {
   const shouldRenderCanvas = inView || show3D;
 
   if (!shouldRenderCanvas) {
-    // Out of viewport and not manually clicked → 2D silhouette
     return (
       <div ref={ref} className="h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
         <Silhouette car={car} />
@@ -142,7 +261,6 @@ export function LazyCarPreview({ car, ownedCar }: CardPreviewProps) {
     );
   }
 
-  // In viewport or clicked → try to render Canvas (with slot limiting)
   return (
     <div ref={ref} className="h-52 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
       <CanvasSlot car={car} accent={accent} />
@@ -151,7 +269,7 @@ export function LazyCarPreview({ car, ownedCar }: CardPreviewProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Sub-components (unchanged)                                         */
+/*  Sub-components                                                     */
 /* ------------------------------------------------------------------ */
 
 function Silhouette({ car }: { car: CarConfig }) {
@@ -167,16 +285,6 @@ function Silhouette({ car }: { car: CarConfig }) {
       <p className="mt-2 text-xs text-white/30 font-bold">{car.name}</p>
       <p className="text-[10px] text-white/20">Class {car.class}</p>
     </div>
-  );
-}
-
-function LoadedModel({ modelUrl, carId }: { modelUrl: string; carId: string }) {
-  const gltf = useGLTF(modelUrl);
-  const scale = getScale(carId);
-  return (
-    <group position={[0, 0.2, 0]} scale={scale} rotation-y={Math.PI}>
-      <Clone object={gltf.scene} />
-    </group>
   );
 }
 
