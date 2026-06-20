@@ -492,9 +492,6 @@ export function GaragePageClient() {
             return (
               <article key={car.id} className={`rounded-3xl border p-4 shadow-lg shadow-black/30 ${selected ? "border-lime-300/70 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
                 <LazyCarPreview car={car} ownedCar={ownedCar} />
-                {!car.modelUrl && (
-                  <p className="mt-2 text-center text-xs text-amber-200/80">Model not uploaded yet — showing fallback</p>
-                )}
                 <div className="mt-3 flex items-start justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-black">{car.name}</h2>

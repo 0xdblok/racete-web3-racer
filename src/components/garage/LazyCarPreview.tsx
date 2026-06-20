@@ -20,38 +20,67 @@ const SCALES: Record<string, number> = {
 };
 
 function getScale(carId: string) { return SCALES[carId] ?? 1; }
+const hasModel = (car: CarConfig) => Boolean(car.modelUrl);
 
 export function LazyCarPreview({ car, ownedCar }: CardPreviewProps) {
   const { ref, inView } = useInViewport();
   const [show3D, setShow3D] = useState(false);
-  const load3D = inView || show3D;
 
+  // No model → show 2D fallback immediately, no Canvas
+  if (!hasModel(car)) {
+    return (
+      <div ref={ref} className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative flex items-center justify-center">
+        <Silhouette car={car} />
+        <p className="absolute bottom-2 text-[10px] font-bold text-amber-300/80">Model not uploaded yet</p>
+      </div>
+    );
+  }
+
+  // Has model but not yet in viewport or clicked → 2D silhouette
+  if (!inView && !show3D) {
+    return (
+      <div ref={ref} className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
+        <Silhouette car={car} />
+        <button
+          onClick={() => setShow3D(true)}
+          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/10 cursor-pointer"
+        >
+          <span className="text-xs text-white/50 hover:text-white/80 font-bold">Load 3D</span>
+        </button>
+      </div>
+    );
+  }
+
+  // In viewport or clicked → render Canvas with 3D
   return (
     <div ref={ref} className="h-56 w-full rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
-      {load3D ? (
-        <Canvas camera={{ position: [0, 1.5, 4.5], fov: 40 }} gl={{ antialias: false }} style={{ background: "transparent" }}>
-          <ambientLight intensity={0.8} />
-          <directionalLight position={[3, 6, 4]} intensity={1.5} />
-          <Suspense fallback={<LoadingPlaceholder accent={getAccent(car.class)} />}>
-            <ModelOrFallback car={car} />
-          </Suspense>
-        </Canvas>
-      ) : (
-        <button onClick={() => setShow3D(true)} className="absolute inset-0 flex items-center justify-center text-sm text-white/40 hover:text-white/70 cursor-pointer">
-          Load 3D preview
-        </button>
-      )}
+      <Canvas camera={{ position: [0, 1.5, 4.5], fov: 40 }} gl={{ antialias: false }} style={{ background: "transparent" }}>
+        <ambientLight intensity={0.8} />
+        <directionalLight position={[3, 6, 4]} intensity={1.5} />
+        <Suspense fallback={<LoadingPlaceholder accent={getAccent(car.class)} />}>
+          <GltfBoundary fallback={<FallbackMesh accent={getAccent(car.class)} />}>
+            <LoadedModel modelUrl={car.modelUrl} carId={car.id} />
+          </GltfBoundary>
+        </Suspense>
+      </Canvas>
     </div>
   );
 }
 
-function ModelOrFallback({ car }: { car: CarConfig }) {
-  if (!car.modelUrl) return <FallbackMesh accent={getAccent(car.class)} />;
-
+function Silhouette({ car }: { car: CarConfig }) {
+  const accent = getAccent(car.class);
   return (
-    <GltfBoundary fallback={<FallbackMesh accent={getAccent(car.class)} />}>
-      <LoadedModel modelUrl={car.modelUrl} carId={car.id} />
-    </GltfBoundary>
+    <div className="flex flex-col items-center justify-center w-full h-full px-4">
+      {/* Car silhouette SVG */}
+      <svg viewBox="0 0 120 40" className="w-full max-w-[180px] opacity-30">
+        <rect x="10" y="22" width="100" height="12" rx="3" fill={accent} />
+        <rect x="25" y="8" width="70" height="16" rx="6" fill={accent} />
+        <circle cx="30" cy="34" r="6" fill={accent} />
+        <circle cx="90" cy="34" r="6" fill={accent} />
+      </svg>
+      <p className="mt-2 text-xs text-white/30 font-bold">{car.name}</p>
+      <p className="text-[10px] text-white/20">Class {car.class}</p>
+    </div>
   );
 }
 
