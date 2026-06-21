@@ -11,11 +11,14 @@ export type RacePhase = "waiting" | "countdown" | "go" | "racing" | "finished";
 export type RaceResult = {
   totalTimeMs: number;
   bestLapTimeMs: number;
+  firstLapTimeMs: number;
   lapsCompleted: number;
   checkpointsPassed: number;
   totalCheckpoints: number;
   carId: string;
   trackId: string;
+  wrongWayTriggered: boolean;
+  resetCount: number;
 };
 
 export type RaceProgress = {
@@ -93,6 +96,9 @@ type InternalState = {
   raceStartAt: number;
   lapStartAt: number;
   hasLeftStartArea: boolean;
+  firstLapMs: number;
+  wrongWayTriggered: boolean;
+  resetCount: number;
 };
 
 function createInitialState(): InternalState {
@@ -112,6 +118,9 @@ function createInitialState(): InternalState {
     raceStartAt: 0,
     lapStartAt: 0,
     hasLeftStartArea: false,
+    firstLapMs: 0,
+    wrongWayTriggered: false,
+    resetCount: 0,
   };
 }
 
@@ -165,7 +174,9 @@ export function useRaceLoop(
   }, [makeSnapshot]);
 
   const resetRace = useCallback(() => {
+    const prevResets = internalRef.current.resetCount;
     internalRef.current = createInitialState();
+    internalRef.current.resetCount = prevResets + 1;
     broadcast();
     if (autoStart) {
       window.setTimeout(() => {
@@ -293,6 +304,9 @@ export function useRaceLoop(
               // Start/finish only counts after all non-finish checkpoints are done.
               const lapTime = now - state.lapStartAt;
               state.bestLapMs = state.bestLapMs === 0 ? lapTime : Math.min(state.bestLapMs, lapTime);
+              if (state.firstLapMs === 0 && state.lap === 1) {
+                state.firstLapMs = lapTime;
+              }
               state.lapStartAt = now;
               state.completedThisLap = 0;
               state.hasLeftStartArea = false;
@@ -307,11 +321,14 @@ export function useRaceLoop(
                 const result: RaceResult = {
                   totalTimeMs: Math.round(state.totalMs),
                   bestLapTimeMs: Math.round(state.bestLapMs),
+                  firstLapTimeMs: Math.round(state.firstLapMs),
                   lapsCompleted: track.lapCount,
                   checkpointsPassed: state.passed,
                   totalCheckpoints: checkpoints.length,
                   carId: "",
                   trackId: track.id,
+                  wrongWayTriggered: state.wrongWayTriggered,
+                  resetCount: state.resetCount,
                 };
 
                 window.setTimeout(() => onFinishRef.current?.(result), 0);
@@ -333,6 +350,7 @@ export function useRaceLoop(
             const previous = checkpoints[previousIndex];
             if (distance2D(cs, previous) <= previous.radius * 0.9) {
               state.wrongWayAt = now;
+              state.wrongWayTriggered = true;
             }
           }
         }

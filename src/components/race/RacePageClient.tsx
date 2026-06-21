@@ -10,7 +10,7 @@ import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
 import { RaceResultsOverlay, type RewardClaimState } from "@/components/race/RaceResultsOverlay";
-import { calculateSoloRaceReward } from "@/config/rewards";
+import { calculateSoloRaceReward, getTrackTarget } from "@/config/rewards";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
@@ -93,11 +93,16 @@ export function RacePageClient() {
     if (claimedRaceSessionRef.current === raceSessionId) return;
     claimedRaceSessionRef.current = raceSessionId;
 
+    // Compute optimistic preview with available data (no previous records yet)
     const preview = calculateSoloRaceReward({
       completed: raceResult.lapsCompleted >= CITY_LOOP_TRACK.lapCount,
       totalTimeMs: raceResult.totalTimeMs,
       bestLapMs: raceResult.bestLapTimeMs,
-      cleanRace: true,
+      firstLapMs: raceResult.firstLapTimeMs,
+      wrongWayTriggered: raceResult.wrongWayTriggered,
+      resetCount: raceResult.resetCount,
+      targetConfig: getTrackTarget(selectedCatalogCar.class, CITY_LOOP_TRACK.id),
+      previousRecords: null, // will be populated server-side
     });
     setRewardClaim({
       status: "claiming",
@@ -118,10 +123,14 @@ export function RacePageClient() {
             trackId: CITY_LOOP_TRACK.id,
             totalTimeMs: raceResult?.totalTimeMs,
             bestLapMs: raceResult?.bestLapTimeMs,
+            firstLapMs: raceResult?.firstLapTimeMs ?? 0,
             lapsCompleted: raceResult?.lapsCompleted,
             checkpointsCompleted: raceResult?.checkpointsPassed,
             placement: 1,
             clientRaceId: raceSessionId,
+            wrongWayTriggered: raceResult?.wrongWayTriggered ?? false,
+            resetCount: raceResult?.resetCount ?? 0,
+            carClass: selectedCatalogCar?.class ?? "",
           }),
         });
         const data = await res.json();
