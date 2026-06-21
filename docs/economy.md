@@ -61,9 +61,11 @@ RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
 
 Implementation rule:
 
-- Dev/test flows should use `RACETE_TEST_TOKEN_MINT`.
+- `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8` is a temporary dev/test token mint only.
+- It is not the final production Pump.fun token.
+- Dev/test token room flows should use `RACETE_TEST_TOKEN_MINT`.
 - Production/mainnet flows must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
-- The temporary test mint is not the final production token.
+- `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` remains the production placeholder.
 
 - Players will deposit RACETE into a token stake pot later.
 - Top valid finishers receive token payout from the player payout pool.
