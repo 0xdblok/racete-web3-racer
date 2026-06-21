@@ -25,6 +25,7 @@ export function MissionsPageClient() {
     tone: "normal" | "success" | "error";
     message: string;
   } | null>(null);
+  const [lastClaimed, setLastClaimed] = useState<string | null>(null);
 
   const walletAddress = publicKey?.toBase58() || "";
 
@@ -88,6 +89,10 @@ export function MissionsPageClient() {
           tone: "success",
           message: `+${data.rewardAmount} Race Cash claimed!`,
         });
+        setLastClaimed(objectiveId);
+
+        // Clear claim message after 4 seconds
+        window.setTimeout(() => setClaimMessage(null), 4000);
       } catch (err) {
         setClaimMessage({
           tone: "error",

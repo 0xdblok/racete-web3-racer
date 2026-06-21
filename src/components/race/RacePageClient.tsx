@@ -265,6 +265,7 @@ export function RacePageClient() {
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <Link href="/garage" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Garage</Link>
           <Link href="/missions" className="rounded-full border border-lime-300/25 bg-black/50 px-4 py-2 text-sm font-bold text-lime-200/80 backdrop-blur hover:bg-lime-300/10">Missions</Link>
+          <Link href="/leaderboard" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Leaderboard</Link>
           <button onClick={() => void loadPlayer()} className="rounded-full border border-lime-300/35 bg-black/50 px-4 py-2 text-sm font-bold text-lime-100 backdrop-blur hover:bg-lime-300/10">Refresh car</button>
         </div>
 
