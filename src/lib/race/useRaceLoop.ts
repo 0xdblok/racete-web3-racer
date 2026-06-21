@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { TrackConfig, CheckpointConfig } from "@/config/tracks";
 import type { CarState } from "@/components/race/RaceScene";
+import { formatRaceTime } from "@/lib/race/format";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -59,20 +60,7 @@ const WRONG_WAY_WINDOW_MS = 4000;
 const WRONG_WAY_FLASH_MS = 1500;
 
 /* ------------------------------------------------------------------ */
-/*  Format                                                             */
-/* ------------------------------------------------------------------ */
-
-export function formatRaceTime(ms: number): string {
-  const safeMs = Math.max(0, Math.round(ms));
-  const totalSeconds = Math.floor(safeMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  const fraction = Math.floor((safeMs % 1000) / 10);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}.${fraction.toString().padStart(2, "0")}`;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Hook                                                               */
+/*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
 type UseRaceLoopOptions = {
