@@ -28,16 +28,16 @@ export type TrackConfig = {
 };
 
 const CITY_LOOP_CHECKPOINTS: CheckpointConfig[] = [
-  { id: "cp-start", order: 0, x: 0, z: -80, radius: 14, label: "Start / Finish", isFinish: true },
-  { id: "cp-north", order: 1, x: 0, z: 200, radius: 16, label: "North Straight" },
-  { id: "cp-northeast", order: 2, x: 120, z: 340, radius: 16, label: "Northeast Curve" },
-  { id: "cp-east", order: 3, x: 320, z: 260, radius: 16, label: "East Bend" },
-  { id: "cp-southeast", order: 4, x: 380, z: 0, radius: 16, label: "Southeast Straight" },
-  { id: "cp-south", order: 5, x: 340, z: -120, radius: 16, label: "South Curve" },
-  { id: "cp-southwest", order: 6, x: 260, z: -220, radius: 16, label: "Southwest Curve" },
-  { id: "cp-west-return", order: 7, x: 140, z: -260, radius: 16, label: "West Return" },
-  { id: "cp-west", order: 8, x: -80, z: -180, radius: 16, label: "West Curve" },
-  { id: "cp-return", order: 9, x: -80, z: 0, radius: 16, label: "Return Straight" },
+  { id: "cp-start", order: 0, x: 0, z: -80, radius: 24, label: "Start / Finish", isFinish: true },
+  { id: "cp-north", order: 1, x: 0, z: 200, radius: 28, label: "North Straight" },
+  { id: "cp-northeast", order: 2, x: 120, z: 340, radius: 28, label: "Northeast Curve" },
+  { id: "cp-east", order: 3, x: 320, z: 260, radius: 28, label: "East Bend" },
+  { id: "cp-southeast", order: 4, x: 380, z: 0, radius: 28, label: "Southeast Straight" },
+  { id: "cp-south", order: 5, x: 340, z: -120, radius: 28, label: "South Curve" },
+  { id: "cp-southwest", order: 6, x: 260, z: -220, radius: 28, label: "Southwest Curve" },
+  { id: "cp-west-return", order: 7, x: 140, z: -260, radius: 28, label: "West Return" },
+  { id: "cp-west", order: 8, x: -80, z: -180, radius: 28, label: "West Curve" },
+  { id: "cp-return", order: 9, x: -80, z: 0, radius: 28, label: "Return Straight" },
 ];
 
 export const CITY_LOOP_TRACK: TrackConfig = {

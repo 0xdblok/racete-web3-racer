@@ -23,6 +23,8 @@ type CarControllerProps = {
   } | null>;
   initialPosition?: THREE.Vector3;
   initialRotationY?: number;
+  /** False during waiting/countdown/finished so players cannot jump-start. */
+  controlsEnabled?: boolean;
 };
 
 /* ── Tuning constants (tweak these for feel) ── */
@@ -41,6 +43,7 @@ export function CarController({
   carRef,
   initialPosition = SPAWN_POSITION,
   initialRotationY = SPAWN_ROTATION_Y,
+  controlsEnabled = true,
 }: CarControllerProps) {
   const groupRef = useRef<THREE.Group>(null);
   const keys = useKeyboard();
@@ -69,6 +72,32 @@ export function CarController({
     const k = keys.current;
     const dt = Math.min(delta, 0.1);
     escapeAssistTimer.current = Math.max(0, escapeAssistTimer.current - dt);
+
+    if (!controlsEnabled) {
+      speed.current = 0;
+      currentSteer.current = 0;
+      driftAngle.current = 0;
+      driftFactor.current = 0;
+      collisionTimer.current = 0;
+      escapeAssistTimer.current = 0;
+      lastCollisionNormal.current.set(0, 0);
+
+      if (groupRef.current) {
+        groupRef.current.position.copy(worldPos.current);
+        groupRef.current.rotation.set(0, rotation.current, 0);
+      }
+
+      if (carRef) {
+        carRef.current = {
+          position: worldPos.current.clone(),
+          rotation: new THREE.Euler(0, rotation.current, 0),
+          speed: 0,
+          drifting: false,
+          nitroActive: false,
+        };
+      }
+      return;
+    }
 
     // --- Raw binary input ---
     const throttle = (k.has("ArrowUp") || k.has("w") || k.has("W")) ? 1 : 0;

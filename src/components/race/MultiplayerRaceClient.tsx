@@ -86,6 +86,8 @@ function MultiplayerRaceClientInner() {
   const handleRaceAgain = useCallback(() => {
     setRaceResult(null);
     setRaceProgress(null);
+    setTelemetry(null);
+    carStateRef.current = null;
     setRaceKey((k) => k + 1);
   }, []);
 

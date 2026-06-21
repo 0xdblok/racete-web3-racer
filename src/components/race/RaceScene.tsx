@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
@@ -64,10 +64,21 @@ export function RaceScene({
     onFinish,
   });
 
-  // Mirror progress to parent on every render
-  if (onProgress) {
-    onProgress(race);
-  }
+  // Mirror progress to parent after render; avoids parent state updates during child render.
+  useEffect(() => {
+    onProgress?.(race);
+  }, [
+    onProgress,
+    race.phase,
+    race.countdown,
+    race.currentLap,
+    race.expectedCheckpointIndex,
+    race.currentCheckpoint,
+    race.totalRaceTimeMs,
+    race.bestLapTimeMs,
+    race.wrongWayHint,
+    race.finished,
+  ]);
 
   return (
     <div className="relative h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
@@ -88,7 +99,7 @@ export function RaceScene({
         {/* Checkpoint and finish gates */}
         <CheckpointGates
           checkpoints={race.checkpoints}
-          currentCheckpointIndex={race.currentCheckpointIndex}
+          expectedCheckpointIndex={race.expectedCheckpointIndex}
           phase={race.phase}
         />
 
@@ -98,6 +109,7 @@ export function RaceScene({
           carRef={activeCarRef}
           initialPosition={initialPosition}
           initialRotationY={initialRotationY}
+          controlsEnabled={race.phase === "racing"}
         >
           <CarModel car={car} selectedCar={selectedCar} gameplayStats={gameplayStats} isDriving />
         </CarController>

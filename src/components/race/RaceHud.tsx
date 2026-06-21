@@ -49,6 +49,11 @@ export function RaceHud({
   const currentSpeedRaw = telemetry ? Math.abs(telemetry.speed) : 0;
   const currentSpeed = Math.round(currentSpeedRaw * SPEED_TO_KMH);
   const speedPct = telemetry ? Math.min(Math.abs(telemetry.speed) / stats.maxSpeed, 1) : 0;
+  const nextCheckpointLabel = raceProgress
+    ? raceProgress.expectedCheckpointIndex === 0
+      ? `Finish/${raceProgress.totalCheckpoints}`
+      : `${raceProgress.expectedCheckpointIndex}/${raceProgress.totalCheckpoints}`
+    : "—";
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 p-4 md:p-6">
@@ -60,10 +65,10 @@ export function RaceHud({
           <p className="mt-1 max-w-sm text-sm text-white/60">{track.description}</p>
           {raceProgress && raceProgress.phase !== "waiting" && (
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <ProgressStat label="Lap" value={`${raceProgress.lap}/${track.lapCount}`} active />
-              <ProgressStat label="Checkpoint" value={`${raceProgress.currentCheckpointIndex + 1}/${raceProgress.totalCheckpoints}`} active />
-              <ProgressStat label="Time" value={formatRaceTime(raceProgress.totalRaceTimeMs)} />
-              <ProgressStat label="Best Lap" value={raceProgress.bestLapTimeMs > 0 ? formatRaceTime(raceProgress.bestLapTimeMs) : "—"} />
+              <ProgressStat label="Lap" value={`${raceProgress.currentLap}/${raceProgress.totalLaps}`} active />
+              <ProgressStat label="Next CP" value={nextCheckpointLabel} active />
+              <ProgressStat label="Time" value={formatRaceTime(raceProgress.currentTime)} />
+              <ProgressStat label="Best Lap" value={raceProgress.bestLapTime > 0 ? formatRaceTime(raceProgress.bestLapTime) : "—"} />
             </div>
           )}
           {raceProgress?.wrongWayHint && (

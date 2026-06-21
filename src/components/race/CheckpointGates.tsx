@@ -11,14 +11,13 @@ import type { CheckpointConfig } from "@/config/tracks";
 
 type CheckpointGatesProps = {
   checkpoints: CheckpointConfig[];
-  currentCheckpointIndex: number;
+  expectedCheckpointIndex: number;
   phase: "waiting" | "countdown" | "racing" | "finished";
 };
 
-export function CheckpointGates({ checkpoints, currentCheckpointIndex, phase }: CheckpointGatesProps) {
-  // Always show the next checkpoint highlighted; dim others.
-  // During finished phase, still show the last/next for context.
-  const activeIndex = phase === "finished" ? 0 : (currentCheckpointIndex + 1) % checkpoints.length;
+export function CheckpointGates({ checkpoints, expectedCheckpointIndex, phase }: CheckpointGatesProps) {
+  // Highlight the next checkpoint the race loop expects, not the last one crossed.
+  const activeIndex = phase === "finished" ? 0 : expectedCheckpointIndex;
 
   return (
     <group>

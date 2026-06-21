@@ -21,14 +21,29 @@ export type RaceResult = {
 export type RaceProgress = {
   phase: RacePhase;
   countdown: number;
+  /** Current lap, 1-based. */
   lap: number;
+  /** Alias for HUD/readability. */
+  currentLap: number;
+  /** Total configured laps. */
+  totalLaps: number;
+  /** Next checkpoint the player must cross. Starts at 1; 0 means start/finish. */
+  expectedCheckpointIndex: number;
+  /** Back-compat alias used by older HUD/gate code; now means next expected checkpoint. */
   currentCheckpointIndex: number;
+  /** Number of checkpoints completed in the current lap, excluding start/finish. */
+  currentCheckpoint: number;
   checkpointsPassed: number;
   totalCheckpoints: number;
   totalRaceTimeMs: number;
+  /** Back-compat alias for total race time. */
+  currentTime: number;
   currentLapTimeMs: number;
   bestLapTimeMs: number;
+  /** Back-compat alias. */
+  bestLapTime: number;
   wrongWayHint: boolean;
+  finished: boolean;
 };
 
 /* ------------------------------------------------------------------ */
@@ -44,10 +59,11 @@ const WRONG_WAY_FLASH_MS = 1500;
 /* ------------------------------------------------------------------ */
 
 export function formatRaceTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
+  const safeMs = Math.max(0, Math.round(ms));
+  const totalSeconds = Math.floor(safeMs / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  const fraction = Math.floor((ms % 1000) / 10);
+  const fraction = Math.floor((safeMs % 1000) / 10);
   return `${minutes}:${seconds.toString().padStart(2, "0")}.${fraction.toString().padStart(2, "0")}`;
 }
 
@@ -64,7 +80,8 @@ type InternalState = {
   phase: RacePhase;
   countdown: number;
   lap: number;
-  currentIndex: number;
+  expectedIndex: number;
+  completedThisLap: number;
   passed: number;
   totalMs: number;
   lapMs: number;
@@ -74,7 +91,34 @@ type InternalState = {
   finished: boolean;
   raceStartAt: number;
   lapStartAt: number;
+  hasLeftStartArea: boolean;
 };
+
+function createInitialState(): InternalState {
+  return {
+    phase: "waiting",
+    countdown: COUNTDOWN_SECONDS,
+    lap: 1,
+    expectedIndex: 1,
+    completedThisLap: 0,
+    passed: 0,
+    totalMs: 0,
+    lapMs: 0,
+    bestLapMs: 0,
+    wrongWayAt: 0,
+    lastCrossAt: 0,
+    finished: false,
+    raceStartAt: 0,
+    lapStartAt: 0,
+    hasLeftStartArea: false,
+  };
+}
+
+function distance2D(car: NonNullable<CarState>, cp: CheckpointConfig): number {
+  const dx = car.position.x - cp.x;
+  const dz = car.position.z - cp.z;
+  return Math.sqrt(dx * dx + dz * dz);
+}
 
 export function useRaceLoop(
   carRef: React.MutableRefObject<CarState | null>,
@@ -91,67 +135,36 @@ export function useRaceLoop(
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
 
-  const internalRef = useRef<InternalState>({
-    phase: "waiting",
-    countdown: COUNTDOWN_SECONDS,
-    lap: 1,
-    currentIndex: 0,
-    passed: 0,
-    totalMs: 0,
-    lapMs: 0,
-    bestLapMs: 0,
-    wrongWayAt: 0,
-    lastCrossAt: 0,
-    finished: false,
-    raceStartAt: 0,
-    lapStartAt: 0,
-  });
+  const internalRef = useRef<InternalState>(createInitialState());
 
-  const [snapshot, setSnapshot] = useState<RaceProgress>(() => ({
-    phase: "waiting",
-    countdown: COUNTDOWN_SECONDS,
-    lap: 1,
-    currentCheckpointIndex: 0,
-    checkpointsPassed: 0,
+  const makeSnapshot = useCallback((s: InternalState): RaceProgress => ({
+    phase: s.phase,
+    countdown: s.countdown,
+    lap: s.lap,
+    currentLap: s.lap,
+    totalLaps: track.lapCount,
+    expectedCheckpointIndex: s.expectedIndex,
+    currentCheckpointIndex: s.expectedIndex,
+    currentCheckpoint: s.completedThisLap,
+    checkpointsPassed: s.passed,
     totalCheckpoints: checkpoints.length,
-    totalRaceTimeMs: 0,
-    currentLapTimeMs: 0,
-    bestLapTimeMs: 0,
-    wrongWayHint: false,
-  }));
+    totalRaceTimeMs: Math.round(s.totalMs),
+    currentTime: Math.round(s.totalMs),
+    currentLapTimeMs: Math.round(s.lapMs),
+    bestLapTimeMs: Math.round(s.bestLapMs),
+    bestLapTime: Math.round(s.bestLapMs),
+    wrongWayHint: performance.now() - s.wrongWayAt < WRONG_WAY_FLASH_MS,
+    finished: s.finished,
+  }), [checkpoints.length, track.lapCount]);
+
+  const [snapshot, setSnapshot] = useState<RaceProgress>(() => makeSnapshot(internalRef.current));
 
   const broadcast = useCallback(() => {
-    const s = internalRef.current;
-    setSnapshot({
-      phase: s.phase,
-      countdown: s.countdown,
-      lap: s.lap,
-      currentCheckpointIndex: s.currentIndex,
-      checkpointsPassed: s.passed,
-      totalCheckpoints: checkpoints.length,
-      totalRaceTimeMs: Math.round(s.totalMs),
-      currentLapTimeMs: Math.round(s.lapMs),
-      bestLapTimeMs: Math.round(s.bestLapMs),
-      wrongWayHint: performance.now() - s.wrongWayAt < WRONG_WAY_FLASH_MS,
-    });
-  }, [checkpoints.length]);
+    setSnapshot(makeSnapshot(internalRef.current));
+  }, [makeSnapshot]);
 
   const resetRace = useCallback(() => {
-    internalRef.current = {
-      phase: "waiting",
-      countdown: COUNTDOWN_SECONDS,
-      lap: 1,
-      currentIndex: 0,
-      passed: 0,
-      totalMs: 0,
-      lapMs: 0,
-      bestLapMs: 0,
-      wrongWayAt: 0,
-      lastCrossAt: 0,
-      finished: false,
-      raceStartAt: 0,
-      lapStartAt: 0,
-    };
+    internalRef.current = createInitialState();
     broadcast();
     if (autoStart) {
       window.setTimeout(() => {
@@ -167,27 +180,32 @@ export function useRaceLoop(
     broadcast();
   }, [broadcast]);
 
-  // Auto-start
+  // Auto-start countdown.
   useEffect(() => {
     if (!autoStart) return;
     const t = window.setTimeout(() => {
       if (internalRef.current.phase === "waiting") {
         internalRef.current.phase = "countdown";
+        internalRef.current.countdown = COUNTDOWN_SECONDS;
         broadcast();
       }
     }, 500);
     return () => window.clearTimeout(t);
   }, [autoStart, broadcast]);
 
-  // Countdown interval
+  // Countdown interval. Timer stays at 0 until GO/racing begins.
   useEffect(() => {
     if (snapshot.phase !== "countdown") return;
 
     let remaining = COUNTDOWN_SECONDS;
+    internalRef.current.countdown = remaining;
+    broadcast();
+
     const interval = window.setInterval(() => {
       remaining -= 1;
-      internalRef.current.countdown = remaining;
+      internalRef.current.countdown = Math.max(remaining, 0);
       broadcast();
+
       if (remaining <= 0) {
         window.clearInterval(interval);
         const now = performance.now();
@@ -195,6 +213,11 @@ export function useRaceLoop(
         internalRef.current.countdown = 0;
         internalRef.current.raceStartAt = now;
         internalRef.current.lapStartAt = now;
+        internalRef.current.totalMs = 0;
+        internalRef.current.lapMs = 0;
+        internalRef.current.expectedIndex = 1;
+        internalRef.current.completedThisLap = 0;
+        internalRef.current.hasLeftStartArea = false;
         broadcast();
       }
     }, 1000);
@@ -202,7 +225,7 @@ export function useRaceLoop(
     return () => window.clearInterval(interval);
   }, [snapshot.phase, broadcast]);
 
-  // Checkpoint + timing loop
+  // Checkpoint + timing loop.
   useEffect(() => {
     let raf = 0;
 
@@ -212,30 +235,37 @@ export function useRaceLoop(
 
       if (state.phase === "racing") {
         const now = performance.now();
-        state.totalMs = now - state.raceStartAt;
-        state.lapMs = now - state.lapStartAt;
+        state.totalMs = Math.max(0, now - state.raceStartAt);
+        state.lapMs = Math.max(0, now - state.lapStartAt);
 
-        if (cs && !state.finished) {
-          const nextIndex = (state.currentIndex + 1) % checkpoints.length;
-          const nextCp = checkpoints[nextIndex];
-          const dx = cs.position.x - nextCp.x;
-          const dz = cs.position.z - nextCp.z;
-          const dist = Math.sqrt(dx * dx + dz * dz);
+        if (cs && !state.finished && checkpoints.length > 1) {
+          const startCp = checkpoints[0];
+          const startDist = distance2D(cs, startCp);
+          if (!state.hasLeftStartArea && startDist > startCp.radius * 1.15) {
+            state.hasLeftStartArea = true;
+          }
 
-          if (dist <= nextCp.radius) {
-            // Checkpoint crossed
-            state.currentIndex = nextIndex;
+          const expected = checkpoints[state.expectedIndex];
+          const expectedDist = distance2D(cs, expected);
+          const canCountStartFinish = state.expectedIndex !== 0 || state.hasLeftStartArea;
+
+          if (expectedDist <= expected.radius && canCountStartFinish) {
             state.passed += 1;
             state.lastCrossAt = now;
 
-            if (nextCp.isFinish && state.currentIndex === 0 && state.passed > 1) {
+            if (state.expectedIndex === 0) {
+              // Start/finish only counts after all non-finish checkpoints are done.
               const lapTime = now - state.lapStartAt;
               state.bestLapMs = state.bestLapMs === 0 ? lapTime : Math.min(state.bestLapMs, lapTime);
               state.lapStartAt = now;
+              state.completedThisLap = 0;
+              state.hasLeftStartArea = false;
 
               if (state.lap >= track.lapCount) {
                 state.finished = true;
                 state.phase = "finished";
+                state.totalMs = now - state.raceStartAt;
+                state.lapMs = lapTime;
                 broadcast();
 
                 const result: RaceResult = {
@@ -251,17 +281,22 @@ export function useRaceLoop(
                 window.setTimeout(() => onFinishRef.current?.(result), 0);
               } else {
                 state.lap += 1;
+                state.expectedIndex = 1;
+              }
+            } else {
+              state.completedThisLap = state.expectedIndex;
+              state.expectedIndex = state.expectedIndex + 1;
+              if (state.expectedIndex >= checkpoints.length) {
+                state.expectedIndex = 0;
               }
             }
-          } else {
-            // Wrong-way detection: close to previous checkpoint after not crossing next for a while
-            if (now - state.lastCrossAt > WRONG_WAY_WINDOW_MS && state.passed > 0) {
-              const prevCp = checkpoints[state.currentIndex];
-              const pdx = cs.position.x - prevCp.x;
-              const pdz = cs.position.z - prevCp.z;
-              if (Math.sqrt(pdx * pdx + pdz * pdz) <= prevCp.radius * 0.9) {
-                state.wrongWayAt = now;
-              }
+          } else if (now - state.lastCrossAt > WRONG_WAY_WINDOW_MS && state.passed > 0) {
+            const previousIndex = state.expectedIndex === 0
+              ? checkpoints.length - 1
+              : state.expectedIndex - 1;
+            const previous = checkpoints[previousIndex];
+            if (distance2D(cs, previous) <= previous.radius * 0.9) {
+              state.wrongWayAt = now;
             }
           }
         }
