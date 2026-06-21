@@ -36,6 +36,9 @@ Optional future tables:
 - `token_room_payout_plans`
 - `token_room_admin_reviews`
 - `token_room_wallet_risk_scores`
+- `weekly_token_snapshots`
+- `weekly_token_snapshot_entries`
+- `weekly_token_manual_payouts`
 
 ## Status Enums
 
@@ -111,6 +114,24 @@ Allowed values:
 - `failed`
 - `rejected`
 - `manual_review`
+
+### `weekly_token_snapshots.snapshot_status`
+
+Allowed values:
+
+- `pending_review`
+- `reviewed`
+- `paid`
+- `disputed`
+
+### `weekly_token_snapshot_entries.manual_payout_status`
+
+Allowed values:
+
+- `unpaid`
+- `paid`
+- `blocked`
+- `under_review`
 
 ## Table: `token_rooms`
 
@@ -569,6 +590,169 @@ Allowed statuses:
 - `cancelled`
 - `manual_review`
 
+## Table: `weekly_token_snapshots`
+
+Purpose: frozen weekly leaderboard and weekly reward-pool snapshot used for manual weekly token reward distribution.
+
+V1 note: this is a future schema proposal only. Do not create the migration until implementation is approved.
+
+Proposed columns:
+
+```sql
+id uuid primary key default gen_random_uuid()
+week_id text not null unique
+week_start timestamptz not null
+week_end timestamptz not null
+token_mint text not null
+weekly_reward_wallet_address text not null
+treasury_wallet_address text not null
+total_weekly_token_pool_amount numeric not null default 0
+total_token_room_volume numeric not null default 0
+total_token_room_count integer not null default 0
+leaderboard_category text not null default 'token_room_weekly_composite'
+ranking_basis jsonb not null default '{}'::jsonb
+snapshot_status text not null default 'pending_review'
+created_at timestamptz not null default now()
+reviewed_at timestamptz
+reviewed_by text
+admin_notes text
+```
+
+Recommended constraints:
+
+```sql
+check (week_end > week_start)
+check (total_weekly_token_pool_amount >= 0)
+check (total_token_room_volume >= 0)
+check (total_token_room_count >= 0)
+check (snapshot_status in ('pending_review', 'reviewed', 'paid', 'disputed'))
+```
+
+Recommended indexes:
+
+```sql
+create index on weekly_token_snapshots(snapshot_status, week_start desc);
+create index on weekly_token_snapshots(token_mint, week_start desc);
+```
+
+Notes:
+
+- Recommended window is Monday 00:00 UTC to next Monday 00:00 UTC.
+- `week_id` should use ISO week format, e.g. `2026-W26`.
+- Snapshot must freeze the weekly pool amount and leaderboard inputs at creation/review time.
+- After final review, ranking fields should be immutable except via explicit dispute process.
+
+## Table: `weekly_token_snapshot_entries`
+
+Purpose: one frozen leaderboard entry per wallet per weekly snapshot.
+
+Proposed columns:
+
+```sql
+id uuid primary key default gen_random_uuid()
+snapshot_id uuid not null references weekly_token_snapshots(id) on delete cascade
+wallet_address text not null references players(wallet_address) on delete restrict
+rank integer not null
+total_token_room_wins integer not null default 0
+total_token_room_races integer not null default 0
+valid_finishes integer not null default 0
+dnf_count integer not null default 0
+dq_count integer not null default 0
+suspicious_event_count integer not null default 0
+total_stake_volume numeric not null default 0
+gross_token_winnings numeric not null default 0
+total_token_staked numeric not null default 0
+net_token_pnl numeric not null default 0
+best_time_ms integer
+win_rate numeric not null default 0
+payout_eligible boolean not null default false
+suggested_payout_amount numeric not null default 0
+manual_payout_status text not null default 'unpaid'
+manual_payout_signature text
+admin_notes text
+created_at timestamptz not null default now()
+updated_at timestamptz not null default now()
+```
+
+Recommended constraints:
+
+```sql
+unique(snapshot_id, wallet_address)
+unique(snapshot_id, rank)
+check (rank > 0)
+check (total_token_room_wins >= 0)
+check (total_token_room_races >= 0)
+check (valid_finishes >= 0)
+check (dnf_count >= 0)
+check (dq_count >= 0)
+check (suspicious_event_count >= 0)
+check (total_stake_volume >= 0)
+check (gross_token_winnings >= 0)
+check (total_token_staked >= 0)
+check (win_rate >= 0 and win_rate <= 1)
+check (suggested_payout_amount >= 0)
+check (manual_payout_status in ('unpaid', 'paid', 'blocked', 'under_review'))
+```
+
+Recommended indexes:
+
+```sql
+create index on weekly_token_snapshot_entries(snapshot_id, rank);
+create index on weekly_token_snapshot_entries(wallet_address, created_at desc);
+create index on weekly_token_snapshot_entries(snapshot_id, manual_payout_status);
+create index on weekly_token_snapshot_entries(snapshot_id, payout_eligible);
+```
+
+Eligibility notes:
+
+- DQ/disqualified wallets should default to `payout_eligible=false` and `manual_payout_status='blocked'` or `under_review`.
+- Suspicious wallets should default to `manual_payout_status='under_review'`.
+- `suggested_payout_amount` is advisory for admin review; V1 does not auto-send weekly token rewards.
+- `manual_payout_signature` records a manually executed transfer, not an automatic payout initiated by the app.
+
+## Table: `weekly_token_manual_payouts`
+
+Purpose: immutable-ish record of admin/manual weekly token reward payouts from `TOKEN_WEEKLY_REWARD_WALLET`.
+
+Proposed columns:
+
+```sql
+id uuid primary key default gen_random_uuid()
+snapshot_id uuid not null references weekly_token_snapshots(id) on delete cascade
+wallet_address text not null references players(wallet_address) on delete restrict
+amount numeric not null
+token_mint text not null
+payout_signature text unique
+paid_by text not null
+paid_at timestamptz not null default now()
+notes text
+created_at timestamptz not null default now()
+```
+
+Recommended constraints:
+
+```sql
+unique(snapshot_id, wallet_address)
+check (amount > 0)
+```
+
+Recommended indexes:
+
+```sql
+create index on weekly_token_manual_payouts(snapshot_id, paid_at desc);
+create index on weekly_token_manual_payouts(wallet_address, paid_at desc);
+create unique index weekly_token_manual_payouts_signature_unique
+  on weekly_token_manual_payouts(payout_signature)
+  where payout_signature is not null;
+```
+
+Notes:
+
+- This table records manual admin payouts only.
+- Inserting a row must not send an on-chain transaction.
+- `payout_signature` should be populated after the admin manually sends RACETE.
+- `paid_by` should identify the admin/operator account, not the recipient wallet.
+
 ## RLS / Service Role Policy
 
 Recommended V1:
@@ -576,6 +760,8 @@ Recommended V1:
 - Enable RLS on all token-room tables.
 - Public clients should not write directly to these tables.
 - All writes go through server API with service role.
+- Weekly snapshot create/review/record-payout writes must go through admin-only APIs.
+- Final-reviewed snapshot ranking and metric fields should be immutable except through explicit disputed/admin process.
 - Read access can be exposed through API endpoints, not direct Supabase client queries.
 
 Potential safe public reads later:
@@ -621,6 +807,18 @@ Every token_payout and token_refund has an idempotency_key.
 No room can transition paid/refunded without corresponding confirmed transfer rows.
 ```
 
+```text
+weekly_token_snapshots.total_weekly_token_pool_amount = sum(confirmed weekly token stake reward pool transfers for settled rooms in [week_start, week_end))
+```
+
+```text
+weekly_token_snapshot_entries are ranked from frozen settled room results, not live mutable leaderboard queries after review.
+```
+
+```text
+weekly_token_manual_payouts records must not initiate on-chain payouts; they only record admin/manual transfers already sent from TOKEN_WEEKLY_REWARD_WALLET.
+```
+
 ## Example Payout Calculation Fields
 
 For a room with 6 players staking 10,000 RACETE each:
@@ -657,6 +855,7 @@ When this spec becomes an actual migration:
 - Add indexes after table creation.
 - Enable RLS.
 - Do not create automatic payout triggers in DB; payouts must happen in service code with explicit transaction signing.
+- Do not create automatic weekly token reward payout triggers; weekly snapshot/manual payout tables are audit records only in V1.
 - Do not add references to Race Cash reward tables except maybe audit links. Token accounting must remain separate.
 
 ## Open Schema Questions
@@ -666,3 +865,5 @@ When this spec becomes an actual migration:
 - Should per-room vault token accounts be first-class columns from day one?
 - Should payout plans be required before any automatic payout, or only for manual review?
 - Should admin review have a separate table with reviewer wallet/admin identity?
+- Should weekly snapshots store only top N entries or every eligible wallet for full auditability?
+- Should weekly manual payout amount suggestions be fixed rank percentages or decided by admin policy per snapshot?

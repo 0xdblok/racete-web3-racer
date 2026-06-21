@@ -124,13 +124,81 @@ Reasoning:
 - Admin manually sends weekly token payouts from the weekly reward wallet.
 - Future automation can be added only after stronger anti-cheat, admin tooling, and payout review systems.
 
-Future weekly winner criteria may include:
+### Weekly Token Reward Snapshot System
 
-- best multiplayer performance
+V1 weekly token reward distribution must be based on a frozen 7-day snapshot, not a live leaderboard query at payout time.
+
+Recommended cadence:
+
+```text
+Week window: Monday 00:00 UTC -> next Monday 00:00 UTC
+weekId format: ISO week, e.g. 2026-W26
+snapshot cadence: every 7 days after weekEnd
+```
+
+Snapshot purpose:
+
+- Freeze the weekly token room leaderboard at `weekEnd`.
+- Freeze total RACETE collected into the weekly token stake reward pool for that week.
+- Freeze each eligible wallet's rank, metrics, eligibility state, DQ count, and suspicious flags.
+- Give admins a stable review object for manual weekly token payouts.
+- Record manual payout transaction signatures after admin sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`.
+
+Snapshot contents:
+
+- `weekId`
+- `weekStart`
+- `weekEnd`
+- `snapshotCreatedAt`
+- `tokenMint`
+- `totalWeeklyTokenStakeRewardPoolAmount`
+- `TOKEN_WEEKLY_REWARD_WALLET` used for the week
+- `TOKEN_TREASURY_WALLET` used for the week
+- `totalTokenRoomsCount`
+- `totalTokenRoomVolume`
+- leaderboard category
+- entries with wallet address, rank, stats, eligibility, admin status, and manual payout status
+
+Immutability rule:
+
+- Snapshot data should be immutable after final review.
+- After final review, only admin notes and manual payout transaction signatures may be appended/updated.
+- The ranking, week window, total weekly pool amount, and eligibility metrics must not be silently recomputed after review.
+
+Primary V1 weekly token reward ranking basis:
+
+1. Most token room wins.
+2. Highest net token profit.
+3. Highest valid finish rate.
+4. Lowest DQ/suspicious count.
+5. Best multiplayer time as tie-breaker.
+
+Future categories may include:
+
 - most token room wins
-- best win rate
-- best total profit
-- best weekly leaderboard rank
+- highest token PnL
+- highest win rate
+- most token room volume
+- best valid multiplayer time
+- best risk-adjusted performance
+
+Manual weekly payout process:
+
+1. Weekly window closes at Monday 00:00 UTC.
+2. Admin triggers snapshot creation, or scheduled automation creates a pending snapshot.
+3. Snapshot freezes leaderboard entries and weekly token pool totals.
+4. Admin reviews top players, DQ flags, suspicious events, and abnormal wallet patterns.
+5. Admin marks entries `paid`, `blocked`, or `under_review`.
+6. Admin manually sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`.
+7. Admin records payout signatures against snapshot entries/manual payout rows.
+8. Snapshot remains auditable for later review.
+
+Automation policy:
+
+- V1 recommended: admin-triggered snapshot endpoint or admin action.
+- Later: Vercel Cron every Monday.
+- Alternative: VPS cron calls the snapshot endpoint.
+- No automatic weekly token payout in V1.
 
 ### Player Payout Pool Split
 
@@ -587,6 +655,54 @@ Must require:
 - Result players match deposited players.
 - AC status clean enough for payout.
 
+### Future Admin-Only Weekly Snapshot APIs
+
+These endpoints are architecture-only for a future implementation. They must be admin-only and must not auto-distribute weekly token rewards.
+
+#### `POST /api/admin/weekly-token-snapshots/create`
+
+Creates a frozen snapshot for a completed week.
+
+Payload:
+
+- `weekId` optional; defaults to most recently completed ISO week.
+- `forceRebuild` should be disallowed once a snapshot is reviewed/paid.
+
+Rules:
+
+- Admin-only.
+- Week must be closed before snapshot creation.
+- Snapshot captures leaderboard metrics and weekly pool totals from settled token rooms in `[weekStart, weekEnd)`.
+- Snapshot starts as `pending_review`.
+
+#### `GET /api/admin/weekly-token-snapshots`
+
+Lists weekly snapshots with status, week window, pool amount, and review state.
+
+#### `GET /api/admin/weekly-token-snapshots/:weekId`
+
+Returns snapshot detail, entries, eligibility flags, suspicious/DQ counts, suggested payouts, and recorded manual payout signatures.
+
+#### `PATCH /api/admin/weekly-token-snapshots/:weekId/review`
+
+Updates review status and per-entry admin status.
+
+Rules:
+
+- DQ/disqualified players default to `blocked` or `under_review`.
+- Suspicious players default to `under_review`.
+- Final review freezes rank/metrics/pool totals.
+
+#### `PATCH /api/admin/weekly-token-snapshots/:weekId/record-payout`
+
+Records manual payout transaction signatures after admin sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`.
+
+Rules:
+
+- Does not send tokens automatically.
+- Records `walletAddress`, `amount`, `tokenMint`, `payoutSignature`, `paidBy`, `paidAt`, and notes.
+- Can update payout signatures/admin notes after review; cannot recalculate leaderboard ranking.
+
 ## Colyseus Server Changes
 
 V1 should use a separate room type, not overload the current free race room:
@@ -815,7 +931,8 @@ Notes:
 
 ### Phase A — DB Schema + Docs
 
-- Add schema migrations for token-room tables.
+- Add schema migrations for token-room tables later, after this spec is approved.
+- Include future weekly snapshot tables in the schema plan: `weekly_token_snapshots`, `weekly_token_snapshot_entries`, and `weekly_token_manual_payouts`.
 - No runtime token logic.
 - No UI enabling.
 - Add admin-facing audit documentation.

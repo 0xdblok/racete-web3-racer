@@ -54,6 +54,10 @@ Security policy:
 7. **Auditability before automation**
    - Token rooms must write durable audit events before any mainnet beta.
 
+8. **Frozen weekly reward snapshots**
+   - Weekly token rewards must be manually distributed from an immutable 7-day snapshot, not from a mutable live leaderboard.
+   - No automatic weekly token reward payout in V1.
+
 ## Trust Boundaries
 
 ### Browser Client
@@ -487,6 +491,58 @@ Payout failure:
 - No blind retry.
 - Operator/retry worker checks chain state first.
 
+## Weekly Snapshot Security Requirements
+
+Weekly token reward distribution in V1 is manual, but the review data must be frozen and auditable.
+
+Snapshot cadence and scope:
+
+- Create one snapshot every 7 days.
+- Recommended week window: Monday 00:00 UTC to next Monday 00:00 UTC.
+- Snapshot `weekId` should use ISO week format, e.g. `2026-W26`.
+- Snapshot includes only settled Token Stake Rooms from the closed week window.
+- Snapshot freezes weekly token pool totals and leaderboard entries at creation time.
+
+Admin-only access:
+
+- Snapshot create/review/record-payout APIs must be admin-only.
+- Admin identity should be recorded as `reviewed_by` / `paid_by`.
+- Admin actions must be audit logged.
+- Client wallets must not be able to trigger, edit, approve, or record weekly payout snapshots.
+
+Eligibility defaults:
+
+- DQ/disqualified players default to `blocked` or `under_review`.
+- Suspicious players default to `under_review`.
+- Players with unresolved payout/refund disputes should default to `under_review`.
+- Final review should explicitly mark each top entry as `unpaid`, `paid`, `blocked`, or `under_review`.
+
+Immutability:
+
+- After final review, snapshot rankings, week window, token mint, weekly pool amount, total token room volume, and leaderboard metrics must not be recomputed silently.
+- After final review, only admin notes and manual payout transaction signatures may be appended/updated.
+- If a snapshot is disputed after review, create an audit trail entry and move status to `disputed`; do not overwrite historical ranking data.
+
+Manual payout safety:
+
+- Weekly token rewards are paid manually from `TOKEN_WEEKLY_REWARD_WALLET`.
+- V1 must not send automatic weekly leaderboard payouts.
+- Recording a payout signature must not itself initiate an on-chain transaction.
+- Manual payout records should validate token mint, amount, wallet address, and transaction signature format before saving.
+
+Snapshot audit fields should include:
+
+- `weekId`, `weekStart`, `weekEnd`, `snapshotCreatedAt`
+- `tokenMint`
+- `weeklyRewardWalletAddress`
+- `treasuryWalletAddress`
+- `totalWeeklyTokenStakeRewardPoolAmount`
+- `totalTokenRoomsCount`
+- `totalTokenRoomVolume`
+- leaderboard category and ranking basis
+- entry metrics: wins, races, valid finishes, DNF/DQ counts, suspicious event count, stake volume, gross winnings, total staked, net PnL, best time, win rate
+- admin status and manual payout signature
+
 ## Audit Log Requirements
 
 Every important event must be inserted into `token_room_events`:
@@ -506,6 +562,8 @@ Every important event must be inserted into `token_room_events`:
 - payout transaction sent/confirmed/failed
 - refund requested/sent/confirmed/failed
 - manual review opened/resolved
+- weekly token snapshot created/reviewed/disputed
+- weekly manual payout recorded
 - emergency pause triggered
 
 Audit records must include:

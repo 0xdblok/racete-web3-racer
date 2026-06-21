@@ -76,7 +76,7 @@ If 3+ valid finishers:
 - 2nd: `25% of player payout pool = 12,000 RACETE`
 - 3rd: `10% of player payout pool = 4,800 RACETE`
 
-Weekly token stake rewards are tracked/admin-reviewed/manual-payout only in V1; no automatic weekly token payouts.
+Weekly token stake rewards are tracked with a frozen 7-day snapshot and are admin-reviewed/manual-payout only in V1; no automatic weekly token payouts.
 
 ## Race result tracking
 
@@ -109,6 +109,15 @@ Future leaderboards will track career stats from `race_records`:
 Weekly leaderboard prizes remain Race Cash-only until token stake rooms are explicitly implemented.
 
 Token Stake Rooms V1 will track a separate weekly token stake reward pool funded by the 15% weekly allocation from every token stake room. Weekly token rewards are admin-reviewed/manual-payout only in V1; no automatic weekly token payout is allowed.
+
+Weekly token rewards should be distributed from a frozen weekly snapshot:
+
+- Snapshot cadence: every 7 days.
+- Recommended window: Monday 00:00 UTC -> next Monday 00:00 UTC.
+- Example week id: `2026-W26`.
+- Snapshot freezes the token-room leaderboard, weekly pool amount, token room count, token volume, eligibility flags, DQ/suspicious counts, and suggested payouts.
+- Admin manually reviews the snapshot, sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`, and records payout signatures.
+- Snapshot data should be immutable after final review except admin notes and manual payout transaction signatures.
 
 ## Flexible objectives framework (future)
 
