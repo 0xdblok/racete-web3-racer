@@ -9,6 +9,11 @@ export type RewardClaimState = {
   rewardAmount?: number;
   rewardBreakdown?: RaceRewardBreakdown;
   message?: string;
+  completedObjectives?: Array<{
+    objectiveId: string;
+    title: string;
+    rewardAmount: number;
+  }>;
 };
 
 type RaceResultsOverlayProps = {
@@ -143,6 +148,11 @@ export function RaceResultsOverlay({
         )}
 
         {rewardClaim && <RewardBox rewardClaim={rewardClaim} />}
+
+        {rewardClaim?.completedObjectives &&
+          rewardClaim.completedObjectives.length > 0 && (
+            <CompletedObjectivesBox objectives={rewardClaim.completedObjectives} />
+          )}
 
         <div className="mt-8 flex flex-col gap-3">
           <button
@@ -377,4 +387,36 @@ function formatMsDisplay(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}.${fraction
     .toString()
     .padStart(2, "0")}`;
+}
+
+function CompletedObjectivesBox({
+  objectives,
+}: {
+  objectives: Array<{
+    objectiveId: string;
+    title: string;
+    rewardAmount: number;
+  }>;
+}) {
+  return (
+    <div className="mt-3 rounded-2xl border border-fuchsia-300/25 bg-fuchsia-500/[0.06] p-4 text-left">
+      <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-fuchsia-300/70">
+        Missions Completed
+      </p>
+      <div className="space-y-2">
+        {objectives.map((obj) => (
+          <div
+            key={obj.objectiveId}
+            className="flex items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2 text-xs"
+          >
+            <span className="text-white/80">{obj.title}</span>
+            <b className="text-fuchsia-200 shrink-0">+{obj.rewardAmount} RC</b>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[11px] text-white/40">
+        Visit Missions page to claim rewards
+      </p>
+    </div>
+  );
 }

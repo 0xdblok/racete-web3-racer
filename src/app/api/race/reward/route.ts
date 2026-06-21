@@ -13,6 +13,10 @@ import {
 import { getPlayerState } from "@/lib/player-state";
 import { isValidSolanaAddress } from "@/lib/solana-payments";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import {
+  evaluateObjectives,
+  type ObjectiveEvaluation,
+} from "@/config/objectives";
 
 // ── Payload types ────────────────────────────────────────────────────────────
 
@@ -455,7 +459,126 @@ export async function POST(request: NextRequest) {
       });
     if (ledgerError) throw ledgerError;
 
-    // 13. Upsert race_records (gracefully no-ops if table missing) ──────────
+    // 13. Evaluate & upsert objective progress (before race_records update) ──
+    const objectiveEvaluations = evaluateObjectives({
+      walletAddress,
+      trackId,
+      carClass,
+      carId,
+      totalTimeMs,
+      bestLapMs,
+      firstLapMs,
+      wrongWayTriggered,
+      resetCount,
+      targetConfig,
+      previousRecords,
+      rewardBreakdown: {
+        total: rewardAmount,
+        targetTimeBonus: breakdown.targetTimeBonus,
+      },
+    });
+
+    const completedObjectives: Array<{
+      objectiveId: string;
+      title: string;
+      rewardAmount: number;
+    }> = [];
+
+    for (const evalResult of objectiveEvaluations) {
+      const now = new Date().toISOString();
+
+      // Fetch existing progress row for this wallet+objective
+      const { data: existingProgress } = await supabase
+        .from("race_objective_progress")
+        .select("id,status,progress,reward_amount,completed_at")
+        .eq("wallet_address", walletAddress)
+        .eq("objective_id", evalResult.objectiveId)
+        .maybeSingle();
+
+      if (existingProgress) {
+        const existingRow = existingProgress as Record<string, unknown>;
+        // Skip if already completed or claimed (for non-repeatable)
+        if (
+          !evalResult.objective.repeatable &&
+          (existingRow.status === "completed" ||
+            existingRow.status === "claimed")
+        ) {
+          continue;
+        }
+
+        // For repeatable objectives, only update if new progress is higher
+        if (
+          evalResult.objective.repeatable &&
+          evalResult.newProgress <= Number(existingRow.progress)
+        ) {
+          continue;
+        }
+
+        // Update progress
+        const newStatus = evalResult.completed ? "completed" : "in_progress";
+        const { error: progressError } = await supabase
+          .from("race_objective_progress")
+          .update({
+            status: newStatus,
+            progress: evalResult.newProgress,
+            target: evalResult.target,
+            reward_amount: evalResult.objective.rewardAmount,
+            completed_at: evalResult.completed ? now : (existingRow.completed_at as string | null),
+            updated_at: now,
+          })
+          .eq("wallet_address", walletAddress)
+          .eq("objective_id", evalResult.objectiveId);
+
+        // Table missing is non-fatal for objectives
+        if (progressError) {
+          const code = (progressError as { code?: string }).code;
+          if (
+            code !== "PGRST205" &&
+            !progressError.message?.includes("does not exist")
+          ) {
+            throw progressError;
+          }
+        } else if (evalResult.completed && existingProgress.status !== "completed") {
+          completedObjectives.push({
+            objectiveId: evalResult.objectiveId,
+            title: evalResult.objective.title,
+            rewardAmount: evalResult.objective.rewardAmount,
+          });
+        }
+      } else {
+        // No row yet — insert new
+        const newStatus = evalResult.completed ? "completed" : "in_progress";
+        const { error: insertError } = await supabase
+          .from("race_objective_progress")
+          .insert({
+            wallet_address: walletAddress,
+            objective_id: evalResult.objectiveId,
+            status: newStatus,
+            progress: evalResult.newProgress,
+            target: evalResult.target,
+            reward_amount: evalResult.objective.rewardAmount,
+            completed_at: evalResult.completed ? now : null,
+          });
+
+        if (insertError) {
+          const code = (insertError as { code?: string }).code;
+          if (
+            code !== "PGRST205" &&
+            !insertError.message?.includes("does not exist")
+          ) {
+            throw insertError;
+          }
+        } else if (evalResult.completed) {
+          completedObjectives.push({
+            objectiveId: evalResult.objectiveId,
+            title: evalResult.objective.title,
+            rewardAmount: evalResult.objective.rewardAmount,
+          });
+        }
+      }
+    }
+
+    // 14. Upsert race_records (gracefully no-ops if table missing) ──────────
     await upsertRaceRecords(
       supabase,
       walletAddress,
@@ -468,7 +591,7 @@ export async function POST(request: NextRequest) {
       previousRaceRecord,
     );
 
-    // 14. Fetch recent rewards for response ─────────────────────────────────
+    // 15. Fetch recent rewards for response ─────────────────────────────────
     let recentRewards: Array<Record<string, unknown>> = [];
     const { data: recentRewardRows, error: recentRewardsError } =
       await supabase
@@ -490,6 +613,7 @@ export async function POST(request: NextRequest) {
         autoSelectFallback: false,
       }),
       recentRewards,
+      completedObjectives,
     });
   } catch (error) {
     const message =

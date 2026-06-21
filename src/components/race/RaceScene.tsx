@@ -37,6 +37,8 @@ type RaceSceneProps = {
   carRef?: React.MutableRefObject<CarState | null>;
   remotePlayers?: LobbyPlayer[];
   localSpawn?: { x: number; y?: number; z: number; yaw?: number };
+  autoStart?: boolean;
+  startRaceRef?: React.MutableRefObject<(() => void) | null>;
   onFinish?: (result: RaceResult) => void;
   onProgress?: (progress: RaceProgress) => void;
 };
@@ -48,6 +50,8 @@ export function RaceScene({
   carRef,
   remotePlayers = [],
   localSpawn,
+  autoStart = true,
+  startRaceRef,
   onFinish,
   onProgress,
 }: RaceSceneProps) {
@@ -59,10 +63,24 @@ export function RaceScene({
   const initialPosition = new THREE.Vector3(start.x, start.y ?? 0.3, start.z);
   const initialRotationY = start.yaw ?? 0;
 
+  // When parent provides a startRaceRef, manual start is intended → force autoStart off.
+  const effectiveAutoStart = startRaceRef ? false : autoStart;
+
   const race = useRaceLoop(activeCarRef, track, {
-    autoStart: true,
+    autoStart: effectiveAutoStart,
     onFinish,
   });
+
+  // Expose startRace to parent so it can trigger a manual start.
+  // When startRaceRef is provided, auto-start is disabled — only set the callback.
+  useEffect(() => {
+    if (startRaceRef) {
+      startRaceRef.current = race.startRace;
+    }
+    return () => {
+      if (startRaceRef) startRaceRef.current = null;
+    };
+  }, [startRaceRef, race.startRace]);
 
   // Mirror progress to parent after render; avoids parent state updates during child render.
   useEffect(() => {

@@ -12,6 +12,7 @@ import { RaceHud } from "@/components/race/RaceHud";
 import { RaceResultsOverlay, type RewardClaimState } from "@/components/race/RaceResultsOverlay";
 import { MyRecordsPanel } from "@/components/race/MyRecordsPanel";
 import { RewardProgressPanel } from "@/components/race/RewardProgressPanel";
+import { LeaderboardPreviewPanel } from "@/components/race/LeaderboardPreviewPanel";
 import { calculateSoloRaceReward, getTrackTarget } from "@/config/rewards";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
@@ -46,8 +47,10 @@ export function RacePageClient() {
   const [rewardClaim, setRewardClaim] = useState<RewardClaimState>({ status: "idle" });
   const claimedRaceSessionRef = useRef<string | null>(null);
   const carStateRef = useRef<CarState | null>(null);
+  const startRaceRef = useRef<(() => void) | null>(null);
   const [recordsData, setRecordsData] = useState<RecordsResponse | null>(null);
   const [recordsLoading, setRecordsLoading] = useState(false);
+  const [raceManuallyStarted, setRaceManuallyStarted] = useState(false);
   const walletAddress = publicKey?.toBase58() || "";
 
   const handleRaceProgress = useCallback((progress: RaceProgress) => {
@@ -66,6 +69,7 @@ export function RacePageClient() {
     claimedRaceSessionRef.current = null;
     setRaceSessionId(crypto.randomUUID());
     carStateRef.current = null;
+    setRaceManuallyStarted(false);
     setRaceKey((k) => k + 1);
   }, []);
 
@@ -145,6 +149,7 @@ export function RacePageClient() {
           rewardAmount: Number(data.rewardAmount || 0),
           rewardBreakdown: data.rewardBreakdown || preview,
           message: `+${Number(data.rewardAmount || 0)} Race Cash added.`,
+          completedObjectives: data.completedObjectives || [],
         });
         if (data.playerState) setState(data.playerState);
         // Refresh records after earning reward
@@ -252,22 +257,39 @@ export function RacePageClient() {
   }
 
   if (state?.selectedCar && selectedCatalogCar) {
-    const isRacing = raceProgress != null && !raceResult;
-    const showPanels = !raceProgress && !raceResult;
+    const showPanels = !raceResult && !raceManuallyStarted && raceProgress?.phase !== "racing" && raceProgress?.phase !== "go";
 
     return (
       <main className="relative min-h-screen bg-[#050509] p-2 text-white">
         <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} telemetry={telemetry} raceProgress={raceProgress} />
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <Link href="/garage" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Garage</Link>
+          <Link href="/missions" className="rounded-full border border-lime-300/25 bg-black/50 px-4 py-2 text-sm font-bold text-lime-200/80 backdrop-blur hover:bg-lime-300/10">Missions</Link>
           <button onClick={() => void loadPlayer()} className="rounded-full border border-lime-300/35 bg-black/50 px-4 py-2 text-sm font-bold text-lime-100 backdrop-blur hover:bg-lime-300/10">Refresh car</button>
         </div>
 
         {/* Records & progress panels — shown before race starts */}
         {showPanels && (
-          <div className="absolute right-3 top-20 z-20 w-72 space-y-3">
+          <div className="absolute bottom-5 right-3 z-20 w-72 space-y-3">
+            <button
+              onClick={() => {
+                setRaceManuallyStarted(true);
+                startRaceRef.current?.();
+              }}
+              className="w-full rounded-xl border border-fuchsia-400/40 bg-fuchsia-500/20 px-4 py-3 text-sm font-black text-fuchsia-200 hover:bg-fuchsia-500/30 active:scale-[0.98] transition-all"
+            >
+              🏁 Start Solo Race
+            </button>
             <MyRecordsPanel data={recordsData} loading={recordsLoading} />
             <RewardProgressPanel data={recordsData} loading={recordsLoading} />
+            <LeaderboardPreviewPanel walletAddress={walletAddress} carClass={selectedCatalogCar.class} />
+          </div>
+        )}
+
+        {/* Debug: phase indicator (visible in dev only) */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="absolute top-2 left-1/2 z-30 -translate-x-1/2 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[10px] text-white/40 backdrop-blur">
+            phase={raceProgress?.phase ?? "null"} | manual={String(raceManuallyStarted)} | autoStart=false
           </div>
         )}
 
@@ -277,6 +299,8 @@ export function RacePageClient() {
           selectedCar={state.selectedCar}
           track={CITY_LOOP_TRACK}
           carRef={carStateRef}
+          autoStart={false}
+          startRaceRef={startRaceRef}
           onProgress={handleRaceProgress}
           onFinish={handleRaceFinish}
         />
