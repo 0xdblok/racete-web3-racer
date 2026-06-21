@@ -11,6 +11,7 @@ import { RaceHud } from "@/components/race/RaceHud";
 import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
+import { TokenStakeRoomsPreview } from "@/components/token-rooms/TokenStakeRoomsPreview";
 import {
   getState,
   sendMovement,
@@ -219,10 +220,13 @@ function MultiplayerRaceClientInner() {
   if (!connected) {
     return (
       <MultiplayerShell>
-        <div className="mx-auto max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center text-white">
-          <p className="text-sm font-bold uppercase tracking-[0.35em] text-lime-300">Wallet required</p>
-          <h1 className="mt-3 text-4xl font-black">Connect wallet to race.</h1>
-          <div className="mt-6 flex justify-center"><WalletMultiButton /></div>
+        <div className="flex w-full max-w-4xl flex-col items-center gap-6">
+          <div className="mx-auto max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-center text-white">
+            <p className="text-sm font-bold uppercase tracking-[0.35em] text-lime-300">Wallet required</p>
+            <h1 className="mt-3 text-4xl font-black">Connect wallet to race.</h1>
+            <div className="mt-6 flex justify-center"><WalletMultiButton /></div>
+          </div>
+          <TokenStakeRoomsPreview />
         </div>
       </MultiplayerShell>
     );
@@ -264,11 +268,14 @@ function MultiplayerRaceClientInner() {
 
     return (
       <MultiplayerShell>
-        <MatchmakingPanel
-          selectedCar={{ ...selectedCatalogCar, powerRating: playerState.selectedCar.power_rating ?? selectedCatalogCar.basePowerRating }}
-          playerCar={playerState.selectedCar}
-          onStateChange={handleLobbyStateChange}
-        />
+        <div className="flex w-full max-w-4xl flex-col items-center gap-6">
+          <MatchmakingPanel
+            selectedCar={{ ...selectedCatalogCar, powerRating: playerState.selectedCar.power_rating ?? selectedCatalogCar.basePowerRating }}
+            playerCar={playerState.selectedCar}
+            onStateChange={handleLobbyStateChange}
+          />
+          <TokenStakeRoomsPreview />
+        </div>
       </MultiplayerShell>
     );
   }
