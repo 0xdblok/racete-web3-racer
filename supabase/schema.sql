@@ -99,12 +99,23 @@ create table if not exists token_transactions (
 );
 
 insert into cars_catalog (id, name, class, model_url, base_power_rating, price_race_cash, price_token, is_starter) values
-  ('street-rat','Street Rat','D','/models/cars/street-rat.glb',120,0,0,true),
-  ('bavaro-coupe','Bavaro Coupe','C','/models/cars/bavaro-coupe.glb',240,40000,0,false),
-  ('aurox-v10','Aurox V10','B','/models/cars/aurox-v10.glb',390,120000,0,false),
-  ('sturm-rs','Sturm RS','B+','/models/cars/sturm-rs.glb',520,250000,25000,false),
-  ('furia-gt','Furia GT','A','/models/cars/furia-gt.glb',720,500000,75000,false),
-  ('toro-x','Toro X','S','/models/cars/toro-x.glb',900,1000000,200000,false)
+  ('street-rat','Tesla Cybertruck','C','/models/cars/street-rat/scene.gltf',280,0,0,true),
+  ('bavaro-coupe','BMW M4 Competition','B','/models/cars/bavaro-coupe/scene.gltf',480,40000,0,false),
+  ('aurox-v10','Audi e-tron GT quattro','B','',450,120000,0,false),
+  ('sturm-rs','Bugatti Chiron Pur Sport','S','',940,250000,25000,false),
+  ('furia-gt','Ferrari SF90 Spider','S','/models/cars/furia-gt/scene.gltf',900,500000,75000,false),
+  ('toro-x','Lamborghini Urus','A','/models/cars/toro-x/scene.gltf',720,1000000,200000,false),
+  ('nova-s1','Audi Nuvolari concept','B+','/models/cars/audi-novulari/scene.gltf',620,140000,0,false),
+  ('bavaro-sport','BMW 330i','C+','/models/cars/bmw-330i/scene.gltf',380,50000,0,false),
+  ('zephyr-z8','Subaru BRZ','C','/models/cars/subaru-brz/scene.gltf',350,45000,0,false),
+  ('bavaro-m5','BMW M5 2025','A','/models/cars/bmw-m5-sedan/scene.gltf',730,300000,30000,false),
+  ('toro-se','Lamborghini Urus SE 2025','A','/models/cars/lambo-urus-se/scene.gltf',760,600000,80000,false),
+  ('valor-gt','Aston Martin Valiant','S','/models/cars/aston-martin-valiant/scene.gltf',850,650000,85000,false),
+  ('warp-x1','McLaren W1 2025','S','/models/cars/mclaren-w1/scene.gltf',980,1200000,250000,false),
+  ('nova-spider','McLaren Artura Spider','S','/models/cars/mclaren-artura/scene.gltf',820,550000,70000,false),
+  ('volt-w6','BYD Seal 6 DM-i Touring','D','/models/cars/byd-seal-6/scene.gltf',200,35000,0,false),
+  ('volt-c5','BYD Seal 5 DM-i','D','/models/cars/byd-seal-5/scene.gltf',190,30000,0,false),
+  ('bavaro-cs','BMW M3 CS Touring','A','/models/cars/bmw-m3-cs/scene.gltf',700,350000,40000,false)
 on conflict (id) do update set
   name = excluded.name, class = excluded.class, model_url = excluded.model_url,
   base_power_rating = excluded.base_power_rating, price_race_cash = excluded.price_race_cash,
