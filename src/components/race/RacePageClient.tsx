@@ -9,7 +9,8 @@ import { CARS } from "@/config/cars";
 import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
-import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
+import { RaceResultsOverlay, type RewardClaimState } from "@/components/race/RaceResultsOverlay";
+import { calculateSoloRaceReward } from "@/config/rewards";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
@@ -38,6 +39,9 @@ export function RacePageClient() {
   const [raceProgress, setRaceProgress] = useState<RaceProgress | null>(null);
   const [raceResult, setRaceResult] = useState<RaceResult | null>(null);
   const [raceKey, setRaceKey] = useState(0);
+  const [raceSessionId, setRaceSessionId] = useState(() => crypto.randomUUID());
+  const [rewardClaim, setRewardClaim] = useState<RewardClaimState>({ status: "idle" });
+  const claimedRaceSessionRef = useRef<string | null>(null);
   const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
 
@@ -53,6 +57,9 @@ export function RacePageClient() {
     setRaceResult(null);
     setRaceProgress(null);
     setTelemetry(null);
+    setRewardClaim({ status: "idle" });
+    claimedRaceSessionRef.current = null;
+    setRaceSessionId(crypto.randomUUID());
     carStateRef.current = null;
     setRaceKey((k) => k + 1);
   }, []);
@@ -80,6 +87,64 @@ export function RacePageClient() {
     if (!state?.selectedCar) return null;
     return CARS.find((car) => car.id === state.selectedCar?.car_id) || null;
   }, [state]);
+
+  useEffect(() => {
+    if (!raceResult || !walletAddress || !state?.selectedCar || !selectedCatalogCar) return;
+    if (claimedRaceSessionRef.current === raceSessionId) return;
+    claimedRaceSessionRef.current = raceSessionId;
+
+    const preview = calculateSoloRaceReward({
+      completed: raceResult.lapsCompleted >= CITY_LOOP_TRACK.lapCount,
+      totalTimeMs: raceResult.totalTimeMs,
+      bestLapMs: raceResult.bestLapTimeMs,
+      cleanRace: true,
+    });
+    setRewardClaim({
+      status: "claiming",
+      rewardAmount: preview.total,
+      rewardBreakdown: preview,
+      message: "Adding Race Cash...",
+    });
+
+    async function claimReward() {
+      try {
+        const res = await fetch("/api/race/reward", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            walletAddress,
+            raceMode: "solo",
+            carId: selectedCatalogCar?.id,
+            trackId: CITY_LOOP_TRACK.id,
+            totalTimeMs: raceResult?.totalTimeMs,
+            bestLapMs: raceResult?.bestLapTimeMs,
+            lapsCompleted: raceResult?.lapsCompleted,
+            checkpointsCompleted: raceResult?.checkpointsPassed,
+            placement: 1,
+            clientRaceId: raceSessionId,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Race reward claim failed");
+        setRewardClaim({
+          status: "paid",
+          rewardAmount: Number(data.rewardAmount || 0),
+          rewardBreakdown: data.rewardBreakdown || preview,
+          message: `+${Number(data.rewardAmount || 0)} Race Cash added.`,
+        });
+        if (data.playerState) setState(data.playerState);
+      } catch (err) {
+        setRewardClaim({
+          status: "error",
+          rewardAmount: preview.total,
+          rewardBreakdown: preview,
+          message: err instanceof Error ? err.message : "Reward claim failed",
+        });
+      }
+    }
+
+    void claimReward();
+  }, [raceResult, raceSessionId, selectedCatalogCar, state?.selectedCar, walletAddress]);
 
   const loadPlayer = useCallback(async () => {
     if (!walletAddress) return;
@@ -173,6 +238,7 @@ export function RacePageClient() {
             onRaceAgain={handleRaceAgain}
             placement={1}
             totalPlayers={1}
+            rewardClaim={rewardClaim}
           />
         )}
       </main>

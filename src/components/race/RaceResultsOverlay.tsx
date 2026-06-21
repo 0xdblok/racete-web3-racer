@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import type { RaceResult } from "@/lib/race/useRaceLoop";
+import type { RaceRewardBreakdown } from "@/config/rewards";
+
+export type RewardClaimState = {
+  status: "idle" | "claiming" | "paid" | "error";
+  rewardAmount?: number;
+  rewardBreakdown?: RaceRewardBreakdown;
+  message?: string;
+};
 
 type RaceResultsOverlayProps = {
   result: RaceResult;
@@ -12,6 +20,7 @@ type RaceResultsOverlayProps = {
   /** Multiplayer-ready placement. Defaults to 1 for solo/local runs. */
   placement?: number;
   totalPlayers?: number;
+  rewardClaim?: RewardClaimState;
 };
 
 export function getOrdinal(value: number): string {
@@ -43,6 +52,7 @@ export function RaceResultsOverlay({
   onRaceAgain,
   placement = 1,
   totalPlayers,
+  rewardClaim,
 }: RaceResultsOverlayProps) {
   const safePlacement = Math.max(1, Math.floor(placement));
   const ordinal = getOrdinal(safePlacement);
@@ -72,6 +82,10 @@ export function RaceResultsOverlay({
           <StatBox label="Position" value={`${ordinal}${fieldSize}`} accent={safePlacement === 1} />
         </div>
 
+        {rewardClaim && (
+          <RewardBox rewardClaim={rewardClaim} />
+        )}
+
         <div className="mt-8 flex flex-col gap-3">
           <button
             onClick={onRaceAgain}
@@ -95,6 +109,51 @@ export function RaceResultsOverlay({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function RewardBox({ rewardClaim }: { rewardClaim: RewardClaimState }) {
+  const breakdown = rewardClaim.rewardBreakdown;
+  const isPaid = rewardClaim.status === "paid";
+  const isError = rewardClaim.status === "error";
+
+  return (
+    <div className={`mt-5 rounded-2xl border p-4 text-left ${
+      isError
+        ? "border-red-400/30 bg-red-500/10"
+        : isPaid
+          ? "border-lime-300/30 bg-lime-300/[0.08]"
+          : "border-white/10 bg-white/[0.04]"
+    }`}>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-white/45">Race Cash Reward</p>
+        <p className={`text-sm font-black ${isError ? "text-red-200" : isPaid ? "text-lime-200" : "text-white/70"}`}>
+          {rewardClaim.status === "claiming" ? "Claiming..." : isPaid ? `+${rewardClaim.rewardAmount ?? breakdown?.total ?? 0} Race Cash` : "Not paid"}
+        </p>
+      </div>
+
+      {breakdown && (
+        <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-white/65">
+          <RewardLine label="Finish" value={breakdown.finish} />
+          <RewardLine label="Best Lap Bonus" value={breakdown.bestLap} />
+          <RewardLine label="Clean Race Bonus" value={breakdown.cleanRace} />
+          <RewardLine label="Fast Finish Bonus" value={breakdown.fastFinish} />
+        </div>
+      )}
+
+      <p className={`mt-3 text-sm font-bold ${isError ? "text-red-200" : isPaid ? "text-lime-200" : "text-white/55"}`}>
+        {rewardClaim.message || (isPaid ? `+${rewardClaim.rewardAmount ?? 0} Race Cash added.` : "Reward claim pending.")}
+      </p>
+    </div>
+  );
+}
+
+function RewardLine({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex justify-between gap-3 rounded-xl bg-black/25 px-3 py-2">
+      <span>{label}</span>
+      <b className="text-lime-200">+{value}</b>
     </div>
   );
 }

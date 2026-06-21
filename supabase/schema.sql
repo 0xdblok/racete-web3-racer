@@ -117,5 +117,29 @@ alter table race_cash_ledger enable row level security;
 alter table payment_intents enable row level security;
 alter table token_transactions enable row level security;
 
+create table if not exists race_rewards (
+  id uuid primary key default gen_random_uuid(),
+  wallet_address text not null references players(wallet_address) on delete cascade,
+  race_mode text not null check (race_mode in ('solo','multiplayer')),
+  track_id text not null,
+  car_id text not null,
+  client_race_id text not null,
+  total_time_ms int not null,
+  best_lap_ms int not null,
+  laps_completed int not null,
+  checkpoints_completed int not null,
+  placement int,
+  reward_amount numeric not null default 0,
+  reward_breakdown jsonb not null default '{}'::jsonb,
+  status text not null check (status in ('paid','rejected')),
+  rejection_reason text,
+  created_at timestamptz not null default now(),
+  unique(wallet_address, client_race_id)
+);
+
+create index if not exists race_rewards_wallet_created_idx on race_rewards(wallet_address, created_at desc);
+
+alter table race_rewards enable row level security;
+
 drop policy if exists "cars_catalog_public_read" on cars_catalog;
 create policy "cars_catalog_public_read" on cars_catalog for select using (is_active = true);
