@@ -2,10 +2,14 @@
 
 Status: **Security design only — not implemented, not enabled**
 
-Token placeholder:
+Token mint configuration:
 
 ```env
-RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
+# Temporary dev/test token mint only. Do not use as final production Pump.fun token.
+RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+
+# Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
+RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
 ```
 
 This document defines the minimum security requirements, threat model, mitigations, and launch gates for RaceTE Token Stake Rooms.
@@ -136,12 +140,17 @@ Risk:
 Server/backend only:
 
 ```env
-RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
+# Temporary dev/test token mint only.
+RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+
+# Final production Pump.fun token mint. Must remain placeholder until provided.
+RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
+
 SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
 TOKEN_VAULT_AUTHORITY=...
-TOKEN_TREASURY_WALLET=...
-TOKEN_WEEKLY_REWARD_WALLET=...
+TOKEN_TREASURY_WALLET=ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG
+TOKEN_WEEKLY_REWARD_WALLET=4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -154,6 +163,9 @@ MULTIPLAYER_REWARD_SECRET=...
 
 Rules:
 
+- `RACETE_TEST_TOKEN_MINT` is a temporary test mint for dev/test flows only.
+- `RACETE_TOKEN_MINT` remains the final production Pump.fun mint placeholder until the real mint is provided.
+- Production/mainnet flows must reject `RACETE_TEST_TOKEN_MINT`; they must use `RACETE_TOKEN_MINT` only after the final mint is set.
 - `TOKEN_TREASURY_WALLET` and `TOKEN_WEEKLY_REWARD_WALLET` are public recipient addresses only.
 - Production treasury and weekly reward wallets should ideally be controlled by a multisig or secure operational wallet.
 - `TOKEN_VAULT_AUTHORITY` is server-side signer configuration or an equivalent secure signer setup.

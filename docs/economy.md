@@ -49,6 +49,22 @@ Personal best bonuses only trigger when the player beats a previous record. Firs
 
 ### Token Stake Race — future, disabled in V1 UI
 
+Token mint config for Token Stake Rooms docs:
+
+```env
+# Temporary dev/test token mint only. Do not use as final production Pump.fun token.
+RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+
+# Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
+RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
+```
+
+Implementation rule:
+
+- Dev/test flows should use `RACETE_TEST_TOKEN_MINT`.
+- Production/mainnet flows must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
+- The temporary test mint is not the final production token.
+
 - Players will deposit RACETE into a token stake pot later.
 - Top valid finishers receive token payout from the player payout pool.
 - Token stake rooms are multiplayer-only and currently **coming soon**: no real SPL transfer, escrow, payout, or treasury signer is implemented here.

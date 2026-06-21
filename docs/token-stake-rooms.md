@@ -2,10 +2,14 @@
 
 Status: **Architecture only — not implemented, not enabled**
 
-Token placeholder:
+Token mint configuration:
 
 ```env
-RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
+# Temporary dev/test token mint only. Do not use as final production Pump.fun token.
+RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+
+# Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
+RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
 ```
 
 This document defines the proposed V1 architecture for **multiplayer Token Stake Rooms** in RaceTE Web3 Racer. It must be reviewed before any production code is written.
@@ -43,7 +47,9 @@ For this architecture pass:
 
 - Players per room: **2 to 6**.
 - Race type: multiplayer only.
-- Token: existing Pump.fun SPL token, mint placeholder `RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT`.
+- Token: existing Pump.fun SPL token. Final production mint remains placeholder `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` until provided.
+- Dev/test flows should use temporary test mint `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8`.
+- Production/mainnet flows must not use `RACETE_TEST_TOKEN_MINT`; they must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
 - Stake amount is selected by the room creator before the room opens.
 - Every player in the same room must stake the **exact same amount**.
 - Other players can only join if they accept and deposit that same stake.
@@ -81,8 +87,8 @@ playerPayoutPool:              80% -> automatic player winner payouts
 Required wallet environment variables:
 
 ```env
-TOKEN_TREASURY_WALLET=...
-TOKEN_WEEKLY_REWARD_WALLET=...
+TOKEN_TREASURY_WALLET=ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG
+TOKEN_WEEKLY_REWARD_WALLET=4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw
 TOKEN_VAULT_AUTHORITY=...
 ```
 
@@ -360,7 +366,7 @@ Recommended V1 custody details:
 ### 1. Wallet Connects
 
 - User connects Solana wallet.
-- Frontend reads token balance for `RACETE_TOKEN_MINT`.
+- Frontend reads token balance for the active token mint: `RACETE_TEST_TOKEN_MINT` in dev/test, `RACETE_TOKEN_MINT` only in production after the final Pump.fun mint is provided.
 - Token Stake Rooms remain disabled until the feature flag is enabled.
 
 ### 2. Room Creator Selects Stake
@@ -395,7 +401,7 @@ User signs SPL token transfer:
 ```text
 user ATA -> room vault ATA
 amount = exact stakeAmount
-mint = RACETE_TOKEN_MINT
+mint = active token mint (RACETE_TEST_TOKEN_MINT in dev/test; RACETE_TOKEN_MINT in production after final mint is provided)
 ```
 
 Recommended: include memo/reference containing `room_id`, `wallet_address`, and join intent id if possible.
@@ -412,7 +418,7 @@ Backend verifies on-chain:
 
 - transaction finalized/confirmed enough for policy
 - instruction is SPL token transfer or transferChecked
-- mint matches `RACETE_TOKEN_MINT`
+- mint matches the active token mint (`RACETE_TEST_TOKEN_MINT` in dev/test; `RACETE_TOKEN_MINT` in production after final mint is provided)
 - source owner matches wallet address
 - destination equals vault ATA
 - amount equals room stake amount
@@ -489,7 +495,7 @@ Long-term recommended:
 
 ### Token Account Creation
 
-- Create a vault ATA for `RACETE_TOKEN_MINT`.
+- Create a vault ATA for the active token mint (`RACETE_TEST_TOKEN_MINT` in dev/test; `RACETE_TOKEN_MINT` in production after final mint is provided).
 - Do not accept deposits to arbitrary token accounts.
 - Validate token account mint and owner for every deposit.
 - Consider separate vault token accounts per room if operationally feasible.
@@ -731,7 +737,7 @@ Recommended signed finalize payload:
   "roomId": "token_room_...",
   "raceId": "race_...",
   "serverRaceId": "mp:...",
-  "tokenMint": "TO_BE_PROVIDED_PUMPFUN_MINT",
+  "tokenMint": "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT",
   "stakeAmount": "100000000000",
   "players": [
     {
@@ -903,12 +909,17 @@ Card states:
 Server/backend only — never `NEXT_PUBLIC_`:
 
 ```env
-RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
+# Temporary dev/test token mint only.
+RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+
+# Final production Pump.fun token mint. Must remain placeholder until provided.
+RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
+
 SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
 TOKEN_VAULT_AUTHORITY=...
-TOKEN_TREASURY_WALLET=...
-TOKEN_WEEKLY_REWARD_WALLET=...
+TOKEN_TREASURY_WALLET=ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG
+TOKEN_WEEKLY_REWARD_WALLET=4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -921,6 +932,8 @@ MULTIPLAYER_REWARD_SECRET=...
 
 Notes:
 
+- `RACETE_TEST_TOKEN_MINT` is temporary and only for dev/test implementation flows.
+- `RACETE_TOKEN_MINT` is the final production Pump.fun mint placeholder; production/mainnet flows must not use the test mint.
 - `TOKEN_ROOM_SECRET` signs server-only token-room lifecycle events.
 - `MULTIPLAYER_REWARD_SECRET` remains only for free multiplayer Race Cash rewards.
 - V1 creator fee is 0%; no creator fee env var is required.
@@ -983,7 +996,8 @@ Notes:
 
 ## What Must Be True Before Coding Starts
 
-- Token mint confirmed: `RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT` replaced with real Pump.fun mint.
+- Temporary test mint recorded for dev/test flows: `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8`.
+- Final production token mint confirmed: `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` replaced with real Pump.fun mint before any production/mainnet flow.
 - Custody model selected and approved.
 - Fee wallets selected and secured.
 - RPC provider selected with reliable transaction history access.
