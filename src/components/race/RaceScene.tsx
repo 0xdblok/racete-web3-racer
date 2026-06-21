@@ -41,6 +41,8 @@ type RaceSceneProps = {
   startRaceRef?: React.MutableRefObject<(() => void) | null>;
   onFinish?: (result: RaceResult) => void;
   onProgress?: (progress: RaceProgress) => void;
+  /** Called when a checkpoint is crossed (for server-authoritative validation). */
+  onCheckpoint?: (checkpointId: string, lap: number, passed: number) => void;
 };
 
 export function RaceScene({
@@ -54,6 +56,7 @@ export function RaceScene({
   startRaceRef,
   onFinish,
   onProgress,
+  onCheckpoint,
 }: RaceSceneProps) {
   const gameplayStats = resolveCarGameplayStats(car, selectedCar);
   const internalCarRef = useRef<CarState | null>(null);
@@ -69,6 +72,7 @@ export function RaceScene({
   const race = useRaceLoop(activeCarRef, track, {
     autoStart: effectiveAutoStart,
     onFinish,
+    onCheckpoint,
   });
 
   // Expose startRace to parent so it can trigger a manual start.

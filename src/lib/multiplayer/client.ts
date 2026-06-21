@@ -6,14 +6,14 @@
  */
 
 import type { Client, Room } from "colyseus.js";
-import type { RaceRoomState, LobbyPlayer, RoomStatus } from "@/types/multiplayer";
+import type { RaceRoomState, LobbyPlayer, RoomStatus, RaceResultEntry } from "@/types/multiplayer";
 import { publicEnv } from "@/lib/env";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-export type { RaceRoomState, LobbyPlayer, RoomStatus };
+export type { RaceRoomState, LobbyPlayer, RoomStatus, RaceResultEntry };
 
 export type MultiplayerMovementPayload = {
   x: number;
@@ -40,6 +40,17 @@ export type MatchmakingState = {
   roomId: string | null;
   sessionId: string | null;
   error: string | null;
+  /** Server-authoritative race results (populated when race ends). */
+  raceResults: RaceResultEntry[] | null;
+  /** My finish result (if I finished). */
+  myFinishResult: {
+    accepted: boolean;
+    placement: number;
+    totalTimeMs: number;
+    bestLapMs: number;
+    firstLapMs: number;
+    error?: string;
+  } | null;
 };
 
 type Listener = () => void;
@@ -136,6 +147,8 @@ let _state: MatchmakingState = {
   roomId: null,
   sessionId: null,
   error: null,
+  raceResults: null,
+  myFinishResult: null,
 };
 
 /* ------------------------------------------------------------------ */
@@ -233,13 +246,14 @@ export async function findMatch(params: {
           raceStartedAt: state.raceStartedAt ?? null,
           maxPlayers: state.maxPlayers ?? 4,
           minPlayersToStart: state.minPlayersToStart ?? 2,
+          results: state.results
+            ? (Array.from(state.results) as unknown as RaceResultEntry[])
+            : [],
         },
         status:
-          state.status === "racing"
+          state.status === "racing" || state.status === "finished"
             ? "joined"
-            : state.status === "ended"
-              ? "joined"
-              : "searching",
+            : "searching",
       });
     });
 
@@ -250,6 +264,67 @@ export async function findMatch(params: {
 
     room.onMessage("error", (msg: { message: string }) => {
       setState({ error: msg.message });
+    });
+
+    // ── Server-authoritative race events ──────────────────────────────────
+    room.onMessage("checkpoint_result", (msg: {
+      valid: boolean;
+      checkpointId: string;
+      currentLap: number;
+      totalLaps: number;
+      checkpointIndex: number;
+      checkpointsPassed: number;
+    }) => {
+      // Server confirmed checkpoint — update local state if needed
+      console.log(`[Multiplayer] Checkpoint ${msg.checkpointId} — ${msg.valid ? "valid" : "invalid"} (lap ${msg.currentLap}/${msg.totalLaps}, next cp ${msg.checkpointIndex})`);
+    });
+
+    room.onMessage("finish_result", (msg: {
+      accepted: boolean;
+      placement?: number;
+      totalTimeMs?: number;
+      bestLapMs?: number;
+      firstLapMs?: number;
+      error?: string;
+    }) => {
+      setState({
+        myFinishResult: {
+          accepted: msg.accepted,
+          placement: msg.placement ?? 0,
+          totalTimeMs: msg.totalTimeMs ?? 0,
+          bestLapMs: msg.bestLapMs ?? 0,
+          firstLapMs: msg.firstLapMs ?? 0,
+          error: msg.error,
+        },
+      });
+    });
+
+    room.onMessage("player_finished", (msg: {
+      sessionId: string;
+      walletAddress: string;
+      displayWallet: string;
+      carName: string;
+      carClass: string;
+      placement: number;
+      totalTimeMs: number;
+      bestLapMs: number;
+      firstLapMs: number;
+    }) => {
+      console.log(`[Multiplayer] ${msg.displayWallet} finished — Place #${msg.placement} Time ${msg.totalTimeMs}ms`);
+    });
+
+    room.onMessage("player_dnf", (msg: {
+      sessionId: string;
+      walletAddress: string;
+      displayWallet: string;
+    }) => {
+      console.log(`[Multiplayer] ${msg.displayWallet} DNF`);
+    });
+
+    room.onMessage("race_results", (msg: {
+      results: RaceResultEntry[];
+    }) => {
+      setState({ raceResults: msg.results });
     });
 
     // Handle disconnect
@@ -290,6 +365,22 @@ export function sendMovement(payload: MultiplayerMovementPayload): void {
   _room.send("movement", { ...payload, sentAt: payload.sentAt ?? Date.now() });
 }
 
+/** Send a checkpoint crossing to the server for validation. */
+export function sendCheckpoint(checkpointId: string): void {
+  if (!_room) return;
+  _room.send("checkpoint", { checkpointId });
+}
+
+/** Request finish from the server. Server validates and assigns placement. */
+export function sendFinish(payload: {
+  totalTimeMs: number;
+  bestLapMs: number;
+  firstLapMs: number;
+}): void {
+  if (!_room) return;
+  _room.send("finish", payload);
+}
+
 export function cancelMatchmaking(): void {
   if (_room) {
     _room.leave(true);
@@ -301,6 +392,8 @@ export function cancelMatchmaking(): void {
     roomId: null,
     sessionId: null,
     error: null,
+    raceResults: null,
+    myFinishResult: null,
   });
 }
 

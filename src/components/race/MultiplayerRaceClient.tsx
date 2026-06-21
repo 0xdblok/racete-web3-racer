@@ -11,14 +11,19 @@ import { RaceHud } from "@/components/race/RaceHud";
 import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
-import { getState, sendMovement, subscribe, type MatchmakingState } from "@/lib/multiplayer/client";
+import {
+  getState,
+  sendMovement,
+  sendCheckpoint,
+  sendFinish,
+  subscribe,
+  type MatchmakingState,
+} from "@/lib/multiplayer/client";
 import { formatRaceTime } from "@/lib/race/format";
 import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 
-// Dynamic import: RaceScene pulls in @react-three/* and may fail on some browsers.
-// Load it only when racing view is active to avoid crashing the whole page on initial render.
 const RaceScene = dynamic(
   () => import("@/components/race/RaceScene").then((mod) => ({ default: mod.RaceScene })),
   { ssr: false, loading: () => <div className="flex items-center justify-center h-screen text-white/60">Loading 3D race engine…</div> },
@@ -75,13 +80,28 @@ function MultiplayerRaceClientInner() {
   const [raceKey, setRaceKey] = useState(0);
   const carStateRef = useRef<CarState | null>(null);
   const walletAddress = publicKey?.toBase58() || "";
+  const finishRequestedRef = useRef(false);
 
   const handleRaceProgress = useCallback((progress: RaceProgress) => {
     setRaceProgress(progress);
   }, []);
 
+  // Server-authoritative finish: send finish event to Colyseus
   const handleRaceFinish = useCallback((result: RaceResult) => {
+    if (finishRequestedRef.current) return;
+    finishRequestedRef.current = true;
+
     setRaceResult(result);
+    sendFinish({
+      totalTimeMs: result.totalTimeMs,
+      bestLapMs: result.bestLapTimeMs,
+      firstLapMs: result.firstLapTimeMs,
+    });
+  }, []);
+
+  // Send checkpoint events to server
+  const handleCheckpoint = useCallback((checkpointId: string, _lap: number, _passed: number) => {
+    sendCheckpoint(checkpointId);
   }, []);
 
   const handleRaceAgain = useCallback(() => {
@@ -89,6 +109,7 @@ function MultiplayerRaceClientInner() {
     setRaceProgress(null);
     setTelemetry(null);
     carStateRef.current = null;
+    finishRequestedRef.current = false;
     setRaceKey((k) => k + 1);
   }, []);
 
@@ -101,6 +122,10 @@ function MultiplayerRaceClientInner() {
       }
       if (state.status === "idle" || state.status === "error" || state.status === "disconnected") {
         setView("matchmaking");
+      }
+      // When server sends race_results, show final state
+      if (state.raceResults || state.room?.status === "finished") {
+        // Keep in racing view — results overlay handles the transition
       }
     });
   }, []);
@@ -119,10 +144,9 @@ function MultiplayerRaceClientInner() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Network sync: send local car transform at 15Hz (not every frame)
+  // Network sync: send local car transform at 15Hz
   useEffect(() => {
     if (view !== "racing") return;
-
     const interval = window.setInterval(() => {
       const cs = carStateRef.current;
       if (!cs) return;
@@ -136,7 +160,6 @@ function MultiplayerRaceClientInner() {
         isDrifting: cs.drifting,
       });
     }, 1000 / 15);
-
     return () => window.clearInterval(interval);
   }, [view]);
 
@@ -184,7 +207,6 @@ function MultiplayerRaceClientInner() {
       } else if (s.status === "idle" || s.status === "error" || s.status === "disconnected") {
         setView("matchmaking");
       }
-      // Racing transition handled by onRaceStart callback from LobbyPanel
     },
     [],
   );
@@ -206,17 +228,14 @@ function MultiplayerRaceClientInner() {
     );
   }
 
-  // Loading (also guard the initial idle state when wallet is already connected)
   if (status === "loading" || (connected && status === "idle")) {
     return <MultiplayerShell><Panel>Loading garage state...</Panel></MultiplayerShell>;
   }
 
-  // Error
   if (error) {
     return <MultiplayerShell><Panel tone="error">{error}</Panel></MultiplayerShell>;
   }
 
-  // No selected car
   if (status === "ready" && (!playerState?.selectedCar || !selectedCatalogCar)) {
     return (
       <MultiplayerShell>
@@ -229,7 +248,7 @@ function MultiplayerRaceClientInner() {
     );
   }
 
-  // Matchmaking view — extra guard against incomplete state
+  // Matchmaking view
   if (view === "matchmaking") {
     if (!selectedCatalogCar || !playerState?.selectedCar) {
       return (
@@ -298,18 +317,21 @@ function MultiplayerRaceClientInner() {
           carRef={carStateRef}
           remotePlayers={remotePlayers}
           localSpawn={localSpawn}
+          autoStart={false}
           onProgress={handleRaceProgress}
           onFinish={handleRaceFinish}
+          onCheckpoint={handleCheckpoint}
         />
         {raceResult && (
-          <RaceResultsOverlay
-            result={raceResult}
-            formatRaceTime={formatRaceTime}
+          <MultiplayerResultsOverlay
+            raceResult={raceResult}
+            multiplayerState={multiplayerState}
             carName={selectedCatalogCar.name}
             trackName={CITY_LOOP_TRACK.name}
             onRaceAgain={handleRaceAgain}
-            placement={1}
+            placement={multiplayerState.myFinishResult?.placement ?? 1}
             totalPlayers={Math.max(players.length, 1)}
+            sessionId={sessionId}
           />
         )}
       </main>
@@ -326,6 +348,137 @@ export function MultiplayerRaceClient() {
     </MultiplayerErrorBoundary>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  Multiplayer Results Overlay                                        */
+/* ------------------------------------------------------------------ */
+
+function MultiplayerResultsOverlay({
+  raceResult,
+  multiplayerState,
+  carName,
+  trackName,
+  onRaceAgain,
+  placement,
+  totalPlayers,
+  sessionId,
+}: {
+  raceResult: RaceResult;
+  multiplayerState: MatchmakingState;
+  carName: string;
+  trackName: string;
+  onRaceAgain: () => void;
+  placement: number;
+  totalPlayers: number;
+  sessionId: string | null;
+}) {
+  const finishResult = multiplayerState.myFinishResult;
+  const serverResults = multiplayerState.raceResults;
+  const roomResults = multiplayerState.room?.results;
+
+  // Show server results if available
+  const results = serverResults ?? roomResults ?? [];
+  const hasServerResults = results.length > 0;
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg rounded-[2rem] border border-white/10 bg-[#0a0a12]/95 p-8 text-white shadow-2xl">
+        {/* Header */}
+        <p className="text-center text-sm font-bold uppercase tracking-[0.35em] text-cyan-300">
+          Multiplayer Race Results
+        </p>
+        <h2 className="mt-2 text-center text-2xl font-black">{trackName}</h2>
+
+        {/* Your finish */}
+        {finishResult?.accepted ? (
+          <div className="mt-4 rounded-2xl border border-lime-300/20 bg-lime-500/[0.06] p-4 text-center">
+            <p className="text-sm text-lime-200/80">You finished</p>
+            <p className="mt-1 text-4xl font-black text-lime-300">
+              #{finishResult.placement}
+            </p>
+            <p className="mt-1 font-mono text-lg text-white">
+              {formatRaceTime(finishResult.totalTimeMs)}
+            </p>
+            {finishResult.bestLapMs > 0 && (
+              <p className="mt-1 text-xs text-white/40">
+                Best Lap: {formatRaceTime(finishResult.bestLapMs)} · First Lap: {formatRaceTime(finishResult.firstLapMs)}
+              </p>
+            )}
+          </div>
+        ) : finishResult && !finishResult.accepted ? (
+          <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-500/[0.06] p-4 text-center">
+            <p className="text-sm text-red-200/80">Finish rejected</p>
+            <p className="mt-1 text-xs text-red-300/60">{finishResult.error}</p>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
+            <p className="text-sm text-white/50">Waiting for server confirmation...</p>
+          </div>
+        )}
+
+        {/* Server leaderboard */}
+        {hasServerResults && (
+          <div className="mt-4 space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/30">Race Standings</p>
+            {results
+              .filter((r) => r.placement > 0)
+              .map((r) => (
+                <div
+                  key={r.sessionId}
+                  className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
+                    r.sessionId === sessionId
+                      ? "border-fuchsia-400/20 bg-fuchsia-500/[0.06]"
+                      : r.placement === 1
+                        ? "border-yellow-400/15 bg-yellow-500/[0.04]"
+                        : "border-white/[0.06] bg-white/[0.02]"
+                  }`}
+                >
+                  <span className="w-6 text-center text-sm font-black text-white/50">#{r.placement}</span>
+                  <span className="flex-1 truncate text-xs font-mono text-white/60">{r.displayWallet}</span>
+                  <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-black text-white/40">{r.carClass}</span>
+                  {r.status === "finished" ? (
+                    <span className="font-mono text-xs text-lime-200/80 tabular-nums">{formatRaceTime(r.totalTimeMs)}</span>
+                  ) : (
+                    <span className="text-[10px] font-bold uppercase text-red-300/60">DNF</span>
+                  )}
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Rewards disabled notice */}
+        <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-500/[0.04] p-3 text-center">
+          <p className="text-xs font-bold text-amber-300/70">
+            Multiplayer rewards are disabled during beta
+          </p>
+          <p className="mt-1 text-[10px] text-amber-200/40">
+            Race Cash earnings will be enabled once server-authoritative results are fully verified.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-5 flex gap-3">
+          <button
+            onClick={onRaceAgain}
+            className="flex-1 rounded-full bg-fuchsia-400 px-5 py-3 text-sm font-black text-black hover:bg-fuchsia-300"
+          >
+            Race Again
+          </button>
+          <Link
+            href="/"
+            className="rounded-full border border-white/15 px-5 py-3 text-sm text-white/70 hover:bg-white/10"
+          >
+            Exit
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Shell + Panel helpers                                              */
+/* ------------------------------------------------------------------ */
 
 function MultiplayerShell({ children }: { children: React.ReactNode }) {
   return (

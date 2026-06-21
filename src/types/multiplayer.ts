@@ -3,7 +3,9 @@
 
 export type RaceClass = "D" | "C" | "B" | "A" | "S" | "open";
 
-export type RoomStatus = "lobby" | "countdown" | "racing" | "ended";
+export type RoomStatus = "lobby" | "countdown" | "racing" | "finished";
+
+export type PlayerRaceStatus = "lobby" | "racing" | "finished" | "disconnected" | "dnf";
 
 export type LobbyPlayer = {
   sessionId: string;
@@ -21,9 +23,33 @@ export type LobbyPlayer = {
   speed: number;
   isNitro: boolean;
   isDrifting: boolean;
-  raceStatus: "lobby" | "racing" | "disconnected";
+  raceStatus: PlayerRaceStatus;
   laneIndex: number;
   lastUpdate: number;
+  // Server-authoritative race progress
+  currentLap: number;
+  totalLaps: number;
+  checkpointIndex: number;
+  checkpointsPassed: number;
+  startedAt: number;
+  finishedAt: number;
+  totalTimeMs: number;
+  bestLapMs: number;
+  firstLapMs: number;
+  placement: number;
+};
+
+export type RaceResultEntry = {
+  sessionId: string;
+  walletAddress: string;
+  displayWallet: string;
+  carName: string;
+  carClass: string;
+  placement: number;
+  totalTimeMs: number;
+  bestLapMs: number;
+  firstLapMs: number;
+  status: "finished" | "dnf";
 };
 
 export type RaceRoomState = {
@@ -36,4 +62,5 @@ export type RaceRoomState = {
   raceStartedAt: number | null;
   maxPlayers: number;
   minPlayersToStart: number;
+  results: RaceResultEntry[];
 };

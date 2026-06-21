@@ -66,6 +66,8 @@ const WRONG_WAY_FLASH_MS = 1500;
 type UseRaceLoopOptions = {
   autoStart?: boolean;
   onFinish?: (result: RaceResult) => void;
+  /** Called when a checkpoint is crossed (for server-authoritative validation in multiplayer). */
+  onCheckpoint?: (checkpointId: string, lap: number, checkpointsPassed: number) => void;
 };
 
 type InternalState = {
@@ -128,10 +130,12 @@ export function useRaceLoop(
   resetRace: () => void;
   formatRaceTime: (ms: number) => string;
 } {
-  const { autoStart = true, onFinish } = options;
+  const { autoStart = true, onFinish, onCheckpoint } = options;
   const checkpoints = track.checkpoints;
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
+  const onCheckpointRef = useRef(onCheckpoint);
+  onCheckpointRef.current = onCheckpoint;
 
   const internalRef = useRef<InternalState>(createInitialState());
 
@@ -287,6 +291,11 @@ export function useRaceLoop(
           if (expectedDist <= expected.radius && canCountStartFinish) {
             state.passed += 1;
             state.lastCrossAt = now;
+
+            // Notify parent (for server-authoritative multiplayer)
+            if (expected.id) {
+              window.setTimeout(() => onCheckpointRef.current?.(expected.id, state.lap, state.passed), 0);
+            }
 
             if (state.expectedIndex === 0) {
               // Start/finish only counts after all non-finish checkpoints are done.
