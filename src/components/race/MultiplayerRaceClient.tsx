@@ -376,6 +376,7 @@ function MultiplayerResultsOverlay({
   const serverResults = multiplayerState.raceResults;
   const roomResults = multiplayerState.room?.results;
   const signedReward = multiplayerState.signedReward;
+  const dqReason = multiplayerState.dqReason;
 
   const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "error">("idle");
   const [claimError, setClaimError] = useState<string | null>(null);
@@ -394,7 +395,6 @@ function MultiplayerResultsOverlay({
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 409) {
-          // Already claimed — treat as success
           setClaimStatus("claimed");
           setClaimedAmount(typeof data.reward?.amount === "number" ? data.reward.amount : null);
           return;
@@ -409,11 +409,11 @@ function MultiplayerResultsOverlay({
     }
   }, [signedReward]);
 
-  // Show server results if available
   const results = serverResults ?? roomResults ?? [];
   const hasServerResults = results.length > 0;
   const isFinished = finishResult?.accepted === true;
-  const canClaim = signedReward !== null && claimStatus === "idle" && isFinished;
+  const isDQ = dqReason !== null || finishResult?.dq === true;
+  const canClaim = signedReward !== null && claimStatus === "idle" && isFinished && !isDQ;
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -445,6 +445,16 @@ function MultiplayerResultsOverlay({
             <p className="text-sm text-red-200/80">Finish rejected</p>
             <p className="mt-1 text-xs text-red-300/60">{finishResult.error}</p>
           </div>
+        ) : isDQ ? (
+          <div className="mt-4 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-500/[0.06] p-4 text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-fuchsia-300">⚠ Disqualified</p>
+            <p className="mt-1 text-xs text-fuchsia-200/60">
+              {dqReason || "Server detected suspicious activity"}
+            </p>
+            <p className="mt-2 text-[10px] text-fuchsia-300/30">
+              No reward for disqualified players
+            </p>
+          </div>
         ) : (
           <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center">
             <p className="text-sm text-white/50">Waiting for server confirmation...</p>
@@ -473,6 +483,8 @@ function MultiplayerResultsOverlay({
                   <span className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-black text-white/40">{r.carClass}</span>
                   {r.status === "finished" ? (
                     <span className="font-mono text-xs text-lime-200/80 tabular-nums">{formatRaceTime(r.totalTimeMs)}</span>
+                  ) : r.status === "disqualified" ? (
+                    <span className="text-[10px] font-bold uppercase text-fuchsia-300/60">DQ</span>
                   ) : (
                     <span className="text-[10px] font-bold uppercase text-red-300/60">DNF</span>
                   )}
@@ -527,8 +539,8 @@ function MultiplayerResultsOverlay({
           </div>
         )}
 
-        {/* DNF / no reward */}
-        {finishResult && !finishResult.accepted && !isFinished && (
+        {/* DNF / DQ — no reward */}
+        {!isFinished && !isDQ && finishResult && !finishResult.accepted && (
           <div className="mt-4 rounded-xl border border-amber-300/15 bg-amber-500/[0.03] p-3 text-center">
             <p className="text-xs font-bold text-amber-300/60">
               No reward for this race

@@ -20,7 +20,7 @@ export class LobbyPlayerSchema extends Schema {
   @type("boolean") isDrifting = false;
 
   // Race lifecycle
-  @type("string") raceStatus: "lobby" | "racing" | "finished" | "disconnected" | "dnf" = "lobby";
+  @type("string") raceStatus: "lobby" | "racing" | "finished" | "disconnected" | "dnf" | "disqualified" = "lobby";
   @type("number") laneIndex = 0;
   @type("number") lastUpdate = Date.now();
 
@@ -37,6 +37,14 @@ export class LobbyPlayerSchema extends Schema {
 
   // Placement (assigned by server when race ends)
   @type("number") placement = 0;
+
+  // ── Anti-cheat tracking ──────────────────────────────────────────────────
+  @type("number") suspiciousEvents = 0;   // Total suspicious event count
+  @type("number") speedViolations = 0;    // Speed cap violations
+  @type("number") teleportViolations = 0; // Teleport/position-jump violations
+  @type("number") checkpointViolations = 0; // Checkpoint proximity violations
+  @type("number") outOfOrderViolations = 0; // Out-of-order checkpoint attempts
+  @type("string") acFlagReason = "";      // Reason for DQ or warning
 }
 
 export class RaceResultSchema extends Schema {
@@ -49,7 +57,7 @@ export class RaceResultSchema extends Schema {
   @type("number") totalTimeMs = 0;
   @type("number") bestLapMs = 0;
   @type("number") firstLapMs = 0;
-  @type("string") status = "dnf"; // finished | dnf | disconnected
+  @type("string") status = "dnf"; // finished | dnf | disconnected | disqualified
 }
 
 export class RaceStateSchema extends Schema {

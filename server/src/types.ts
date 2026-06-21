@@ -5,7 +5,7 @@ export type RaceClass = "D" | "C" | "B" | "A" | "S" | "open";
 
 export type RoomStatus = "lobby" | "countdown" | "racing" | "finished";
 
-export type PlayerRaceStatus = "lobby" | "racing" | "finished" | "disconnected" | "dnf";
+export type PlayerRaceStatus = "lobby" | "racing" | "finished" | "disconnected" | "dnf" | "disqualified";
 
 export type LobbyPlayer = {
   sessionId: string;
@@ -37,6 +37,13 @@ export type LobbyPlayer = {
   bestLapMs: number;
   firstLapMs: number;
   placement: number;
+  // Anti-cheat tracking
+  suspiciousEvents: number;
+  speedViolations: number;
+  teleportViolations: number;
+  checkpointViolations: number;
+  outOfOrderViolations: number;
+  acFlagReason: string;
 };
 
 export type RaceResultEntry = {
@@ -49,7 +56,7 @@ export type RaceResultEntry = {
   totalTimeMs: number;
   bestLapMs: number;
   firstLapMs: number;
-  status: "finished" | "dnf";
+  status: "finished" | "dnf" | "disconnected" | "disqualified";
 };
 
 export type RaceRoomState = {

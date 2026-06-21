@@ -49,7 +49,7 @@ export type RaceResultEntry = {
   totalTimeMs: number;
   bestLapMs: number;
   firstLapMs: number;
-  status: "finished" | "dnf";
+  status: "finished" | "dnf" | "disconnected" | "disqualified";
 };
 
 export type RaceRoomState = {

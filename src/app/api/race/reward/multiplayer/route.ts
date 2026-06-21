@@ -8,6 +8,9 @@ import {
   isRecognizedCarClass,
 } from "@/config/rewards";
 import { TRACKS } from "@/config/tracks";
+import {
+  MIN_MULTIPLAYER_TOTAL_TIME_MS,
+} from "@/config/anti-cheat";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -37,7 +40,6 @@ type SignedRewardBody = {
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
-const MIN_FINISH_TIME_MS = 30_000;
 const CITY_LOOP_LAPS = 3;
 const CITY_LOOP_CHECKPOINTS = 10;
 
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest) {
       return jsonError("Only multiplayer rewards accepted on this endpoint", 400);
     }
 
-    // 5. Status check ──────────────────────────────────────────────────────
+    // 5. Status check — MUST be "finished" (DQ/DNF never signed) ────────
     if (payload.status !== "finished") {
       return jsonError("Only finished racers can claim rewards", 400);
     }
@@ -131,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 10. Time plausibility ────────────────────────────────────────────────
-    if (payload.totalTimeMs < MIN_FINISH_TIME_MS) {
+    if (payload.totalTimeMs < MIN_MULTIPLAYER_TOTAL_TIME_MS) {
       return jsonError("Finish time is impossibly fast", 400);
     }
 

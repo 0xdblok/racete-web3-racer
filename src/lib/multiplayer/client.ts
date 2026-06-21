@@ -50,9 +50,12 @@ export type MatchmakingState = {
     bestLapMs: number;
     firstLapMs: number;
     error?: string;
+    dq?: boolean;
   } | null;
   /** Server-signed reward payload (for claiming Race Cash). */
   signedReward: SignedRewardPayload | null;
+  /** DQ state (if disqualified by server). */
+  dqReason: string | null;
 };
 
 /** Server-signed multiplayer reward payload. */
@@ -177,6 +180,7 @@ let _state: MatchmakingState = {
   raceResults: null,
   myFinishResult: null,
   signedReward: null,
+  dqReason: null,
 };
 
 /* ------------------------------------------------------------------ */
@@ -360,6 +364,28 @@ export async function findMatch(params: {
       console.log(`[Multiplayer] Received signed reward — Place #${msg.payload.placement} for ${msg.payload.walletAddress}`);
     });
 
+    // ── Anti-cheat: DQ events ─────────────────────────────────────────────
+    room.onMessage("player_disqualified", (msg: {
+      reason: string;
+      suspiciousEvents: number;
+      speedViolations: number;
+      teleportViolations: number;
+      checkpointViolations: number;
+    }) => {
+      setState({ dqReason: msg.reason });
+      console.warn(`[Multiplayer] YOU WERE DISQUALIFIED: ${msg.reason}` +
+        ` (events:${msg.suspiciousEvents} speed:${msg.speedViolations} tp:${msg.teleportViolations} cp:${msg.checkpointViolations})`);
+    });
+
+    room.onMessage("player_dq", (msg: {
+      sessionId: string;
+      walletAddress: string;
+      displayWallet: string;
+      reason: string;
+    }) => {
+      console.warn(`[Multiplayer] ${msg.displayWallet} was disqualified: ${msg.reason}`);
+    });
+
     // Handle disconnect
     room.onLeave((code) => {
       console.log(`[Multiplayer] Left room (code ${code})`);
@@ -428,6 +454,7 @@ export function cancelMatchmaking(): void {
     raceResults: null,
     myFinishResult: null,
     signedReward: null,
+    dqReason: null,
   });
 }
 
