@@ -71,10 +71,30 @@ Final V1 pool distribution:
 
 ```text
 creatorFee:                    0%
-weeklyTokenStakeRewardPool:    15%
-platformTreasury:              5%
-playerPayoutPool:              80%
+weeklyTokenStakeRewardPool:    15% -> TOKEN_WEEKLY_REWARD_WALLET
+platformTreasury:              5%  -> TOKEN_TREASURY_WALLET
+playerPayoutPool:              80% -> automatic player winner payouts
 ```
+
+### Wallet Model
+
+Required wallet environment variables:
+
+```env
+TOKEN_TREASURY_WALLET=...
+TOKEN_WEEKLY_REWARD_WALLET=...
+TOKEN_VAULT_AUTHORITY=...
+```
+
+Rules:
+
+- `TOKEN_TREASURY_WALLET` is the public wallet address that receives the 5% platform/treasury fee.
+- `TOKEN_WEEKLY_REWARD_WALLET` is the public wallet address that receives the 15% weekly token stake reward pool.
+- Treasury and weekly reward wallets should be public addresses only; they do not need private keys in client or frontend code.
+- Production treasury and weekly reward wallets should ideally be controlled by a multisig or secure operational wallet.
+- `TOKEN_VAULT_AUTHORITY` represents the server-side vault signing authority or safer equivalent signer setup.
+- Any private key/signer material for the vault authority must remain server-side only.
+- Never prefix signer/private env vars with `NEXT_PUBLIC_`.
 
 ### Creator Fee Policy
 
@@ -97,9 +117,11 @@ Reasoning:
 - Denominated in RACETE token.
 - Funded from every Token Stake Room.
 - Allocation: 15% of the actual collected pool.
-- No automatic weekly payout in V1.
-- Admin manually reviews weekly winners.
-- Admin manually distributes weekly token rewards.
+- Transferred automatically to `TOKEN_WEEKLY_REWARD_WALLET` as part of race settlement.
+- The app should track/report accumulated weekly RACETE collected from token stake rooms.
+- No automatic weekly leaderboard payout in V1.
+- Admin manually reviews weekly leaderboard winners.
+- Admin manually sends weekly token payouts from the weekly reward wallet.
 - Future automation can be added only after stronger anti-cheat, admin tooling, and payout review systems.
 
 Future weekly winner criteria may include:
@@ -358,18 +380,18 @@ Backend computes payout from actual confirmed pool:
 confirmedPool = sum(confirmed deposits)
 creatorFee = 0%
 weeklyTokenStakeRewardPool = 15%
-platformFee = 5%
+treasuryFee = 5%
 playerPayoutPool = 80%
 winners = valid finished players only
 ```
 
-Backend builds and sends payout transaction(s):
+Backend builds and sends automatic race settlement transaction(s):
 
-- player payouts
-- platform/treasury fee
-- weekly token stake reward pool allocation
+- valid finisher player payouts from the 80% player payout pool
+- 5% treasury fee to `TOKEN_TREASURY_WALLET`
+- 15% weekly token stake reward pool allocation to `TOKEN_WEEKLY_REWARD_WALLET`
 
-Each transfer is recorded in `token_payouts` with transaction signature.
+Each transfer is recorded in `token_payouts` with transaction signature. Weekly leaderboard rewards are **not** distributed automatically in V1; only the weekly pool funding transfer is automatic.
 
 ### 9. Refunds
 
@@ -749,7 +771,7 @@ Card states:
   - total collected pool
   - creator fee: 0%
   - weekly token stake reward pool
-  - platform fee
+  - treasury fee
   - player payout pool
 - Show payouts by placement.
 - Show DQ/DNF players as `0 RACETE`.
@@ -768,9 +790,9 @@ Server/backend only — never `NEXT_PUBLIC_`:
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
 SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
-TOKEN_VAULT_AUTHORITY_PRIVATE_KEY=...
-PLATFORM_FEE_WALLET=...
-WEEKLY_TOKEN_STAKE_REWARD_POOL_WALLET=...
+TOKEN_VAULT_AUTHORITY=...
+TOKEN_TREASURY_WALLET=...
+TOKEN_WEEKLY_REWARD_WALLET=...
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -786,7 +808,7 @@ Notes:
 - `TOKEN_ROOM_SECRET` signs server-only token-room lifecycle events.
 - `MULTIPLAYER_REWARD_SECRET` remains only for free multiplayer Race Cash rewards.
 - V1 creator fee is 0%; no creator fee env var is required.
-- Weekly token stake rewards are tracked/admin-reviewed/manual-payout only in V1.
+- Weekly pool funding transfers to `TOKEN_WEEKLY_REWARD_WALLET` are automatic after race settlement; weekly leaderboard reward distribution remains admin-reviewed/manual-payout only in V1.
 - Token vault authority should eventually be replaced by KMS/signer service or program escrow.
 
 ## Recommended V1 Implementation Plan
@@ -837,7 +859,7 @@ Notes:
 ### Phase H — Mainnet Beta with Small Stake Caps
 
 - Enable only 1,000 RACETE rooms initially.
-- Allowlist users/creators.
+- Allowlist users and token-room beta participants.
 - Daily caps and emergency pause.
 - Manual review for suspicious races.
 - Increase stake caps only after telemetry is clean.

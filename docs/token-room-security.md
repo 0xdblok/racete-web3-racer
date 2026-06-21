@@ -18,7 +18,7 @@ For every Token Stake Room:
 Total pool = stakeAmount × numberOfPlayers
 Creator fee = 0%
 Weekly token stake reward pool = 15%
-Platform / treasury fee = 5%
+Treasury fee = 5%
 Player payout pool = 80%
 ```
 
@@ -135,9 +135,9 @@ Server/backend only:
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
 SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
-TOKEN_VAULT_AUTHORITY_PRIVATE_KEY=...
-PLATFORM_FEE_WALLET=...
-WEEKLY_TOKEN_STAKE_REWARD_POOL_WALLET=...
+TOKEN_VAULT_AUTHORITY=...
+TOKEN_TREASURY_WALLET=...
+TOKEN_WEEKLY_REWARD_WALLET=...
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -150,12 +150,16 @@ MULTIPLAYER_REWARD_SECRET=...
 
 Rules:
 
-- No token-room secret can be prefixed with `NEXT_PUBLIC_`.
+- `TOKEN_TREASURY_WALLET` and `TOKEN_WEEKLY_REWARD_WALLET` are public recipient addresses only.
+- Production treasury and weekly reward wallets should ideally be controlled by a multisig or secure operational wallet.
+- `TOKEN_VAULT_AUTHORITY` is server-side signer configuration or an equivalent secure signer setup.
+- Any private key/signer material must stay server-side only.
+- No token-room secret or private signer env var can be prefixed with `NEXT_PUBLIC_`.
 - Secret values must never be logged.
 - Signed payout payloads may be logged only without signatures/private keys.
 - Creator fees are 0% in V1 and must not be implemented.
-- Weekly token stake rewards are tracked in RACETE, admin-reviewed, and manually distributed in V1.
-- Do not send weekly token payouts automatically in V1.
+- Weekly token stake rewards are transferred automatically to `TOKEN_WEEKLY_REWARD_WALLET`, tracked in RACETE, admin-reviewed, and manually distributed in V1.
+- Do not send automatic weekly leaderboard payouts in V1.
 - Vault authority private key should eventually move to KMS/signer service or program escrow.
 
 ## Threats and Mitigations

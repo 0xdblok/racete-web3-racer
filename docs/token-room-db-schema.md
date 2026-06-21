@@ -135,13 +135,15 @@ confirmed_player_count integer not null default 0
 status text not null
 vault_token_account text not null
 vault_authority_type text not null default 'server_wallet'
+treasury_wallet_address text not null
+weekly_reward_wallet_address text not null
 creator_fee_bps integer not null default 0
 weekly_token_stake_reward_pool_bps integer not null default 1500
-platform_fee_bps integer not null default 500
+treasury_fee_bps integer not null default 500
 player_payout_pool_bps integer not null default 8000
 confirmed_pool_amount numeric not null default 0
 weekly_token_stake_reward_pool_amount numeric not null default 0
-platform_fee_amount numeric not null default 0
+treasury_fee_amount numeric not null default 0
 player_payout_pool_amount numeric not null default 0
 payout_total_amount numeric not null default 0
 refund_total_amount numeric not null default 0
@@ -168,7 +170,7 @@ check (min_players >= 2)
 check (max_players between 2 and 6)
 check (min_players <= max_players)
 check (creator_fee_bps = 0)
-check (creator_fee_bps + weekly_token_stake_reward_pool_bps + platform_fee_bps + player_payout_pool_bps = 10000)
+check (creator_fee_bps + weekly_token_stake_reward_pool_bps + treasury_fee_bps + player_payout_pool_bps = 10000)
 check (status in (...))
 ```
 
@@ -186,8 +188,10 @@ Notes:
 
 - `stake_amount` should be stored in base token units, not UI decimals.
 - `stake_preset` should be one of `1000`, `5000`, `10000`, `25000` RACETE in display units.
+- `treasury_wallet_address` should mirror `TOKEN_TREASURY_WALLET` at room creation time for auditability.
+- `weekly_reward_wallet_address` should mirror `TOKEN_WEEKLY_REWARD_WALLET` at room creation time for auditability.
 - `creator_fee_bps` is fixed at `0` for V1; do not implement creator fee payout logic.
-- `weekly_token_stake_reward_pool_amount` is tracked for admin-reviewed/manual weekly token reward distribution only.
+- `weekly_token_stake_reward_pool_amount` is transferred automatically to the weekly reward wallet during race settlement and tracked for admin-reviewed/manual weekly token reward distribution only.
 - `finalize_signature_hash` stores a hash/fingerprint, not necessarily the raw HMAC signature.
 - `anti_cheat_summary` stores final AC counts, DQ reasons, and confidence.
 
@@ -356,7 +360,7 @@ Payout types:
 
 - `winner`
 - `weekly_token_stake_reward_pool`
-- `platform_fee`
+- `treasury_fee`
 - `manual_adjustment`
 
 Proposed columns:
@@ -393,7 +397,7 @@ Recommended constraints:
 
 ```sql
 check (amount >= 0)
-check (payout_type in ('winner', 'weekly_token_stake_reward_pool', 'platform_fee', 'manual_adjustment'))
+check (payout_type in ('winner', 'weekly_token_stake_reward_pool', 'treasury_fee', 'manual_adjustment'))
 check (status in (...))
 ```
 
@@ -417,7 +421,7 @@ unique(room_id, recipient_wallet_address, payout_type, payout_rank)
 Notes:
 
 - `wallet_address` is the player wallet when payout is related to a participant.
-- `recipient_wallet_address` may be a player winner wallet, platform treasury wallet, or weekly token stake reward pool wallet.
+- `recipient_wallet_address` may be a player winner wallet, treasury wallet, or weekly token stake reward pool wallet.
 - Creator fee payouts are intentionally excluded from V1.
 - Weekly token stake reward pool transfers fund the weekly pool only; weekly player rewards are admin-reviewed/manual-payout in V1.
 - Retry must inspect whether `payout_signature` already landed before sending again.
@@ -547,7 +551,7 @@ race_id text
 plan_hash text not null unique
 confirmed_pool_amount numeric not null
 weekly_token_stake_reward_pool_amount numeric not null default 0
-platform_fee_amount numeric not null default 0
+treasury_fee_amount numeric not null default 0
 player_payout_pool_amount numeric not null default 0
 plan jsonb not null
 status text not null default 'planned'
@@ -625,7 +629,7 @@ For a room with 6 players staking 10,000 RACETE each:
 confirmedPool = 60,000 RACETE
 creatorFee = 0 RACETE (0%)
 weeklyTokenStakeRewardPool = 9,000 RACETE (15%)
-platformFee = 3,000 RACETE (5%)
+treasuryFee = 3,000 RACETE (5%)
 playerPayoutPool = 48,000 RACETE (80%)
 ```
 
