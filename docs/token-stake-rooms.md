@@ -67,62 +67,97 @@ totalPool = stakeAmount * numberOfDepositedPlayers
 
 All payouts must be calculated from the **actual collected pool**, not from expected room size.
 
-Suggested V1 pool distribution:
+Final V1 pool distribution:
 
 ```text
-creatorFee:        3%
-weeklyPrizePool:   5%
-platformTreasury:  5%
-winnerPool:       87%
+creatorFee:                    0%
+weeklyTokenStakeRewardPool:    15%
+platformTreasury:              5%
+playerPayoutPool:              80%
 ```
 
 ### Creator Fee Policy
 
-Creator fee is useful for community-hosted rooms but creates abuse risk.
+Creator fees are removed entirely for V1.
 
 Recommended V1 default:
 
-- Architecture includes creator fee accounting.
-- **Creator fee payout disabled by default** unless creator is verified/approved.
-- If disabled, the 3% creator allocation should either:
-  - route to platform treasury, or
-  - remain tracked as `creator_fee_pending` for manual review.
+- Do not implement creator fees in V1.
+- Do not reserve any creator allocation in V1.
+- Do not add creator fee payout logic, allowlists, or pending creator fee accounting in V1.
 
-Recommended gate before enabling creator fee:
+Reasoning:
 
-- Verified creator allowlist.
-- Minimum unique participants.
-- Anti-collusion monitoring.
-- Room cancellation/refund abuse checks.
+- Creator fees create abuse risk through fake rooms, farming, collusion, and incentive manipulation.
+- Removing creator fees keeps V1 simpler and safer.
+- Creator incentives can be reconsidered later only after stronger anti-cheat, admin tooling, and abuse monitoring exist.
 
-### Winner Pool Split
+### Weekly Token Stake Reward Pool
+
+- Denominated in RACETE token.
+- Funded from every Token Stake Room.
+- Allocation: 15% of the actual collected pool.
+- No automatic weekly payout in V1.
+- Admin manually reviews weekly winners.
+- Admin manually distributes weekly token rewards.
+- Future automation can be added only after stronger anti-cheat, admin tooling, and payout review systems.
+
+Future weekly winner criteria may include:
+
+- best multiplayer performance
+- most token room wins
+- best win rate
+- best total profit
+- best weekly leaderboard rank
+
+### Player Payout Pool Split
 
 For 3+ valid finishers:
 
 ```text
-1st place: 65% of winnerPool
-2nd place: 25% of winnerPool
-3rd place: 10% of winnerPool
+1st place: 65% of playerPayoutPool
+2nd place: 25% of playerPayoutPool
+3rd place: 10% of playerPayoutPool
 ```
 
 For exactly 2 valid finishers:
 
 ```text
-1st place: 75% of winnerPool
-2nd place: 25% of winnerPool
+1st place: 75% of playerPayoutPool
+2nd place: 25% of playerPayoutPool
 ```
 
 For exactly 1 valid finisher:
 
 ```text
-1st place: 100% of winnerPool
+1st place: 100% of playerPayoutPool
 ```
 
 For 0 valid finishers:
 
-- No winner payout.
+- No automatic player payout.
 - Room enters `manual_review` or `refund_pending`, depending on final security policy.
 - Recommended V1: `manual_review`, because all-DNF/all-DQ may indicate exploit, server failure, or griefing.
+
+### Example
+
+Six players stake 10,000 RACETE each:
+
+```text
+totalPool = 60,000 RACETE
+weeklyTokenStakeRewardPool = 9,000 RACETE (15%)
+platformTreasury = 3,000 RACETE (5%)
+playerPayoutPool = 48,000 RACETE (80%)
+creatorFee = 0 RACETE (0%)
+```
+
+If 3+ valid finishers:
+
+```text
+1st place = 31,200 RACETE (65% of playerPayoutPool)
+2nd place = 12,000 RACETE (25% of playerPayoutPool)
+3rd place = 4,800 RACETE  (10% of playerPayoutPool)
+```
 
 ## Recommended Custody Model
 
@@ -321,20 +356,18 @@ Backend computes payout from actual confirmed pool:
 
 ```text
 confirmedPool = sum(confirmed deposits)
-creatorFee = 3% if enabled/verified
-weeklyPool = 5%
+creatorFee = 0%
+weeklyTokenStakeRewardPool = 15%
 platformFee = 5%
-winnerPool = remaining 87% or adjusted if creatorFee disabled
+playerPayoutPool = 80%
 winners = valid finished players only
 ```
 
 Backend builds and sends payout transaction(s):
 
-- winner payouts
+- player payouts
 - platform/treasury fee
-- weekly pool allocation
-- creator fee if enabled
-- marketing/rewards split if later added
+- weekly token stake reward pool allocation
 
 Each transfer is recorded in `token_payouts` with transaction signature.
 
@@ -611,7 +644,7 @@ Move room to manual_review.
 
 - Valid finishers ranked by server placement.
 - Fees allocated first.
-- Winner pool split among top valid finishers.
+- Player payout pool split among top valid finishers.
 - Payout transaction(s) sent.
 - Room status becomes `paid`.
 
@@ -714,10 +747,10 @@ Card states:
 
 - Show pot breakdown:
   - total collected pool
-  - creator fee
-  - weekly pool
+  - creator fee: 0%
+  - weekly token stake reward pool
   - platform fee
-  - winner pool
+  - player payout pool
 - Show payouts by placement.
 - Show DQ/DNF players as `0 RACETE`.
 - Show payout status:
@@ -737,9 +770,7 @@ SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
 TOKEN_VAULT_AUTHORITY_PRIVATE_KEY=...
 PLATFORM_FEE_WALLET=...
-WEEKLY_POOL_WALLET=...
-MARKETING_WALLET=...
-CREATOR_FEE_ENABLED=false
+WEEKLY_TOKEN_STAKE_REWARD_POOL_WALLET=...
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -754,6 +785,8 @@ Notes:
 
 - `TOKEN_ROOM_SECRET` signs server-only token-room lifecycle events.
 - `MULTIPLAYER_REWARD_SECRET` remains only for free multiplayer Race Cash rewards.
+- V1 creator fee is 0%; no creator fee env var is required.
+- Weekly token stake rewards are tracked/admin-reviewed/manual-payout only in V1.
 - Token vault authority should eventually be replaced by KMS/signer service or program escrow.
 
 ## Recommended V1 Implementation Plan
@@ -820,13 +853,14 @@ Notes:
 - Manual review process defined.
 - Admin/operator access model defined.
 - Emergency pause plan defined.
-- Decision made: creator fee disabled by default or allowlisted only.
+- Creator fee removed from V1.
+- Weekly token stake reward pool manual review/distribution process defined.
 
 ## Open Questions
 
 - Should V1 use one shared vault ATA or one per-room vault ATA on mainnet beta?
-- Should creator fee be disabled entirely until creator allowlist is ready?
 - What confirmation level is acceptable for deposits: `confirmed` vs `finalized`?
 - What max total room pool should be allowed during beta?
 - Who operates manual review and refund approvals?
+- Who operates weekly token stake reward pool review and manual distribution?
 - Should all-DNF/all-DQ default to refund or manual review?

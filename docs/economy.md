@@ -49,26 +49,34 @@ Personal best bonuses only trigger when the player beats a previous record. Firs
 
 ### Token Stake Race — future, disabled in V1 UI
 
-- Players will deposit $RACETE into an on-chain stake pot later.
-- Top finishers receive on-chain pot payout.
-- All players still earn off-chain Race Cash based on placement.
-- Token staking is currently **coming soon**: no real SPL transfer, escrow, payout, or treasury signer is implemented here.
+- Players will deposit RACETE into a token stake pot later.
+- Top valid finishers receive token payout from the player payout pool.
+- Token stake rooms are multiplayer-only and currently **coming soon**: no real SPL transfer, escrow, payout, or treasury signer is implemented here.
+- V1 Token Stake Rooms should not pay Race Cash unless explicitly redesigned later; token accounting must stay separate from current Race Cash systems.
+
+Final V1 pool distribution preview:
+
+- Total pool: `stakeAmount × numberOfPlayers`
+- Creator fee: `0%`
+- Weekly token stake reward pool: `15%`
+- Platform / treasury fee: `5%`
+- Player payout pool: `80%`
 
 Example stake tier preview:
 
-- Stake: `100 $RACETE × 6 players = 600 $RACETE pool`
+- Stake: `10,000 RACETE × 6 players = 60,000 RACETE pool`
+- Weekly token stake reward pool: `15% = 9,000 RACETE`
+- Platform / treasury fee: `5% = 3,000 RACETE`
+- Player payout pool: `80% = 48,000 RACETE`
+- Creator fee: `0% = 0 RACETE`
 
-Future on-chain pot payout split:
+If 3+ valid finishers:
 
-- 1st: `40%` = `240 $RACETE`
-- 2nd: `25%` = `150 $RACETE`
-- 3rd: `15%` = `90 $RACETE`
-- 4th: `10%` = `60 $RACETE`
-- Platform fee: `10%` = `60 $RACETE`
-- 5th: `0%`
-- 6th: `0%`
+- 1st: `65% of player payout pool = 31,200 RACETE`
+- 2nd: `25% of player payout pool = 12,000 RACETE`
+- 3rd: `10% of player payout pool = 4,800 RACETE`
 
-Race Cash rewards still apply in token stake rooms.
+Weekly token stake rewards are tracked/admin-reviewed/manual-payout only in V1; no automatic weekly token payouts.
 
 ## Race result tracking
 
@@ -98,9 +106,9 @@ Future leaderboards will track career stats from `race_records`:
 - Most races finished
 - Total Race Cash earned
 
-Weekly leaderboard prizes will be Race Cash only until token stake rooms exist.
+Weekly leaderboard prizes remain Race Cash-only until token stake rooms are explicitly implemented.
 
-Token weekly pools will be funded by platform fees from token stake races — not manually from treasury.
+Token Stake Rooms V1 will track a separate weekly token stake reward pool funded by the 15% weekly allocation from every token stake room. Weekly token rewards are admin-reviewed/manual-payout only in V1; no automatic weekly token payout is allowed.
 
 ## Flexible objectives framework (future)
 

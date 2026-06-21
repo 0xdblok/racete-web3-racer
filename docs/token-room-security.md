@@ -10,6 +10,25 @@ RACETE_TOKEN_MINT=TO_BE_PROVIDED_PUMPFUN_MINT
 
 This document defines the minimum security requirements, threat model, mitigations, and launch gates for RaceTE Token Stake Rooms.
 
+## Final V1 Pool Distribution
+
+For every Token Stake Room:
+
+```text
+Total pool = stakeAmount × numberOfPlayers
+Creator fee = 0%
+Weekly token stake reward pool = 15%
+Platform / treasury fee = 5%
+Player payout pool = 80%
+```
+
+Security policy:
+
+- Do not implement creator fees in V1.
+- Do not auto-distribute the weekly token stake reward pool in V1.
+- Weekly token rewards are admin-reviewed/manual-payout only.
+- Player payouts are paid only to valid finishers from the 80% player payout pool.
+
 ## Security Principles
 
 1. **No client trust**
@@ -118,9 +137,7 @@ SOLANA_RPC_URL=...
 TOKEN_ROOM_SECRET=...
 TOKEN_VAULT_AUTHORITY_PRIVATE_KEY=...
 PLATFORM_FEE_WALLET=...
-WEEKLY_POOL_WALLET=...
-MARKETING_WALLET=...
-CREATOR_FEE_ENABLED=false
+WEEKLY_TOKEN_STAKE_REWARD_POOL_WALLET=...
 TOKEN_ROOMS_ENABLED=false
 TOKEN_ROOMS_MAINNET_ENABLED=false
 ```
@@ -136,6 +153,9 @@ Rules:
 - No token-room secret can be prefixed with `NEXT_PUBLIC_`.
 - Secret values must never be logged.
 - Signed payout payloads may be logged only without signatures/private keys.
+- Creator fees are 0% in V1 and must not be implemented.
+- Weekly token stake rewards are tracked in RACETE, admin-reviewed, and manually distributed in V1.
+- Do not send weekly token payouts automatically in V1.
 - Vault authority private key should eventually move to KMS/signer service or program escrow.
 
 ## Threats and Mitigations
@@ -320,11 +340,12 @@ Before token rooms:
 
 Threat:
 
-- Players join rooms together and intentionally DNF/feed wins or abuse creator fee.
+- Players join rooms together and intentionally DNF/feed wins, farm the weekly token stake reward pool, or manipulate room outcomes.
 
 Mitigation:
 
-- Creator fee disabled by default or allowlisted.
+- Creator fee removed entirely for V1.
+- Weekly token stake reward pool requires admin review before manual payout.
 - Track repeated wallet clusters.
 - Track win rate, shared rooms, DQ/DNF patterns.
 - Cap stake amounts in beta.
@@ -334,11 +355,12 @@ Mitigation:
 
 Threat:
 
-- Bots create many low-stake rooms or attempt creator fee extraction.
+- Bots create many low-stake rooms or attempt to farm weekly token stake rewards.
 
 Mitigation:
 
-- Disable creator fee by default.
+- Do not implement creator fees in V1.
+- Do not auto-distribute weekly token stake rewards in V1.
 - Rate-limit room creation and joins.
 - Require wallet age/balance heuristics if needed.
 - Add allowlist for token-room beta.
@@ -510,6 +532,7 @@ Minimum mainnet beta controls:
 - Daily max payout cap.
 - Emergency pause switch.
 - Manual review admin path.
+- Weekly token stake reward review path; manual payout only.
 - Vault balance monitor.
 - Payout/refund reconciliation job.
 
@@ -524,6 +547,7 @@ Minimum mainnet beta controls:
 - Finalization HMAC payload reviewed.
 - Anti-cheat gates reviewed.
 - Manual review process assigned to real operator.
+- Weekly token stake reward review/manual distribution process assigned to real operator.
 - Emergency pause procedure documented.
 - Mainnet beta cap selected.
 

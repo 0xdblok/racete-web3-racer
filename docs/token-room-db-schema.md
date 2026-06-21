@@ -135,16 +135,14 @@ confirmed_player_count integer not null default 0
 status text not null
 vault_token_account text not null
 vault_authority_type text not null default 'server_wallet'
-creator_fee_bps integer not null default 300
-weekly_pool_bps integer not null default 500
+creator_fee_bps integer not null default 0
+weekly_token_stake_reward_pool_bps integer not null default 1500
 platform_fee_bps integer not null default 500
-winner_pool_bps integer not null default 8700
-creator_fee_enabled boolean not null default false
+player_payout_pool_bps integer not null default 8000
 confirmed_pool_amount numeric not null default 0
-creator_fee_amount numeric not null default 0
-weekly_pool_amount numeric not null default 0
+weekly_token_stake_reward_pool_amount numeric not null default 0
 platform_fee_amount numeric not null default 0
-winner_pool_amount numeric not null default 0
+player_payout_pool_amount numeric not null default 0
 payout_total_amount numeric not null default 0
 refund_total_amount numeric not null default 0
 result_hash text
@@ -169,7 +167,8 @@ check (stake_amount > 0)
 check (min_players >= 2)
 check (max_players between 2 and 6)
 check (min_players <= max_players)
-check (creator_fee_bps + weekly_pool_bps + platform_fee_bps + winner_pool_bps = 10000)
+check (creator_fee_bps = 0)
+check (creator_fee_bps + weekly_token_stake_reward_pool_bps + platform_fee_bps + player_payout_pool_bps = 10000)
 check (status in (...))
 ```
 
@@ -187,6 +186,8 @@ Notes:
 
 - `stake_amount` should be stored in base token units, not UI decimals.
 - `stake_preset` should be one of `1000`, `5000`, `10000`, `25000` RACETE in display units.
+- `creator_fee_bps` is fixed at `0` for V1; do not implement creator fee payout logic.
+- `weekly_token_stake_reward_pool_amount` is tracked for admin-reviewed/manual weekly token reward distribution only.
 - `finalize_signature_hash` stores a hash/fingerprint, not necessarily the raw HMAC signature.
 - `anti_cheat_summary` stores final AC counts, DQ reasons, and confidence.
 
@@ -354,10 +355,8 @@ Purpose: one row per planned/sent/confirmed token transfer from room pool.
 Payout types:
 
 - `winner`
-- `creator_fee`
-- `weekly_pool`
+- `weekly_token_stake_reward_pool`
 - `platform_fee`
-- `marketing`
 - `manual_adjustment`
 
 Proposed columns:
@@ -394,7 +393,7 @@ Recommended constraints:
 
 ```sql
 check (amount >= 0)
-check (payout_type in ('winner', 'creator_fee', 'weekly_pool', 'platform_fee', 'marketing', 'manual_adjustment'))
+check (payout_type in ('winner', 'weekly_token_stake_reward_pool', 'platform_fee', 'manual_adjustment'))
 check (status in (...))
 ```
 
@@ -418,7 +417,9 @@ unique(room_id, recipient_wallet_address, payout_type, payout_rank)
 Notes:
 
 - `wallet_address` is the player wallet when payout is related to a participant.
-- `recipient_wallet_address` may be platform treasury, weekly pool wallet, or creator.
+- `recipient_wallet_address` may be a player winner wallet, platform treasury wallet, or weekly token stake reward pool wallet.
+- Creator fee payouts are intentionally excluded from V1.
+- Weekly token stake reward pool transfers fund the weekly pool only; weekly player rewards are admin-reviewed/manual-payout in V1.
 - Retry must inspect whether `payout_signature` already landed before sending again.
 
 ## Table: `token_refunds`
@@ -545,10 +546,9 @@ room_id text not null references token_rooms(room_id) on delete cascade
 race_id text
 plan_hash text not null unique
 confirmed_pool_amount numeric not null
-creator_fee_amount numeric not null default 0
-weekly_pool_amount numeric not null default 0
+weekly_token_stake_reward_pool_amount numeric not null default 0
 platform_fee_amount numeric not null default 0
-winner_pool_amount numeric not null default 0
+player_payout_pool_amount numeric not null default 0
 plan jsonb not null
 status text not null default 'planned'
 created_at timestamptz not null default now()
@@ -623,25 +623,26 @@ For a room with 6 players staking 10,000 RACETE each:
 
 ```text
 confirmedPool = 60,000 RACETE
-creatorFee = 1,800 RACETE (3%)
-weeklyPool = 3,000 RACETE (5%)
+creatorFee = 0 RACETE (0%)
+weeklyTokenStakeRewardPool = 9,000 RACETE (15%)
 platformFee = 3,000 RACETE (5%)
-winnerPool = 52,200 RACETE (87%)
+playerPayoutPool = 48,000 RACETE (80%)
 ```
 
 With 3+ valid finishers:
 
 ```text
-1st = 33,930 RACETE (65% of winnerPool)
-2nd = 13,050 RACETE (25% of winnerPool)
-3rd = 5,220 RACETE  (10% of winnerPool)
+1st = 31,200 RACETE (65% of playerPayoutPool)
+2nd = 12,000 RACETE (25% of playerPayoutPool)
+3rd = 4,800 RACETE  (10% of playerPayoutPool)
 ```
 
-If creator fee disabled:
+Weekly token stake reward pool handling:
 
-- Option A: route creator fee to platform treasury.
-- Option B: track `creator_fee_amount` as pending/manual review.
-- Recommended V1: route disabled creator fee to platform treasury unless explicitly approved otherwise.
+- Track the 15% weekly allocation in RACETE.
+- Do not auto-distribute weekly rewards in V1.
+- Admin manually reviews weekly winners.
+- Admin manually sends weekly token payouts after review.
 
 ## Migration Notes for Later
 
