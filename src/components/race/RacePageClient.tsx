@@ -10,11 +10,14 @@ import { CITY_LOOP_TRACK } from "@/config/tracks";
 import { shortWallet } from "@/lib/format";
 import { RaceHud } from "@/components/race/RaceHud";
 import { RaceResultsOverlay, type RewardClaimState } from "@/components/race/RaceResultsOverlay";
+import { MyRecordsPanel } from "@/components/race/MyRecordsPanel";
+import { RewardProgressPanel } from "@/components/race/RewardProgressPanel";
 import { calculateSoloRaceReward, getTrackTarget } from "@/config/rewards";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
 import { formatRaceTime } from "@/lib/race/useRaceLoop";
+import type { RecordsResponse } from "@/app/api/race/records/route";
 
 const RaceScene = dynamic(
   () => import("@/components/race/RaceScene").then((mod) => ({ default: mod.RaceScene })),
@@ -43,6 +46,8 @@ export function RacePageClient() {
   const [rewardClaim, setRewardClaim] = useState<RewardClaimState>({ status: "idle" });
   const claimedRaceSessionRef = useRef<string | null>(null);
   const carStateRef = useRef<CarState | null>(null);
+  const [recordsData, setRecordsData] = useState<RecordsResponse | null>(null);
+  const [recordsLoading, setRecordsLoading] = useState(false);
   const walletAddress = publicKey?.toBase58() || "";
 
   const handleRaceProgress = useCallback((progress: RaceProgress) => {
@@ -142,6 +147,8 @@ export function RacePageClient() {
           message: `+${Number(data.rewardAmount || 0)} Race Cash added.`,
         });
         if (data.playerState) setState(data.playerState);
+        // Refresh records after earning reward
+        void fetchRecords();
       } catch (err) {
         setRewardClaim({
           status: "error",
@@ -182,10 +189,33 @@ export function RacePageClient() {
         setState(null);
         setStatus("idle");
         setError(null);
+        setRecordsData(null);
       }
     }, 0);
     return () => window.clearTimeout(timer);
   }, [connected, loadPlayer, walletAddress]);
+
+  // Fetch race records when wallet + selected car are ready
+  const fetchRecords = useCallback(async () => {
+    if (!walletAddress || !selectedCatalogCar) return;
+    setRecordsLoading(true);
+    try {
+      const url = `/api/race/records?walletAddress=${encodeURIComponent(walletAddress)}&trackId=city-loop&carClass=${encodeURIComponent(selectedCatalogCar.class)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok) setRecordsData(data);
+    } catch {
+      // non-fatal — records panels show empty states
+    } finally {
+      setRecordsLoading(false);
+    }
+  }, [walletAddress, selectedCatalogCar]);
+
+  useEffect(() => {
+    if (status === "ready" && selectedCatalogCar) {
+      void fetchRecords();
+    }
+  }, [status, selectedCatalogCar, fetchRecords]);
 
   if (!connected) {
     return (
@@ -222,6 +252,9 @@ export function RacePageClient() {
   }
 
   if (state?.selectedCar && selectedCatalogCar) {
+    const isRacing = raceProgress != null && !raceResult;
+    const showPanels = !raceProgress && !raceResult;
+
     return (
       <main className="relative min-h-screen bg-[#050509] p-2 text-white">
         <RaceHud walletAddress={walletAddress} car={selectedCatalogCar} selectedCar={state.selectedCar} track={CITY_LOOP_TRACK} telemetry={telemetry} raceProgress={raceProgress} />
@@ -229,6 +262,15 @@ export function RacePageClient() {
           <Link href="/garage" className="rounded-full border border-white/15 bg-black/50 px-4 py-2 text-sm text-white/80 backdrop-blur hover:bg-white/10">Garage</Link>
           <button onClick={() => void loadPlayer()} className="rounded-full border border-lime-300/35 bg-black/50 px-4 py-2 text-sm font-bold text-lime-100 backdrop-blur hover:bg-lime-300/10">Refresh car</button>
         </div>
+
+        {/* Records & progress panels — shown before race starts */}
+        {showPanels && (
+          <div className="absolute right-3 top-20 z-20 w-72 space-y-3">
+            <MyRecordsPanel data={recordsData} loading={recordsLoading} />
+            <RewardProgressPanel data={recordsData} loading={recordsLoading} />
+          </div>
+        )}
+
         <RaceScene
           key={raceKey}
           car={selectedCatalogCar}
