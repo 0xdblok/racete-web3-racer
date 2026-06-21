@@ -1,4 +1,4 @@
-export type RaceMode = "solo" | "multiplayer";
+export type RaceMode = "solo" | "free_multiplayer" | "token_stake_multiplayer" | "multiplayer";
 
 export type RaceRewardBreakdown = {
   finish: number;
@@ -19,14 +19,16 @@ export const SOLO_RACE_REWARD_CONFIG = {
   maxFinishTimeMs: 30 * 60_000,
 } as const;
 
-export const MULTIPLAYER_PLACEMENT_REWARDS: Record<number, number> = {
-  1: 150,
-  2: 100,
-  3: 75,
-  4: 40,
-  5: 25,
-  6: 15,
+export const MULTIPLAYER_RACE_CASH_PLACEMENT_REWARDS: Record<number, number> = {
+  1: 300,
+  2: 220,
+  3: 160,
+  4: 100,
+  5: 60,
+  6: 40,
 };
+
+export const MULTIPLAYER_PLACEMENT_REWARDS = MULTIPLAYER_RACE_CASH_PLACEMENT_REWARDS;
 
 export function calculateSoloRaceReward(params: {
   completed: boolean;
