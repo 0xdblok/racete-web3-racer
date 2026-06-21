@@ -150,20 +150,48 @@ Snapshot purpose:
 - Give admins a stable review object for manual weekly token payouts.
 - Record manual payout transaction signatures after admin sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`.
 
-Snapshot contents:
+Snapshot header fields (`weekly_token_snapshots`):
 
-- `weekId`
-- `weekStart`
-- `weekEnd`
-- `snapshotCreatedAt`
-- `tokenMint`
-- `totalWeeklyTokenStakeRewardPoolAmount`
-- `TOKEN_WEEKLY_REWARD_WALLET` used for the week
-- `TOKEN_TREASURY_WALLET` used for the week
-- `totalTokenRoomsCount`
-- `totalTokenRoomVolume`
-- leaderboard category
-- entries with wallet address, rank, stats, eligibility, admin status, and manual payout status
+- `id` — UUID primary key
+- `weekId` — ISO week, e.g. `2026-W26`
+- `weekStart` — Monday 00:00 UTC
+- `weekEnd` — next Monday 00:00 UTC
+- `snapshotCreatedAt` — when snapshot was created
+- `tokenMint` — active token mint for the week (`RACETE_TEST_TOKEN_MINT` in dev/test; `RACETE_TOKEN_MINT` in production after final mint is provided)
+- `weeklyRewardWalletAddress` — `TOKEN_WEEKLY_REWARD_WALLET` at snapshot time
+- `treasuryWalletAddress` — `TOKEN_TREASURY_WALLET` at snapshot time
+- `totalWeeklyTokenStakeRewardPoolAmount` — total RACETE collected into the weekly pool from settled token rooms in `[weekStart, weekEnd)`
+- `totalTokenRoomVolume` — total staked RACETE across all settled token rooms in the week
+- `totalTokenRoomsCount` — number of settled token rooms in the week
+- `leaderboardCategory` — ranking category, default `token_room_weekly_composite`
+- `rankingBasis` — JSONB describing sort keys (e.g. wins → netPnL → validFinishRate → DQ count → bestTime)
+- `snapshotStatus` — `pending_review` | `reviewed` | `paid` | `disputed`
+- `reviewedAt` — when admin finalized review
+- `reviewedBy` — admin/operator identifier
+- `adminNotes` — free-text admin notes
+
+Snapshot entry fields (`weekly_token_snapshot_entries`):
+
+- `walletAddress` — Solana wallet public key
+- `rank` — integer position (1 = top)
+- `totalTokenRoomWins` — number of token stake rooms won
+- `totalTokenRoomRaces` — number of token stake rooms entered
+- `validFinishes` — races finished without DNF/DQ
+- `dnfCount` — number of DNF (did not finish)
+- `dqCount` — number of DQ (disqualified)
+- `suspiciousEventCount` — total suspicious anti-cheat events across all races
+- `totalStakeVolume` — total RACETE staked across all entered rooms
+- `grossTokenWinnings` — total RACETE received from race payouts before stake cost
+- `totalTokenStaked` — sum of all stake amounts deposited
+- `netTokenPnl` — gross winnings minus total staked (can be negative)
+- `bestTimeMs` — best multiplayer race time in milliseconds (tie-breaker)
+- `winRate` — validFinishes / totalTokenRoomRaces (0–1)
+- `payoutEligible` — boolean, computed: DQ count = 0 AND suspicious event count below threshold AND wallet not flagged
+- `adminReviewStatus` — `unreviewed` | `cleared` | `flagged` | `blocked`; set by admin during review
+- `suggestedPayoutAmount` — advisory amount in RACETE; admin may adjust
+- `manualPayoutStatus` — `unpaid` | `paid` | `blocked` | `under_review`
+- `manualPayoutSignature` — Solana transaction signature recorded after admin sends RACETE
+- `adminNotes` — free-text per-player admin notes
 
 Immutability rule:
 
@@ -171,22 +199,28 @@ Immutability rule:
 - After final review, only admin notes and manual payout transaction signatures may be appended/updated.
 - The ranking, week window, total weekly pool amount, and eligibility metrics must not be silently recomputed after review.
 
-Primary V1 weekly token reward ranking basis:
+Primary V1 weekly token reward ranking basis (default `token_room_weekly_composite`):
 
-1. Most token room wins.
-2. Highest net token profit.
-3. Highest valid finish rate.
-4. Lowest DQ/suspicious count.
-5. Best multiplayer time as tie-breaker.
+Sort order:
 
-Future categories may include:
+1. Most token room wins (descending).
+2. Highest net token PnL (descending).
+3. Highest valid finish rate (descending).
+4. Lowest DQ + suspicious event count (ascending).
+5. Best multiplayer time as tie-breaker (ascending).
 
-- most token room wins
-- highest token PnL
-- highest win rate
-- most token room volume
-- best valid multiplayer time
-- best risk-adjusted performance
+Alternative ranking categories (documented for future admin selection):
+
+| Category ID | Sort keys | Description |
+|---|---|---|
+| `most_wins` | wins desc, netPnl desc, bestTime asc | Pure win count |
+| `highest_pnl` | netPnl desc, wins desc, bestTime asc | Profit-oriented ranking |
+| `best_win_rate` | winRate desc, wins desc, netPnl desc | Efficiency ranking |
+| `most_volume` | totalStakeVolume desc, wins desc, netPnl desc | Volume commitment ranking |
+| `best_race_time` | bestTime asc, wins desc, netPnl desc | Pure speed ranking |
+| `risk_adjusted` | netPnl desc, winRate desc, dqCount asc, bestTime asc | Risk-adjusted profit |
+
+The snapshot header records which `leaderboardCategory` was used so the ranking basis is auditable per week.
 
 Manual weekly payout process:
 

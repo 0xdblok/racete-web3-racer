@@ -672,6 +672,7 @@ net_token_pnl numeric not null default 0
 best_time_ms integer
 win_rate numeric not null default 0
 payout_eligible boolean not null default false
+admin_review_status text not null default 'unreviewed'
 suggested_payout_amount numeric not null default 0
 manual_payout_status text not null default 'unpaid'
 manual_payout_signature text
@@ -696,6 +697,7 @@ check (total_stake_volume >= 0)
 check (gross_token_winnings >= 0)
 check (total_token_staked >= 0)
 check (win_rate >= 0 and win_rate <= 1)
+check (admin_review_status in ('unreviewed', 'cleared', 'flagged', 'blocked'))
 check (suggested_payout_amount >= 0)
 check (manual_payout_status in ('unpaid', 'paid', 'blocked', 'under_review'))
 ```

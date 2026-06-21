@@ -522,6 +522,14 @@ Admin-only access:
 - Admin actions must be audit logged.
 - Client wallets must not be able to trigger, edit, approve, or record weekly payout snapshots.
 
+Per-endpoint security:
+
+- `POST /api/admin/weekly-token-snapshots/create` — requires admin auth; must validate the week is closed (`weekEnd` is in the past); must reject duplicate `weekId`; must compute totals and rankings from settled token room data only, never from live mutable queries; starts snapshot as `pending_review`.
+- `GET /api/admin/weekly-token-snapshots` — admin-only; returns list of snapshots with status, week window, pool totals; never exposes vault authority private keys.
+- `GET /api/admin/weekly-token-snapshots/:weekId` — admin-only; returns full snapshot + entries; includes `admin_review_status`, `manual_payout_status`, and `suggested_payout_amount` per entry.
+- `PATCH /api/admin/weekly-token-snapshots/:weekId/review` — admin-only; transitions `pending_review` → `reviewed`; sets per-entry `admin_review_status` and `payout_eligible`; DQ/suspicious wallets default to `blocked` or `under_review`; after review, ranking/metrics/pool totals must be immutable (except via dispute).
+- `PATCH /api/admin/weekly-token-snapshots/:weekId/record-payout` — admin-only; records `manual_payout_signature` after admin manually sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`; must NOT initiate an on-chain transaction; must validate signature format, token mint, amount, and recipient wallet; updates `manual_payout_status` to `paid`; transitions snapshot to `paid` when all eligible entries are paid.
+
 Eligibility defaults:
 
 - DQ/disqualified players default to `blocked` or `under_review`.

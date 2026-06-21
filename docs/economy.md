@@ -131,11 +131,43 @@ Token Stake Rooms V1 will track a separate weekly token stake reward pool funded
 Weekly token rewards should be distributed from a frozen weekly snapshot:
 
 - Snapshot cadence: every 7 days.
-- Recommended window: Monday 00:00 UTC -> next Monday 00:00 UTC.
+- Recommended window: Monday 00:00 UTC → next Monday 00:00 UTC.
 - Example week id: `2026-W26`.
 - Snapshot freezes the token-room leaderboard, weekly pool amount, token room count, token volume, eligibility flags, DQ/suspicious counts, and suggested payouts.
 - Admin manually reviews the snapshot, sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET`, and records payout signatures.
 - Snapshot data should be immutable after final review except admin notes and manual payout transaction signatures.
+
+Weekly snapshot header captures:
+
+- `weekId`, `weekStart`, `weekEnd`, `snapshotCreatedAt`
+- `tokenMint` (test mint in dev, production mint after final Pump.fun mint is provided)
+- `weeklyRewardWalletAddress`, `treasuryWalletAddress`
+- `totalWeeklyTokenStakeRewardPoolAmount` — all 15% weekly pool allocations from settled token rooms in `[weekStart, weekEnd)`
+- `totalTokenRoomVolume`, `totalTokenRoomsCount`
+- `leaderboardCategory`, `rankingBasis`
+- `snapshotStatus`: `pending_review` → `reviewed` → `paid` (or `disputed`)
+
+Snapshot entries track per-wallet:
+
+- `walletAddress`, `rank`
+- Performance: `totalTokenRoomWins`, `totalTokenRoomRaces`, `validFinishes`, `dnfCount`, `dqCount`, `suspiciousEventCount`
+- Financial: `totalStakeVolume`, `grossTokenWinnings`, `totalTokenStaked`, `netTokenPnl`
+- Speed: `bestTimeMs` (tie-breaker), `winRate`
+- Review: `payoutEligible`, `adminReviewStatus` (`unreviewed` | `cleared` | `flagged` | `blocked`), `suggestedPayoutAmount`
+- Payout: `manualPayoutStatus` (`unpaid` | `paid` | `blocked` | `under_review`), `manualPayoutSignature`, `adminNotes`
+
+Primary ranking: composite `token_room_weekly_composite` (wins → net PnL → finish rate → DQ count → best time). Alternative categories include `most_wins`, `highest_pnl`, `best_win_rate`, `most_volume`, `best_race_time`, `risk_adjusted`.
+
+Manual payout process:
+
+1. Week closes Monday 00:00 UTC.
+2. Admin triggers snapshot creation (or scheduled automation creates pending snapshot).
+3. Snapshot freezes leaderboard + pool totals from settled token rooms.
+4. Admin reviews: reviews DQ/suspicious flags, marks each entry `cleared`, `flagged`, or `blocked`.
+5. Admin sets `payoutEligible` and `suggestedPayoutAmount` (advisory; admin may adjust).
+6. Admin manually sends RACETE from `TOKEN_WEEKLY_REWARD_WALLET` per approved entry.
+7. Admin records `manualPayoutSignature` via `PATCH /api/admin/weekly-token-snapshots/:weekId/record-payout`.
+8. Snapshot transitions to `paid` when all eligible entries are paid.
 
 ## Flexible objectives framework (future)
 
