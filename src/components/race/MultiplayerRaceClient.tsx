@@ -12,7 +12,8 @@ import { RaceResultsOverlay } from "@/components/race/RaceResultsOverlay";
 import { MatchmakingPanel } from "@/components/multiplayer/MatchmakingPanel";
 import { LobbyPanel } from "@/components/multiplayer/LobbyPanel";
 import { getState, sendMovement, subscribe, type MatchmakingState } from "@/lib/multiplayer/client";
-import { formatRaceTime, type RaceResult, type RaceProgress } from "@/lib/race/useRaceLoop";
+import { formatRaceTime } from "@/lib/race/format";
+import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 

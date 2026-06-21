@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { formatNumber, shortWallet } from "@/lib/format";
 import { resolveCarGameplayStats } from "@/lib/car-gameplay-stats";
-import { formatRaceTime } from "@/lib/race/useRaceLoop";
+import { formatRaceTime } from "@/lib/race/format";
 import type { CarConfig } from "@/config/cars";
 import type { TrackConfig } from "@/config/tracks";
 import type { PlayerCar } from "@/types/game";

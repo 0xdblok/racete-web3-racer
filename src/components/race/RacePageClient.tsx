@@ -14,10 +14,10 @@ import { MyRecordsPanel } from "@/components/race/MyRecordsPanel";
 import { RewardProgressPanel } from "@/components/race/RewardProgressPanel";
 import { LeaderboardPreviewPanel } from "@/components/race/LeaderboardPreviewPanel";
 import { calculateSoloRaceReward, getTrackTarget } from "@/config/rewards";
+import { formatRaceTime } from "@/lib/race/format";
 import type { CarState } from "@/components/race/RaceScene";
 import type { PlayerInitResponse } from "@/types/game";
 import type { RaceResult, RaceProgress } from "@/lib/race/useRaceLoop";
-import { formatRaceTime } from "@/lib/race/useRaceLoop";
 import type { RecordsResponse } from "@/app/api/race/records/route";
 
 const RaceScene = dynamic(
