@@ -1,5 +1,5 @@
-import { WalletGameDashboard } from "@/components/WalletGameDashboard";
+import { LandingPageClient } from "@/components/landing/LandingPageClient";
 
 export default function Home() {
-  return <WalletGameDashboard />;
+  return <LandingPageClient />;
 }

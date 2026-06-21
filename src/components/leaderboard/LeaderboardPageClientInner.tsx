@@ -116,6 +116,7 @@ export function LeaderboardPageClientInner() {
           <Link href="/missions" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white">Missions</Link>
           <Link href="/weekly" className="rounded-full border border-amber-300/20 bg-amber-300/5 px-4 py-2 text-xs font-bold text-amber-200/70 hover:bg-amber-300/10">Weekly</Link>
           <Link href="/garage" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white">Garage</Link>
+          <Link href="/race/multiplayer" className="rounded-full bg-gradient-to-r from-purple-500/70 to-cyan-400/70 px-4 py-2 text-xs font-bold text-black hover:from-purple-400 hover:to-cyan-300">Multiplayer</Link>
         </div>
 
         {/* Filters */}

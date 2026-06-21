@@ -158,6 +158,12 @@ export function WeeklyPageClient() {
           >
             Garage
           </Link>
+          <Link
+            href="/race/multiplayer"
+            className="rounded-full bg-gradient-to-r from-purple-500/70 to-cyan-400/70 px-4 py-2 text-sm font-bold text-black hover:from-purple-400 hover:to-cyan-300"
+          >
+            Multiplayer
+          </Link>
         </div>
 
         {/* Filters */}

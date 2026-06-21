@@ -276,6 +276,12 @@ function MissionsShell({ children }: { children: React.ReactNode }) {
             >
               Weekly
             </Link>
+            <Link
+              className="rounded-full bg-gradient-to-r from-purple-500/80 to-cyan-400/80 px-4 py-2 text-sm font-bold text-black hover:from-purple-500 hover:to-cyan-400"
+              href="/race/multiplayer"
+            >
+              Multiplayer
+            </Link>
             <WalletMultiButton />
           </div>
         </nav>
