@@ -2,6 +2,7 @@
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { LeaderboardTable } from "@/components/leaderboard/LeaderboardTable";
 import { LeaderboardFilters } from "@/components/leaderboard/LeaderboardFilters";
@@ -107,6 +108,14 @@ export function LeaderboardPageClientInner() {
           <p className="mt-2 text-sm text-white/50">
             City Loop records, Race Cash grinders, and class rankings
           </p>
+        </div>
+
+        {/* Nav */}
+        <div className="mb-4 flex justify-center gap-3">
+          <Link href="/race" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white">Race</Link>
+          <Link href="/missions" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white">Missions</Link>
+          <Link href="/weekly" className="rounded-full border border-amber-300/20 bg-amber-300/5 px-4 py-2 text-xs font-bold text-amber-200/70 hover:bg-amber-300/10">Weekly</Link>
+          <Link href="/garage" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white">Garage</Link>
         </div>
 
         {/* Filters */}

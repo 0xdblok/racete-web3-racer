@@ -1029,6 +1029,12 @@ export function GaragePageClient() {
               Missions
             </Link>
             <Link
+              href="/weekly"
+              className="rounded-full border border-amber-300/30 bg-amber-300/10 px-5 py-2.5 text-sm font-bold text-amber-200 hover:bg-amber-300/20 transition-colors"
+            >
+              Weekly
+            </Link>
+            <Link
               href="/leaderboard"
               className="rounded-full border border-white/15 px-5 py-2.5 text-sm text-white/70 hover:bg-white/10 transition-colors"
             >
@@ -1292,6 +1298,12 @@ function GarageShell({ children }: { children: React.ReactNode }) {
               href="/missions"
             >
               Missions
+            </Link>
+            <Link
+              className="rounded-full border border-amber-300/30 bg-amber-300/[0.08] px-4 py-2 text-sm font-bold text-amber-200 hover:bg-amber-300/15"
+              href="/weekly"
+            >
+              Weekly
             </Link>
             <Link
               className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10"

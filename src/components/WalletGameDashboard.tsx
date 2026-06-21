@@ -437,6 +437,7 @@ export function WalletGameDashboard({ devToolsEnabled = false }: { devToolsEnabl
           <div className="flex items-center gap-3">
             <Link className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 hover:bg-white/10" href="/garage">Garage</Link>
             <Link className="rounded-full border border-lime-300/30 bg-lime-300/[0.08] px-4 py-2 text-sm font-bold text-lime-200 hover:bg-lime-300/15" href="/missions">Missions</Link>
+            <Link className="rounded-full border border-amber-300/30 bg-amber-300/[0.08] px-4 py-2 text-sm font-bold text-amber-200 hover:bg-amber-300/15" href="/weekly">Weekly</Link>
             {selectedCarId ? (
               <Link className="rounded-full bg-fuchsia-400 px-4 py-2 text-sm font-black text-black hover:bg-fuchsia-300" href="/race">Play</Link>
             ) : (
