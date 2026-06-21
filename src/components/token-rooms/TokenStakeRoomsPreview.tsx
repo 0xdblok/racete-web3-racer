@@ -1,6 +1,12 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { PublicKey } from "@solana/web3.js";
 import {
   RACETE_TEST_TOKEN_MINT,
   RACETE_TOKEN_MINT,
+  TOKEN_ROOM_DECIMALS,
   TOKEN_ROOM_FEE_BPS,
   TOKEN_ROOM_MAX_PLAYERS,
   TOKEN_ROOM_MIN_PLAYERS,
@@ -16,11 +22,74 @@ function formatRacete(amount: number): string {
   return `${amount.toLocaleString("en-US")} RACETE`;
 }
 
+function shortAddress(address: string): string {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 4)}…${address.slice(-4)}`;
+}
+
+function formatTestRaceteBalance(amount: number): string {
+  const formatted = amount.toLocaleString("en-US", {
+    maximumFractionDigits: TOKEN_ROOM_DECIMALS,
+  });
+  return `${formatted} TEST RACETE`;
+}
+
+type BalanceStatus = "disconnected" | "loading" | "ready" | "error";
+
 export function TokenStakeRoomsPreview() {
+  const { connection } = useConnection();
+  const { connected, publicKey } = useWallet();
+  const walletAddress = publicKey?.toBase58() || "";
+  const [balanceStatus, setBalanceStatus] = useState<BalanceStatus>("disconnected");
+  const [testTokenBalance, setTestTokenBalance] = useState(0);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
+
   const exampleStake = 10_000;
   const examplePlayers = 6;
   const examplePool = exampleStake * examplePlayers;
   const breakdown = calculateTokenRoomPoolBreakdown(examplePool);
+
+  const testMint = useMemo(() => new PublicKey(RACETE_TEST_TOKEN_MINT), []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function readTestTokenBalance() {
+      if (!connected || !publicKey) {
+        setBalanceStatus("disconnected");
+        setTestTokenBalance(0);
+        setBalanceError(null);
+        return;
+      }
+
+      setBalanceStatus("loading");
+      setBalanceError(null);
+
+      try {
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, { mint: testMint });
+        if (cancelled) return;
+
+        const balance = tokenAccounts.value.reduce((sum, account) => {
+          const parsedInfo = account.account.data.parsed.info as { tokenAmount?: { uiAmount?: number | null } };
+          return sum + (parsedInfo.tokenAmount?.uiAmount ?? 0);
+        }, 0);
+
+        setTestTokenBalance(balance);
+        setBalanceStatus("ready");
+      } catch (err) {
+        if (cancelled) return;
+        setTestTokenBalance(0);
+        setBalanceError(err instanceof Error ? err.message : "Unable to read test token balance.");
+        setBalanceStatus("error");
+      }
+    }
+
+    void readTestTokenBalance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [connected, connection, publicKey, testMint]);
 
   return (
     <section className="w-full max-w-4xl rounded-[2rem] border border-cyan-300/20 bg-cyan-300/[0.05] p-6 text-white shadow-2xl shadow-cyan-950/20">
@@ -46,10 +115,36 @@ export function TokenStakeRoomsPreview() {
         </div>
       </div>
 
+      <div className="mt-5 rounded-2xl border border-lime-300/20 bg-lime-300/[0.06] p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-lime-200/70">Test RACETE Balance</p>
+            <div className="mt-2 text-2xl font-black text-lime-200">
+              {balanceStatus === "loading" && "Loading test balance…"}
+              {balanceStatus === "ready" && formatTestRaceteBalance(testTokenBalance)}
+              {balanceStatus === "disconnected" && "Connect wallet to check"}
+              {balanceStatus === "error" && "Balance unavailable"}
+            </div>
+            <p className="mt-2 text-xs text-lime-50/55">
+              Read-only balance check. Token deposits are not enabled yet.
+            </p>
+            {balanceStatus === "error" && (
+              <p className="mt-2 rounded-xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-xs text-red-100/80">
+                {balanceError || "Unable to read test token balance."}
+              </p>
+            )}
+          </div>
+          <dl className="space-y-2 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs">
+            <TokenConfigRow label="Connected wallet" value={walletAddress ? shortAddress(walletAddress) : "Not connected"} />
+            <TokenConfigRow label="Test token mint" value={RACETE_TEST_TOKEN_MINT} />
+          </dl>
+        </div>
+      </div>
+
       <div className="mt-5 grid gap-3 md:grid-cols-4">
         {TOKEN_STAKE_PRESET_CONFIGS.map((preset) => (
-          <div key={preset.amount} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/35">Stake preset</p>
+          <div key={preset.amount} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 opacity-70">
+            <p className="text-xs uppercase tracking-[0.2em] text-white/35">Disabled stake preset</p>
             <p className="mt-1 text-lg font-black text-cyan-100">{preset.label}</p>
           </div>
         ))}
@@ -73,7 +168,6 @@ export function TokenStakeRoomsPreview() {
           <p className="text-xs font-black uppercase tracking-[0.25em] text-white/40">Foundation config</p>
           <dl className="mt-4 space-y-3 text-xs">
             <TokenConfigRow label="Players" value={`${TOKEN_ROOM_MIN_PLAYERS}-${TOKEN_ROOM_MAX_PLAYERS}`} />
-            <TokenConfigRow label="Test token mint" value={RACETE_TEST_TOKEN_MINT} />
             <TokenConfigRow label="Production mint" value={RACETE_TOKEN_MINT} />
             <TokenConfigRow label="Treasury wallet" value={TOKEN_TREASURY_WALLET} />
             <TokenConfigRow label="Weekly wallet" value={TOKEN_WEEKLY_REWARD_WALLET} />
@@ -82,7 +176,7 @@ export function TokenStakeRoomsPreview() {
       </div>
 
       <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100/80">
-        <strong className="text-amber-200">Disabled safety state:</strong> Create Token Room, Join Token Room, and Deposit actions are intentionally unavailable in Phase A.
+        <strong className="text-amber-200">Disabled safety state:</strong> Create Token Room, Join Token Room, and Deposit actions are intentionally unavailable. Phase B only reads the connected wallet’s test token balance.
       </div>
 
       <div className="mt-5 flex flex-wrap gap-3">
@@ -93,7 +187,7 @@ export function TokenStakeRoomsPreview() {
           Join Token Room
         </button>
         <button disabled className="cursor-not-allowed rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-black text-white/35">
-          Deposit
+          Deposit Disabled
         </button>
       </div>
     </section>
