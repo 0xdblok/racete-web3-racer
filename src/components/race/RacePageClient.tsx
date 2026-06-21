@@ -171,6 +171,8 @@ export function RacePageClient() {
             carName={selectedCatalogCar.name}
             trackName={CITY_LOOP_TRACK.name}
             onRaceAgain={handleRaceAgain}
+            placement={1}
+            totalPlayers={1}
           />
         )}
       </main>

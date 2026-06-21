@@ -307,6 +307,8 @@ function MultiplayerRaceClientInner() {
             carName={selectedCatalogCar.name}
             trackName={CITY_LOOP_TRACK.name}
             onRaceAgain={handleRaceAgain}
+            placement={1}
+            totalPlayers={Math.max(players.length, 1)}
           />
         )}
       </main>

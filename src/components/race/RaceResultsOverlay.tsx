@@ -9,7 +9,31 @@ type RaceResultsOverlayProps = {
   carName: string;
   trackName: string;
   onRaceAgain: () => void;
+  /** Multiplayer-ready placement. Defaults to 1 for solo/local runs. */
+  placement?: number;
+  totalPlayers?: number;
 };
+
+export function getOrdinal(value: number): string {
+  const normalized = Math.max(1, Math.floor(value));
+  const mod100 = normalized % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${normalized}th`;
+
+  switch (normalized % 10) {
+    case 1:
+      return `${normalized}st`;
+    case 2:
+      return `${normalized}nd`;
+    case 3:
+      return `${normalized}rd`;
+    default:
+      return `${normalized}th`;
+  }
+}
+
+function getPlacementTitle(placement: number): string {
+  return placement === 1 ? "Winner" : `${getOrdinal(placement)} Place`;
+}
 
 export function RaceResultsOverlay({
   result,
@@ -17,27 +41,35 @@ export function RaceResultsOverlay({
   carName,
   trackName,
   onRaceAgain,
+  placement = 1,
+  totalPlayers,
 }: RaceResultsOverlayProps) {
+  const safePlacement = Math.max(1, Math.floor(placement));
+  const ordinal = getOrdinal(safePlacement);
+  const title = getPlacementTitle(safePlacement);
+  const fieldSize = totalPlayers ? ` / ${totalPlayers}` : "";
+
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-[#050509]/85 backdrop-blur-sm p-4">
+    <div className="absolute inset-0 z-40 flex items-center justify-center bg-[#050509]/85 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-[2.5rem] border border-lime-300/20 bg-[#0a0a12]/95 p-8 text-center shadow-2xl shadow-lime-300/10">
-        <p className="text-sm font-black uppercase tracking-[0.4em] text-lime-300">Finished</p>
-        <h2 className="mt-3 text-5xl font-black text-white">{formatRaceTime(result.totalTimeMs)}</h2>
-        <p className="mt-2 text-white/50">
-          {carName} · {trackName}
+        <p className="text-sm font-black uppercase tracking-[0.4em] text-lime-300">Race Complete</p>
+        <h2 className="mt-3 text-6xl font-black text-white drop-shadow-[0_0_30px_rgba(190,242,100,0.25)]">{title}</h2>
+        <p className="mt-2 text-lg font-black uppercase tracking-[0.25em] text-fuchsia-300">
+          {ordinal} Place{fieldSize}
+        </p>
+        <p className="mt-2 text-sm text-white/55">
+          You finished {ordinal} on {trackName} with {carName}.
         </p>
 
         <div className="mt-8 grid grid-cols-3 gap-3">
+          <StatBox label="Total Time" value={formatRaceTime(result.totalTimeMs)} accent />
           <StatBox label="Best Lap" value={result.bestLapTimeMs > 0 ? formatRaceTime(result.bestLapTimeMs) : "—"} />
-          <StatBox label="Laps" value={`${result.lapsCompleted}/${result.lapsCompleted}`} />
-          <StatBox label="Checkpoints" value={`${result.checkpointsPassed}`} />
+          <StatBox label="Laps" value={`${result.lapsCompleted}`} />
         </div>
 
-        {/* Placement placeholder */}
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/40">Placement</p>
-          <p className="mt-1 text-3xl font-black text-fuchsia-300">Solo Run</p>
-          <p className="text-xs text-white/40">Multiplayer placement will appear here in ranked races.</p>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <StatBox label="Checkpoints" value={`${result.checkpointsPassed}`} />
+          <StatBox label="Position" value={`${ordinal}${fieldSize}`} accent={safePlacement === 1} />
         </div>
 
         <div className="mt-8 flex flex-col gap-3">
@@ -67,11 +99,11 @@ export function RaceResultsOverlay({
   );
 }
 
-function StatBox({ label, value }: { label: string; value: string }) {
+function StatBox({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+    <div className={`rounded-2xl border p-3 ${accent ? "border-lime-300/25 bg-lime-300/[0.08]" : "border-white/10 bg-white/[0.04]"}`}>
       <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/40">{label}</p>
-      <p className="mt-1 text-lg font-black text-white">{value}</p>
+      <p className={`mt-1 text-lg font-black ${accent ? "text-lime-200" : "text-white"}`}>{value}</p>
     </div>
   );
 }

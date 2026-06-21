@@ -82,7 +82,7 @@ export function RaceScene({
 
   return (
     <div className="relative h-[calc(100vh-1rem)] min-h-[680px] overflow-hidden rounded-[2rem] border border-white/10 bg-[#050509]">
-      {race.phase === "countdown" && <RaceCountdown countdown={race.countdown} />}
+      {(race.phase === "countdown" || race.phase === "go") && <RaceCountdown countdown={race.countdown} phase={race.phase} />}
 
       <Canvas camera={{ position: [0, 8, 15], fov: 55, far: 2000 }} shadows>
         <color attach="background" args={["#050509"]} />

@@ -12,7 +12,7 @@ import type { CheckpointConfig } from "@/config/tracks";
 type CheckpointGatesProps = {
   checkpoints: CheckpointConfig[];
   expectedCheckpointIndex: number;
-  phase: "waiting" | "countdown" | "racing" | "finished";
+  phase: "waiting" | "countdown" | "go" | "racing" | "finished";
 };
 
 export function CheckpointGates({ checkpoints, expectedCheckpointIndex, phase }: CheckpointGatesProps) {

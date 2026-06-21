@@ -2,11 +2,13 @@
 
 type RaceCountdownProps = {
   countdown: number;
+  phase: "countdown" | "go";
 };
 
-export function RaceCountdown({ countdown }: RaceCountdownProps) {
-  const label = countdown <= 0 ? "GO" : countdown.toString();
-  const sub = countdown <= 0 ? "Race started" : "Get ready";
+export function RaceCountdown({ countdown, phase }: RaceCountdownProps) {
+  const isGo = phase === "go";
+  const label = isGo ? "GO" : countdown.toString();
+  const sub = isGo ? "Launch" : "Get ready";
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/20 backdrop-blur-[2px]">

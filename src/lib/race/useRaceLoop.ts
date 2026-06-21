@@ -6,7 +6,7 @@ import type { CarState } from "@/components/race/RaceScene";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-export type RacePhase = "waiting" | "countdown" | "racing" | "finished";
+export type RacePhase = "waiting" | "countdown" | "go" | "racing" | "finished";
 
 export type RaceResult = {
   totalTimeMs: number;
@@ -50,7 +50,8 @@ export type RaceProgress = {
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
 
-const COUNTDOWN_SECONDS = 3;
+const COUNTDOWN_SECONDS = 5;
+const GO_DISPLAY_MS = 750;
 const WRONG_WAY_WINDOW_MS = 4000;
 const WRONG_WAY_FLASH_MS = 1500;
 
@@ -193,22 +194,54 @@ export function useRaceLoop(
     return () => window.clearTimeout(t);
   }, [autoStart, broadcast]);
 
-  // Countdown interval. Timer stays at 0 until GO/racing begins.
+  // Timestamp-based countdown. Timer stays at 0 until the short GO flash ends.
   useEffect(() => {
     if (snapshot.phase !== "countdown") return;
 
-    let remaining = COUNTDOWN_SECONDS;
-    internalRef.current.countdown = remaining;
+    let raf = 0;
+    const countdownStartedAt = performance.now();
+    let lastCountdown = COUNTDOWN_SECONDS;
+
+    internalRef.current.countdown = COUNTDOWN_SECONDS;
     broadcast();
 
-    const interval = window.setInterval(() => {
-      remaining -= 1;
-      internalRef.current.countdown = Math.max(remaining, 0);
-      broadcast();
+    function tick() {
+      const now = performance.now();
+      const elapsedMs = now - countdownStartedAt;
 
-      if (remaining <= 0) {
-        window.clearInterval(interval);
-        const now = performance.now();
+      if (elapsedMs >= COUNTDOWN_SECONDS * 1000) {
+        internalRef.current.phase = "go";
+        internalRef.current.countdown = 0;
+        internalRef.current.totalMs = 0;
+        internalRef.current.lapMs = 0;
+        broadcast();
+        return;
+      }
+
+      const nextCountdown = COUNTDOWN_SECONDS - Math.floor(elapsedMs / 1000);
+      if (nextCountdown !== lastCountdown) {
+        lastCountdown = nextCountdown;
+        internalRef.current.countdown = nextCountdown;
+        broadcast();
+      }
+
+      raf = requestAnimationFrame(tick);
+    }
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [snapshot.phase, broadcast]);
+
+  // Keep GO visible briefly, then unlock controls and start race timer at 0.
+  useEffect(() => {
+    if (snapshot.phase !== "go") return;
+
+    const goStartedAt = performance.now();
+    let raf = 0;
+
+    function tick() {
+      const now = performance.now();
+      if (now - goStartedAt >= GO_DISPLAY_MS) {
         internalRef.current.phase = "racing";
         internalRef.current.countdown = 0;
         internalRef.current.raceStartAt = now;
@@ -219,10 +252,13 @@ export function useRaceLoop(
         internalRef.current.completedThisLap = 0;
         internalRef.current.hasLeftStartArea = false;
         broadcast();
+        return;
       }
-    }, 1000);
+      raf = requestAnimationFrame(tick);
+    }
 
-    return () => window.clearInterval(interval);
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [snapshot.phase, broadcast]);
 
   // Checkpoint + timing loop.
