@@ -1,4 +1,5 @@
 import { Room, Client } from "colyseus";
+import { createHmac } from "crypto";
 import { RaceStateSchema, LobbyPlayerSchema, RaceResultSchema } from "../schema/RaceState";
 import type { ClientJoinMessage, ClientReadyMessage, ClientMovementMessage, RaceClass } from "../types";
 
@@ -18,6 +19,11 @@ const SPAWN_LANES = [
   { x: 12, z: -110 },
 ];
 
+// ── Reward signing ──────────────────────────────────────────────────────
+
+const REWARD_SECRET = process.env.MULTIPLAYER_REWARD_SECRET || "";
+const REWARD_PAYLOAD_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
+
 function clampFinite(value: number, min: number, max: number, fallback: number): number {
   if (!Number.isFinite(value)) return fallback;
   return Math.max(min, Math.min(max, value));
@@ -25,6 +31,23 @@ function clampFinite(value: number, min: number, max: number, fallback: number):
 
 function shortWallet(address: string): string {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
+
+/** Generate a canonical JSON string (sorted keys) for HMAC signing. */
+function canonicalJson(obj: Record<string, unknown>): string {
+  return JSON.stringify(obj, Object.keys(obj).sort());
+}
+
+/** Sign a reward payload with HMAC-SHA256. Returns hex signature. */
+function signPayload(payload: Record<string, unknown>): string {
+  if (!REWARD_SECRET) return "";
+  const canonical = canonicalJson(payload);
+  return createHmac("sha256", REWARD_SECRET).update(canonical).digest("hex");
+}
+
+/** Generate a serverRaceId deterministically from roomId + startedAt. */
+function makeServerRaceId(roomId: string, raceStartedAt: number): string {
+  return `mp:${roomId}:${raceStartedAt}`;
 }
 
 // ── Message types ────────────────────────────────────────────────────────
@@ -434,6 +457,12 @@ export class RaceRoom extends Room<RaceStateSchema> {
       `${this.state.results.filter((r) => r.status === "dnf").length} DNF.`,
     );
 
+    // Generate unique server race ID for this race
+    const serverRaceId = makeServerRaceId(this.roomId, this.state.raceStartedAt);
+    const expiresAt = new Date(Date.now() + REWARD_PAYLOAD_EXPIRY_MS).toISOString();
+    const totalPlayers = this.state.players.length;
+    const finishedAt = new Date().toISOString();
+
     // Broadcast final results to all clients
     const resultsPayload = this.state.results.map((r) => ({
       sessionId: r.sessionId,
@@ -449,6 +478,50 @@ export class RaceRoom extends Room<RaceStateSchema> {
     }));
 
     this.broadcast("race_results", { results: resultsPayload });
+
+    // Generate signed reward payloads for each FINISHED player
+    for (const p of this.state.results) {
+      if (p.status !== "finished") continue;
+
+      const rewardPayload = {
+        version: 1,
+        raceMode: "multiplayer",
+        roomId: this.roomId,
+        serverRaceId,
+        walletAddress: p.walletAddress,
+        trackId: "city-loop",
+        carId: p.sessionId ? this.state.players.find((pl) => pl.sessionId === p.sessionId)?.selectedCarId || "" : "",
+        carClass: p.carClass,
+        placement: p.placement,
+        totalPlayers,
+        totalTimeMs: p.totalTimeMs,
+        bestLapMs: p.bestLapMs,
+        firstLapMs: p.firstLapMs,
+        lapsCompleted: CITY_LOOP_LAPS,
+        checkpointsCompleted: CITY_LOOP_LAPS * CITY_LOOP_CHECKPOINTS,
+        status: "finished",
+        finishedAt,
+        expiresAt,
+      };
+
+      const signature = signPayload(rewardPayload);
+
+      const signedReward = {
+        payload: rewardPayload,
+        signature,
+      };
+
+      // Find the client for this player and send individually
+      const client = this.clients.find((c) => {
+        const player = this.state.players.find((pl) => pl.sessionId === c.sessionId);
+        return player?.walletAddress === p.walletAddress;
+      });
+
+      if (client) {
+        client.send("multiplayer_reward", signedReward);
+        console.log(`[RaceRoom] Sent signed reward to ${shortWallet(p.walletAddress!)} (Place #${p.placement}, ${p.totalTimeMs}ms)`);
+      }
+    }
   }
 
   /* ------------------------------------------------------------------ */

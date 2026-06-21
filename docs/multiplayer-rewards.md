@@ -1,106 +1,121 @@
 # Multiplayer Rewards — Architecture & Anti-Cheat Notes
 
-## Current State (V1.1 — Server-Authoritative Results)
+## Current State (V2 — Server-Signed Rewards Enabled)
 
-Multiplayer rewards are **disabled**, but race results are now **server-authoritative**.
+Multiplayer Race Cash rewards are now **enabled** via server-signed payloads.
 
-- Client sends `checkpoint {checkpointId}` and `finish {times}` events to Colyseus server
-- Server validates checkpoint order, lap completion, and finish conditions
-- Server assigns placement based on finish order
-- Server broadcasts `race_results` to all clients when race ends
-- `POST /api/race/reward` with `raceMode="multiplayer"` still returns 403
-
----
-
-## V1.1 Architecture
-
-### Server-Side (Colyseus RaceRoom)
-
-```
-Client → Server messages:
-  - checkpoint { checkpointId }
-  - finish { totalTimeMs, bestLapMs, firstLapMs }
-
-Server validation:
-  1. Checkpoint order: must be sequential (0→1→2→...→9→0→1→...)
-  2. Lap completion: lap N only after completing all N-1 checkpoints
-  3. Finish: only accepted after required laps (3 for City Loop)
-  4. Minimum checkpoints: totalLaps × checkpointsPerLap must be met
-  5. Time plausibility: totalTimeMs must exceed MIN_FINISH_TIME_MS (30s)
-  6. Duplicate finish: rejected if already finished
-
-Server → Client messages:
-  - checkpoint_result { valid, checkpointId, currentLap, ... }
-  - finish_result { accepted, placement, totalTimeMs, ... }
-  - player_finished { sessionId, placement, totalTimeMs, ... }
-  - player_dnf { sessionId }
-  - race_results { results[] }
-```
-
-### Schema
-
-```typescript
-LobbyPlayer {
-  // Race progress (server-authoritative)
-  currentLap: number       // 1-based
-  totalLaps: number        // 3 for City Loop
-  checkpointIndex: number  // Next expected checkpoint (0-based order)
-  checkpointsPassed: number
-  startedAt: number        // Server timestamp
-  finishedAt: number       // Server timestamp
-  totalTimeMs: number      // finishedAt - startedAt
-  bestLapMs: number
-  firstLapMs: number
-  placement: number        // Server-assigned (0 = not finished)
-  raceStatus: "lobby" | "racing" | "finished" | "disconnected" | "dnf"
-}
-
-RaceResult {
-  placement, walletAddress, displayWallet, carName, carClass
-  totalTimeMs, bestLapMs, firstLapMs
-  status: "finished" | "dnf"
-}
-```
-
-### DNF / Timeout
-- Player disconnects during race → marked as `disconnected` → included in results as DNF
-- Max race duration: 10 minutes → remaining racers marked as `dnf` → race ends
-- Room auto-disposes when empty after race completes
+- Colyseus server generates HMAC-SHA256 signed reward payloads for each finished player
+- Frontend receives signed payload via `multiplayer_reward` WebSocket message
+- Player clicks "Claim Multiplayer Reward" button
+- Frontend POSTs signed payload to `POST /api/race/reward/multiplayer`
+- API verifies signature using shared `MULTIPLAYER_REWARD_SECRET`
+- API pays Race Cash based on placement (1st: 150 RC, 2nd: 100 RC, 3rd: 75 RC, 4th: 50 RC, 5th: 40 RC, 6th: 30 RC)
+- DNF players get 0 RC and receive no signed payload
+- Idempotency enforced via `multiplayer:{serverRaceId}:{walletAddress}`
 
 ---
 
-## Remaining Before Enabling Multiplayer Payouts
+## Security Model
 
-### Required
-1. **Server-signed results** — Colyseus server produces a signed/hashed result payload that the reward API can verify
-2. **Reward API integration** — `POST /api/race/reward` accepts server-signed multiplayer results
-3. **Placement-based payouts** — Use `MULTIPLAYER_RACE_CASH_PLACEMENT_REWARDS` config
+### Signing (Server)
+```
+payload = { version, serverRaceId, walletAddress, placement, totalTimeMs, ... }
+canonical = JSON.stringify(payload, Object.keys(payload).sort())
+signature = HMAC-SHA256(canonical, MULTIPLAYER_REWARD_SECRET)
+```
 
-### Recommended
-4. **Checkpoint geometry validation** — Server has checkpoint positions, validates proximity (currently only validates order)
-5. **Speed/distance sanity** — Validate that checkpoint segment times are physically plausible
-6. **No-teleport check** — Validate distance between consecutive positions is below max speed threshold
+### Verification (API)
+```
+canonical = JSON.stringify(payload, Object.keys(payload).sort())
+expected = HMAC-SHA256(canonical, MULTIPLAYER_REWARD_SECRET)
+valid = constantTimeCompare(signature, expected)
+```
 
----
-
-## Current Anti-Cheat Coverage
-
-| Threat | V1.1 Protection |
+### Additional API Checks
+| Check | Purpose |
 |---|---|
-| Fake finish time | ✓ Server computes time from startAt |
-| Finish before laps | ✓ Server validates lap count |
-| Out-of-order checkpoints | ✓ Server ignores out-of-order events |
-| Duplicate finish | ✓ Rejected |
-| Placement spoofing | ✓ Server-assigned |
-| Disconnect griefing | ✓ Marked DNF, doesn't crash room |
-| Speed hacking | ⚠️ Clamped to 350 but generous |
-| Position spoofing | ⚠️ Clamped to track bounds |
-| Wall clipping | ❌ No server-side physics |
-| Stolen checkpoint credit | ⚠️ Order validated but no proximity check |
+| Signature valid | Prevents forgery |
+| expiresAt > now | Payload lifetime: 15 minutes |
+| placement in [1,6] | Valid race placement |
+| status === "finished" | No DNF payouts |
+| totalTimeMs >= 30s | Minimum finish time |
+| lapsCompleted >= 3 | Required City Loop laps |
+| checkpointsCompleted >= 30 | Required checkpoints |
+| idempotency (client_race_id) | No double payout |
+| reward calculated server-side | Amount comes from config, not payload |
+
+### Shared Secret
+- `MULTIPLAYER_REWARD_SECRET` in server `.env` (Colyseus server on VPS)
+- `MULTIPLAYER_REWARD_SECRET` in Vercel env vars (not `NEXT_PUBLIC_`!)
+- Never sent to the browser
 
 ---
 
-## Future V2: Full Server Authority
+## API Endpoint
+
+### POST /api/race/reward/multiplayer
+
+Request body:
+```json
+{
+  "payload": {
+    "version": 1,
+    "raceMode": "multiplayer",
+    "serverRaceId": "mp:roomId:1234567890",
+    "walletAddress": "...",
+    "placement": 1,
+    "totalTimeMs": 120000,
+    ...
+    "expiresAt": "2026-06-22T..."
+  },
+  "signature": "hex..."
+}
+```
+
+Response (200):
+```json
+{
+  "claimed": true,
+  "placement": 1,
+  "rewardAmount": 150,
+  "newBalance": 5420
+}
+```
+
+Errors: 400 (invalid), 403 (bad signature), 409 (already claimed), 410 (expired)
+
+---
+
+## Multiplayer Placement Rewards
+
+| Placement | Race Cash |
+|---|---|
+| 1st | 150 RC |
+| 2nd | 100 RC |
+| 3rd | 75 RC |
+| 4th | 50 RC |
+| 5th | 40 RC |
+| 6th | 30 RC |
+| DNF | 0 RC |
+
+---
+
+## Anti-Cheat Coverage
+
+| Threat | Protection |
+|---|---|
+| Forged reward payload | ✓ HMAC signature verification |
+| Replay attack | ✓ Payload expires after 15 min |
+| Double claim | ✓ Idempotency via client_race_id |
+| DNF payout | ✓ Server only signs finished players |
+| Placement spoofing | ✓ Server-assigned + verified in API |
+| Client-side placement | ✓ Reward amount from server config, not payload |
+| Expired claim | ✓ expiresAt checked |
+| Missing secret | ✓ API returns 500 if secret not configured |
+
+---
+
+## Future V3: Full Server-Authoritative Physics
 
 - Server runs physics simulation (or validates against it)
 - Clients send inputs only (throttle, steer, nitro)

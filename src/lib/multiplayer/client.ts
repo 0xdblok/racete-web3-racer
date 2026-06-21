@@ -51,6 +51,33 @@ export type MatchmakingState = {
     firstLapMs: number;
     error?: string;
   } | null;
+  /** Server-signed reward payload (for claiming Race Cash). */
+  signedReward: SignedRewardPayload | null;
+};
+
+/** Server-signed multiplayer reward payload. */
+export type SignedRewardPayload = {
+  payload: {
+    version: number;
+    raceMode: string;
+    roomId: string;
+    serverRaceId: string;
+    walletAddress: string;
+    trackId: string;
+    carId: string;
+    carClass: string;
+    placement: number;
+    totalPlayers: number;
+    totalTimeMs: number;
+    bestLapMs: number;
+    firstLapMs: number;
+    lapsCompleted: number;
+    checkpointsCompleted: number;
+    status: string;
+    finishedAt: string;
+    expiresAt: string;
+  };
+  signature: string;
 };
 
 type Listener = () => void;
@@ -149,6 +176,7 @@ let _state: MatchmakingState = {
   error: null,
   raceResults: null,
   myFinishResult: null,
+  signedReward: null,
 };
 
 /* ------------------------------------------------------------------ */
@@ -327,6 +355,11 @@ export async function findMatch(params: {
       setState({ raceResults: msg.results });
     });
 
+    room.onMessage("multiplayer_reward", (msg: SignedRewardPayload) => {
+      setState({ signedReward: msg });
+      console.log(`[Multiplayer] Received signed reward — Place #${msg.payload.placement} for ${msg.payload.walletAddress}`);
+    });
+
     // Handle disconnect
     room.onLeave((code) => {
       console.log(`[Multiplayer] Left room (code ${code})`);
@@ -394,6 +427,7 @@ export function cancelMatchmaking(): void {
     error: null,
     raceResults: null,
     myFinishResult: null,
+    signedReward: null,
   });
 }
 

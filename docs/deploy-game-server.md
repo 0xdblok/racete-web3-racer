@@ -48,6 +48,7 @@ Edit `.env`:
 ```
 GAME_SERVER_PORT=2567
 CORS_ORIGIN=https://your-vercel-domain.vercel.app
+MULTIPLAYER_REWARD_SECRET=<generate with: openssl rand -hex 32>
 ```
 
 ### 3. Run with PM2
@@ -149,7 +150,10 @@ Set in your Vercel project dashboard:
 
 ```
 NEXT_PUBLIC_GAME_SERVER_URL=wss://game.yourdomain.com
+MULTIPLAYER_REWARD_SECRET=<same value as server .env>
 ```
+
+⚠️ Do NOT prefix `MULTIPLAYER_REWARD_SECRET` with `NEXT_PUBLIC_` — it is a server-side secret and must never be exposed to the browser.
 
 For local dev only:
 ```

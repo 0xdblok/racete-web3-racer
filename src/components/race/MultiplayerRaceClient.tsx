@@ -375,10 +375,45 @@ function MultiplayerResultsOverlay({
   const finishResult = multiplayerState.myFinishResult;
   const serverResults = multiplayerState.raceResults;
   const roomResults = multiplayerState.room?.results;
+  const signedReward = multiplayerState.signedReward;
+
+  const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "claimed" | "error">("idle");
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [claimedAmount, setClaimedAmount] = useState<number | null>(null);
+
+  const handleClaim = useCallback(async () => {
+    if (!signedReward) return;
+    setClaimStatus("claiming");
+    setClaimError(null);
+    try {
+      const res = await fetch("/api/race/reward/multiplayer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(signedReward),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 409) {
+          // Already claimed — treat as success
+          setClaimStatus("claimed");
+          setClaimedAmount(typeof data.reward?.amount === "number" ? data.reward.amount : null);
+          return;
+        }
+        throw new Error(data.error || "Claim failed");
+      }
+      setClaimStatus("claimed");
+      setClaimedAmount(data.rewardAmount);
+    } catch (err) {
+      setClaimStatus("error");
+      setClaimError(err instanceof Error ? err.message : "Failed to claim reward");
+    }
+  }, [signedReward]);
 
   // Show server results if available
   const results = serverResults ?? roomResults ?? [];
   const hasServerResults = results.length > 0;
+  const isFinished = finishResult?.accepted === true;
+  const canClaim = signedReward !== null && claimStatus === "idle" && isFinished;
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -446,15 +481,63 @@ function MultiplayerResultsOverlay({
           </div>
         )}
 
-        {/* Rewards disabled notice */}
-        <div className="mt-4 rounded-xl border border-amber-300/20 bg-amber-500/[0.04] p-3 text-center">
-          <p className="text-xs font-bold text-amber-300/70">
-            Multiplayer rewards are disabled during beta
-          </p>
-          <p className="mt-1 text-[10px] text-amber-200/40">
-            Race Cash earnings will be enabled once server-authoritative results are fully verified.
-          </p>
-        </div>
+        {/* Reward claim section */}
+        {isFinished && (
+          <div className="mt-4 rounded-xl border border-lime-300/20 bg-lime-500/[0.04] p-4 text-center">
+            {claimStatus === "idle" && canClaim && (
+              <button
+                onClick={handleClaim}
+                className="w-full rounded-full bg-lime-400 px-5 py-3 text-sm font-black text-black hover:bg-lime-300 transition-colors"
+              >
+                Claim Multiplayer Reward
+              </button>
+            )}
+            {claimStatus === "idle" && !canClaim && !signedReward && (
+              <div className="flex items-center justify-center gap-2">
+                <div className="size-3 animate-spin rounded-full border-2 border-lime-300/40 border-t-transparent" />
+                <p className="text-xs text-lime-200/60">Waiting for reward payload...</p>
+              </div>
+            )}
+            {claimStatus === "claiming" && (
+              <div className="flex items-center justify-center gap-2">
+                <div className="size-4 animate-spin rounded-full border-2 border-lime-300 border-t-transparent" />
+                <p className="text-sm font-bold text-lime-200">Claiming reward...</p>
+              </div>
+            )}
+            {claimStatus === "claimed" && (
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-lime-300">Reward Claimed</p>
+                <p className="mt-1 text-3xl font-black text-lime-300">
+                  +{claimedAmount?.toLocaleString() ?? "—"} RC
+                </p>
+                <p className="mt-1 text-[10px] text-lime-200/40">Place #{finishResult?.placement} · Multiplayer Free Race</p>
+              </div>
+            )}
+            {claimStatus === "error" && (
+              <div>
+                <p className="text-xs font-bold text-red-300">{claimError || "Claim failed"}</p>
+                <button
+                  onClick={handleClaim}
+                  className="mt-2 rounded-full border border-lime-300/30 bg-lime-300/10 px-4 py-1.5 text-xs font-bold text-lime-200 hover:bg-lime-300/20"
+                >
+                  Retry Claim
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* DNF / no reward */}
+        {finishResult && !finishResult.accepted && !isFinished && (
+          <div className="mt-4 rounded-xl border border-amber-300/15 bg-amber-500/[0.03] p-3 text-center">
+            <p className="text-xs font-bold text-amber-300/60">
+              No reward for this race
+            </p>
+            <p className="mt-1 text-[10px] text-amber-200/30">
+              {finishResult.error || "Finish was not accepted by server"}
+            </p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="mt-5 flex gap-3">

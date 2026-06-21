@@ -61,12 +61,12 @@ export const SOLO_RACE_REWARD_CONFIG = {
 } as const;
 
 export const MULTIPLAYER_RACE_CASH_PLACEMENT_REWARDS: Record<number, number> = {
-  1: 300,
-  2: 220,
-  3: 160,
-  4: 100,
-  5: 60,
-  6: 40,
+  1: 150,
+  2: 100,
+  3: 75,
+  4: 50,
+  5: 40,
+  6: 30,
 };
 
 export const MULTIPLAYER_PLACEMENT_REWARDS = MULTIPLAYER_RACE_CASH_PLACEMENT_REWARDS;
