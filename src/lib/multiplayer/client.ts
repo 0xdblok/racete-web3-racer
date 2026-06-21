@@ -48,15 +48,63 @@ type Listener = () => void;
 /*  Server URL resolution                                              */
 /* ------------------------------------------------------------------ */
 
+/** Known hosting domains that CANNOT host a Colyseus server. */
+const FRONTEND_ONLY_HOSTS = new Set([
+  "vercel.app",
+  "vercel.com",
+  "nextjs.org",
+  "netlify.app",
+  "pages.dev",
+  "workers.dev",
+]);
+
+function isFrontendOnlyHost(hostname: string): boolean {
+  return FRONTEND_ONLY_HOSTS.has(hostname) ||
+    hostname.endsWith(".vercel.app") ||
+    hostname.endsWith(".netlify.app") ||
+    hostname.endsWith(".pages.dev");
+}
+
 function getConfiguredServerUrl(): string | null {
+  // 1. Explicit config always wins
   if (publicEnv.gameServerUrl) return publicEnv.gameServerUrl;
+
+  // 2. In local dev, auto-detect ws://localhost:2567
   if (typeof window !== "undefined") {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const port = "2567";
-    return `${protocol}//${window.location.hostname}:${port}`;
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.")) {
+      return "ws://localhost:2567";
+    }
   }
+
+  // 3. Never guess — frontend hosts can't run Colyseus
   return null;
 }
+
+/** Health check: ping the game server's /health endpoint. */
+export async function checkServerHealth(): Promise<{ ok: boolean; error?: string }> {
+  const url = getConfiguredServerUrl();
+  if (!url) return { ok: false, error: "NEXT_PUBLIC_GAME_SERVER_URL not configured" };
+
+  try {
+    const httpUrl = url
+      .replace(/^ws:/, "http:")
+      .replace(/^wss:/, "https:");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(`${httpUrl}/health`, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return { ok: false, error: `Server returned ${res.status}` };
+    const body = await res.json().catch(() => null);
+    if (body?.status === "ok") return { ok: true };
+    return { ok: false, error: "Unexpected health response" };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Health check failed";
+    return { ok: false, error: msg };
+  }
+}
+
+export { getConfiguredServerUrl };
 
 /* ------------------------------------------------------------------ */
 /*  Singleton client                                                    */
