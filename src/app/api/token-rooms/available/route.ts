@@ -1,31 +1,40 @@
 import { NextResponse } from "next/server";
 import {
-  RACETE_TEST_TOKEN_MINT,
-  RACETE_TOKEN_MINT,
-  TOKEN_ROOM_DISABLED_MESSAGE,
-  TOKEN_ROOM_FEE_BPS,
-  TOKEN_STAKE_PRESET_CONFIGS,
-  TOKEN_STAKE_ROOMS_ENABLED,
-  TOKEN_STAKE_ROOMS_TEST_MODE,
-  TOKEN_TREASURY_WALLET,
-  TOKEN_WEEKLY_REWARD_WALLET,
-  getTokenRoomMode,
-} from "@/config/token-rooms";
+  fetchDryRunRooms,
+  isMissingTokenRoomTableError,
+  tokenRoomBasePayload,
+} from "../_shared";
 
 export async function GET() {
-  return NextResponse.json({
-    enabled: TOKEN_STAKE_ROOMS_ENABLED,
-    testMode: TOKEN_STAKE_ROOMS_TEST_MODE,
-    mode: getTokenRoomMode(),
-    message: TOKEN_ROOM_DISABLED_MESSAGE,
-    rooms: [],
-    config: {
-      testTokenMint: RACETE_TEST_TOKEN_MINT,
-      productionTokenMint: RACETE_TOKEN_MINT,
-      treasuryWallet: TOKEN_TREASURY_WALLET,
-      weeklyRewardWallet: TOKEN_WEEKLY_REWARD_WALLET,
-      stakePresets: TOKEN_STAKE_PRESET_CONFIGS,
-      feeBps: TOKEN_ROOM_FEE_BPS,
-    },
-  });
+  try {
+    const rooms = (await fetchDryRunRooms()).filter((room) => room.dryRunStatus === "waiting");
+
+    return NextResponse.json({
+      ...tokenRoomBasePayload(),
+      rooms,
+    });
+  } catch (error) {
+    if (isMissingTokenRoomTableError(error)) {
+      return NextResponse.json(
+        {
+          ...tokenRoomBasePayload(),
+          rooms: [],
+          error: "Token room tables are not available yet.",
+          message: "Phase C.1 dry-run listing requires the Phase A token_rooms migration to be applied manually.",
+        },
+        { status: 503 },
+      );
+    }
+
+    const message = error instanceof Error ? error.message : "Token room listing failed";
+    return NextResponse.json(
+      {
+        ...tokenRoomBasePayload(),
+        rooms: [],
+        error: "Token room listing failed",
+        message,
+      },
+      { status: 500 },
+    );
+  }
 }

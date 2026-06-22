@@ -50,6 +50,33 @@ function formatLastChecked(date: Date | null): string {
 }
 
 type BalanceStatus = "disconnected" | "loading" | "ready" | "error";
+type DryRunRoomsStatus = "idle" | "loading" | "ready" | "error";
+
+type DryRunTokenRoomPlayer = {
+  walletAddress: string;
+  isCreator: boolean;
+  status: string;
+  dryRunDepositStatus: "not_required";
+  dbDepositStatus: string;
+  joinedAt: string;
+};
+
+type DryRunTokenRoom = {
+  roomId: string;
+  tokenMint: string;
+  stakeAmount: number;
+  stakeAmountBaseUnits: string;
+  stakePreset: number;
+  maxPlayers: number;
+  playerCount: number;
+  confirmedPlayerCount: number;
+  status: string;
+  dryRunStatus: "waiting" | "full" | "closed";
+  creatorWalletAddress: string;
+  createdAt: string;
+  expiresAt: string;
+  players: DryRunTokenRoomPlayer[];
+};
 
 export function TokenStakeRoomsPreview() {
   const { connection } = useConnection();
@@ -59,12 +86,107 @@ export function TokenStakeRoomsPreview() {
   const [testTokenBalance, setTestTokenBalance] = useState(0);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [rooms, setRooms] = useState<DryRunTokenRoom[]>([]);
+  const [roomsStatus, setRoomsStatus] = useState<DryRunRoomsStatus>("idle");
+  const [roomsMessage, setRoomsMessage] = useState<string | null>(null);
+  const [roomActionStatus, setRoomActionStatus] = useState<"idle" | "working">("idle");
+  const [selectedStakeAmount, setSelectedStakeAmount] = useState<number>(TOKEN_STAKE_PRESET_CONFIGS[0]?.amount ?? 1_000);
+  const [selectedMaxPlayers, setSelectedMaxPlayers] = useState<number>(TOKEN_ROOM_MAX_PLAYERS);
   const balanceReadIdRef = useRef(0);
 
   const exampleStake = 10_000;
   const examplePlayers = 6;
   const examplePool = exampleStake * examplePlayers;
   const breakdown = calculateTokenRoomPoolBreakdown(examplePool);
+
+  const refreshDryRunRooms = useCallback(async () => {
+    setRoomsStatus("loading");
+    setRoomsMessage(null);
+
+    try {
+      const response = await fetch("/api/token-rooms/available", { cache: "no-store" });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Failed to load dry-run rooms");
+      }
+
+      setRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
+      setRoomsMessage(payload.dryRunMessage || "Dry-run room only. No RACETE deposit will be requested or transferred.");
+      setRoomsStatus("ready");
+    } catch (err) {
+      console.warn("[TokenStakeRoomsPreview] dry-run room refresh failed:", err);
+      setRooms([]);
+      setRoomsMessage("Dry-run rooms unavailable — DB read failed.");
+      setRoomsStatus("error");
+    }
+  }, []);
+
+  const createDryRunRoom = useCallback(async () => {
+    if (!connected || !walletAddress) {
+      setRoomsMessage("Connect wallet to create a dry-run room. No signature will be requested.");
+      return;
+    }
+
+    setRoomActionStatus("working");
+    setRoomsMessage(null);
+
+    try {
+      const response = await fetch("/api/token-rooms/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress,
+          stakeAmount: selectedStakeAmount,
+          maxPlayers: selectedMaxPlayers,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Failed to create dry-run room");
+      }
+
+      await refreshDryRunRooms();
+      setRoomsMessage(payload.dryRunNotice || "Dry-run room created. No RACETE deposit was requested or transferred.");
+    } catch (err) {
+      console.warn("[TokenStakeRoomsPreview] dry-run room create failed:", err);
+      setRoomsMessage(err instanceof Error ? err.message : "Dry-run room creation failed.");
+    } finally {
+      setRoomActionStatus("idle");
+    }
+  }, [connected, refreshDryRunRooms, selectedMaxPlayers, selectedStakeAmount, walletAddress]);
+
+  const joinDryRunRoom = useCallback(async (roomId: string) => {
+    if (!connected || !walletAddress) {
+      setRoomsMessage("Connect wallet to join a dry-run room. No signature will be requested.");
+      return;
+    }
+
+    setRoomActionStatus("working");
+    setRoomsMessage(null);
+
+    try {
+      const response = await fetch("/api/token-rooms/join-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ walletAddress, roomId }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload?.message || payload?.error || "Failed to join dry-run room");
+      }
+
+      await refreshDryRunRooms();
+      setRoomsMessage(payload.dryRunNotice || "Joined dry-run room. No RACETE deposit was requested or transferred.");
+    } catch (err) {
+      console.warn("[TokenStakeRoomsPreview] dry-run room join failed:", err);
+      setRoomsMessage(err instanceof Error ? err.message : "Dry-run room join failed.");
+    } finally {
+      setRoomActionStatus("idle");
+    }
+  }, [connected, refreshDryRunRooms, walletAddress]);
 
   const readTestTokenBalance = useCallback(async () => {
     const requestId = balanceReadIdRef.current + 1;
@@ -164,6 +286,11 @@ export function TokenStakeRoomsPreview() {
     };
   }, [readTestTokenBalance]);
 
+  // Load available DB-backed dry-run rooms. This is API-only and never invokes wallet signing.
+  useEffect(() => {
+    void refreshDryRunRooms();
+  }, [refreshDryRunRooms]);
+
   return (
     <section className="w-full max-w-4xl rounded-[2rem] border border-cyan-300/20 bg-cyan-300/[0.05] p-6 text-white shadow-2xl shadow-cyan-950/20">
       {/* Header */}
@@ -251,6 +378,117 @@ export function TokenStakeRoomsPreview() {
         ⚠ This checks only the temporary test token. Production token rooms are not live.
       </div>
 
+      {/* DB-backed dry-run lifecycle */}
+      <div className="mt-5 rounded-2xl border border-fuchsia-300/20 bg-fuchsia-300/[0.05] p-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-fuchsia-200/70">
+              DB-backed dry-run rooms
+            </p>
+            <h3 className="mt-1 text-xl font-black text-white">Create/list/join flow — no token movement</h3>
+            <p className="mt-2 max-w-2xl text-xs text-fuchsia-50/60">
+              Dry-run room only. No RACETE deposit will be requested or transferred. This validates product flow before
+              real escrow, deposit verification, or payouts exist.
+            </p>
+          </div>
+          <button
+            onClick={() => void refreshDryRunRooms()}
+            className="rounded-full border border-fuchsia-200/30 bg-fuchsia-200/[0.08] px-4 py-2 text-xs font-black text-fuchsia-100 transition hover:bg-fuchsia-200/[0.14]"
+          >
+            {roomsStatus === "loading" ? "Loading rooms…" : "Refresh dry-run rooms"}
+          </button>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-[1fr_0.8fr_0.8fr_auto]">
+          <label className="text-xs text-white/55">
+            Stake preset
+            <select
+              value={selectedStakeAmount}
+              onChange={(event) => setSelectedStakeAmount(Number(event.target.value))}
+              className="mt-1 w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2 font-bold text-white outline-none"
+            >
+              {TOKEN_STAKE_PRESET_CONFIGS.map((preset) => (
+                <option key={preset.amount} value={preset.amount}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-white/55">
+            Max players
+            <select
+              value={selectedMaxPlayers}
+              onChange={(event) => setSelectedMaxPlayers(Number(event.target.value))}
+              className="mt-1 w-full rounded-xl border border-white/10 bg-black/35 px-3 py-2 font-bold text-white outline-none"
+            >
+              {[2, 3, 4, 5, 6].map((count) => (
+                <option key={count} value={count}>
+                  {count} players
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/55">
+            <p className="font-bold text-white/80">Deposit mode</p>
+            <p>Dry-run only / not required</p>
+          </div>
+          <button
+            onClick={() => void createDryRunRoom()}
+            disabled={!connected || roomActionStatus === "working"}
+            className="self-end rounded-full border border-fuchsia-200/30 bg-fuchsia-300 px-5 py-3 text-xs font-black text-black transition hover:bg-fuchsia-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {roomActionStatus === "working" ? "Working…" : "Create test dry-run room"}
+          </button>
+        </div>
+
+        {!connected && (
+          <p className="mt-3 text-xs text-amber-200/75">
+            Connect wallet to create or join a dry-run room. No signature popup should appear for this phase.
+          </p>
+        )}
+        {roomsMessage && (
+          <p className="mt-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs text-white/70">
+            {roomsMessage}
+          </p>
+        )}
+
+        <div className="mt-4 grid gap-3">
+          {roomsStatus === "loading" && <p className="text-sm text-white/45">Loading available dry-run rooms…</p>}
+          {roomsStatus !== "loading" && rooms.length === 0 && (
+            <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/45">
+              No open dry-run token rooms yet.
+            </p>
+          )}
+          {rooms.map((room) => {
+            const alreadyJoined = room.players.some((player) => player.walletAddress === walletAddress);
+            const canJoin = connected && !alreadyJoined && room.dryRunStatus === "waiting" && roomActionStatus !== "working";
+            return (
+              <div key={room.roomId} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="font-mono text-xs text-white/35">{room.roomId}</p>
+                    <p className="mt-1 text-lg font-black text-white">{formatRacete(room.stakeAmount)} dry-run room</p>
+                    <p className="mt-1 text-xs text-white/50">
+                      Players {room.playerCount}/{room.maxPlayers} · Status {room.dryRunStatus} · DB {room.status}
+                    </p>
+                    <p className="mt-1 text-xs text-fuchsia-100/55">
+                      Deposit: dry-run not required · no wallet signature · no token transfer
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => void joinDryRunRoom(room.roomId)}
+                    disabled={!canJoin}
+                    className="rounded-full border border-cyan-200/30 bg-cyan-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {alreadyJoined ? "Already in dry-run room" : room.dryRunStatus === "full" ? "Room full" : "Join test dry-run — no deposit"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Disabled stake presets */}
       <div className="mt-5 grid gap-3 md:grid-cols-4">
         {TOKEN_STAKE_PRESET_CONFIGS.map((preset) => (
@@ -295,8 +533,9 @@ export function TokenStakeRoomsPreview() {
 
       {/* Disabled safety state */}
       <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100/80">
-        <strong className="text-amber-200">Disabled safety state:</strong> Create Token Room, Join Token Room, and Deposit
-        actions are intentionally unavailable. Phase B.2 only reads the connected wallet's test token balance.
+        <strong className="text-amber-200">Disabled safety state:</strong> Real token-room create, join, and deposit
+        actions are intentionally unavailable. Phase C.1 only allows DB-backed dry-run rooms with no wallet signature or
+        token movement.
       </div>
 
       {/* Disabled action buttons */}
@@ -305,13 +544,13 @@ export function TokenStakeRoomsPreview() {
           disabled
           className="cursor-not-allowed rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-black text-white/35"
         >
-          Create Token Room
+          Create Real Token Room Disabled
         </button>
         <button
           disabled
           className="cursor-not-allowed rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-black text-white/35"
         >
-          Join Token Room
+          Join Real Token Room Disabled
         </button>
         <button
           disabled

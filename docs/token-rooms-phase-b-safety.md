@@ -1,20 +1,21 @@
-# Token Stake Rooms — Phase B Safety Guardrails
+# Token Stake Rooms — Phase C.1 Safety Guardrails
 
-Status: **Phase B.3 — pre-migration readiness + safety validation**  
-Last updated: 2026-06-21
+Status: **Phase C.1 — DB-backed dry-run lifecycle + safety validation**  
+Last updated: 2026-06-22
 
 ## Current State
 
-Token Stake Rooms are in **Phase B.3** — read-only test token balance display with manual refresh, automated safety guardrails, compound check workflow, and pre-migration readiness docs.
+Token Stake Rooms are in **Phase C.1** — read-only test token balance plus DB-backed dry-run create/list/join room lifecycle. Dry-run rooms validate product flow only; they do not request wallet signatures and do not move tokens.
 
 ### What exists
 
 - Config: `src/config/token-rooms.ts` with feature flags, fee BPS, wallet addresses, stake presets, payout split functions
 - Types: `src/types/token-rooms.ts` with shared TypeScript types for room, player, deposit, payout, refund, and weekly snapshot entities
-- API skeletons: 6 disabled routes under `src/app/api/token-rooms/` (all return 403 or 200-disabled)
-- UI: `TokenStakeRoomsPreview` component showing disabled state + connected wallet test token balance with manual Refresh balance button and Last checked timestamp on `/race/multiplayer`
-- Migration: `supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql` created but **not applied**
-- Safety script: `scripts/check-token-rooms-safety.mjs` with 22 automated checks across 11 sections
+- API dry-run lifecycle: `GET /api/token-rooms/available`, `POST /api/token-rooms/create`, and `POST /api/token-rooms/join-intent`
+- Disabled real-token routes: `POST /api/token-rooms/confirm-deposit` and `POST /api/token-rooms/refund` remain fail-closed
+- UI: `TokenStakeRoomsPreview` component showing disabled state, read-only balance, and dry-run room controls on `/race/multiplayer`
+- Migration: `supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql` must be applied manually before DB-backed dry-run routes can work
+- Safety script: `scripts/check-token-rooms-safety.mjs` with dry-run route checks and forbidden signer/transfer scans
 - Compound check: `npm run check:token-rooms` runs safety checks + TypeScript typecheck in one command
 - Pre-migration checklist: `docs/token-rooms-pre-migration-checklist.md`
 - Phase C prerequisites: `docs/token-rooms-phase-c-prerequisites.md`
@@ -32,18 +33,31 @@ The **Refresh balance** button in the Token Stake Rooms preview:
 
 ### What is explicitly disabled
 
-- Token Stake Rooms feature flag: `TOKEN_STAKE_ROOMS_ENABLED=*** Test mode active: `TOKEN_STAKE_ROOMS_TEST_MODE=*** No deposits accepted (all deposit APIs return 403)
+- Token Stake Rooms real-money feature flag: `TOKEN_STAKE_ROOMS_ENABLED=false`
+- Test mode active: `TOKEN_STAKE_ROOMS_TEST_MODE=true`
+- Real deposits are not accepted
+- `confirm-deposit` remains disabled/fail-closed
+- `refund` remains disabled/fail-closed
 - No token transfers
 - No token payouts
 - No signer/private key logic
 - No vault authority
 - No on-chain write operations
 - No token account creation (ATAs)
-- No token room DB usage (migration not applied)
+- No SPL transfer helper imports
+- No wallet signature requests from the dry-run UI
 - No Race Cash reward modifications
 - No current multiplayer reward modifications
 - Creator fee: 0% (not implemented)
 - Refresh balance button: read-only RPC, zero on-chain writes
+
+### Phase C.1 dry-run DB behavior
+
+- `available` reads `token_rooms` + `token_room_players` and returns only waiting/open dry-run test rooms.
+- `create` inserts a `token_rooms` row plus creator `token_room_players` row.
+- `join-intent` inserts a `token_room_players` row for an existing waiting room.
+- No `token_deposits`, `token_payouts`, or `token_refunds` rows are created in C.1.
+- Existing schema values are used: room `status='created'`, player `status='ready'`, DB `deposit_status='intent_created'`; API/UI expose this as dry-run deposit not required.
 
 ### UI warnings
 
@@ -59,22 +73,23 @@ The Token Stake Rooms preview displays:
 npm run check:token-rooms
 ```
 
-Runs `check:token-rooms-safety && npx tsc --noEmit` — a single command that verifies all 22 safety checks pass AND TypeScript compiles. Fails fast if either step fails.
+Runs `check:token-rooms-safety && npx tsc --noEmit` — a single command that verifies safety checks pass AND TypeScript compiles. Fails fast if either step fails.
 
 ### Safety script check sections
 
-Run with: `npm run check:token-rooms-safety` — 22 checks across 11 sections:
+Run with: `npm run check:token-rooms-safety` — 24 checks across 11 sections:
 
 1. **Feature Flags** (2 checks) — enabled=false, testMode=true
 2. **Fee Configuration** (5 checks) — creator 0, weekly 1500, treasury 500, payout 8000, sum 10000
 3. **Token Mint Configuration** (2 checks) — test mint correct, production mint is placeholder
 4. **Wallet Configuration** (2 checks) — treasury + weekly reward wallets
 5. **Stake Configuration** (3 checks) — min players 2, max players 6, decimals 6
-6. **Forbidden Keyword Scan** (1 check) — 0 hits across 4 paths, 13 banned terms
+6. **Forbidden Keyword Scan** (1 check) — 0 hits across token-room source paths, 13 banned terms
 7. **Migration File Check** (1 check) — migration file exists and contains expected DDL
-8. **API Disabled Route Check** (4 checks) — create/confirm-deposit/join-intent/refund all use `tokenRoomDisabledResponse`
-9. **UI Warning Text Check** (1 check) — "Production token rooms are not live" text present
-10. **Package Script Check** (2 checks) — `check:token-rooms` and `check:token-rooms-safety` scripts exist
+8. **API Dry-Run Route Check** (4 checks) — create/join are test-mode dry-run only; confirm-deposit/refund remain disabled
+9. **No SPL Transaction Import Check** (1 check) — no SPL token transfer or transaction helper imports in token-room API/UI files
+10. **UI Warning Text Check** (1 check) — "Production token rooms are not live" text present
+11. **Package Script Check** (2 checks) — `check:token-rooms` and `check:token-rooms-safety` scripts exist
 
 ### Forbidden keywords scanned
 
@@ -154,28 +169,36 @@ After every deploy (including docs-only deploys), manually verify on the live de
 10. Confirm "Last checked" timestamp appears and updates
 11. Confirm test-only warning is visible: "Production token rooms are not live."
 
-### Disabled Action Buttons
+### Dry-run Room Lifecycle
 
-12. Confirm "Create Token Room" button is disabled
-13. Confirm "Join Token Room" button is disabled
-14. Confirm "Deposit Disabled" button is disabled
+12. Confirm **Create test dry-run room** is visible only as a test/dry-run flow
+13. Create a dry-run room and confirm no wallet signature popup appears
+14. Confirm available rooms show room id, stake amount, player count, and status
+15. Join with another wallet if available; confirm no wallet signature popup appears
+16. Confirm copy says "Dry-run room only" and "No RACETE deposit will be requested or transferred"
+
+### Disabled Real Token Actions
+
+17. Confirm "Create Real Token Room Disabled" button is disabled
+18. Confirm "Join Real Token Room Disabled" button is disabled
+19. Confirm "Deposit Disabled" button is disabled
 
 ### API Safety
 
-15. Run in terminal or browser console:
+20. Run in terminal or browser console:
     ```
-    curl -X POST https://<deployed-url>/api/token-rooms/create
+    curl -X POST https://<deployed-url>/api/token-rooms/confirm-deposit
     ```
-16. Confirm response is HTTP 403 with disabled message
-17. Repeat for `/api/token-rooms/confirm-deposit`, `/join-intent`, `/refund`
-18. Confirm `/api/token-rooms/available` returns 200 with `enabled: false`
+21. Confirm response is HTTP 403 with disabled message
+22. Repeat for `/api/token-rooms/refund`
+23. Confirm `/api/token-rooms/available` returns 200 with `enabled: false`, `testMode: true`, and dry-run room data only
 
 ### Console
 
-19. Open browser DevTools → Console
-20. Confirm zero errors on `/race/multiplayer`
+24. Open browser DevTools → Console
+25. Confirm zero errors on `/race/multiplayer`
 
 ### Other Pages
 
-21. `/`, `/race`, `/garage`, `/missions`, `/leaderboard`, `/weekly` all load without errors
-22. Free Multiplayer matchmaking/lobby still works
+26. `/`, `/race`, `/garage`, `/missions`, `/leaderboard`, `/weekly` all load without errors
+27. Free Multiplayer matchmaking/lobby still works

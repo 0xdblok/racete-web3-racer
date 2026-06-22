@@ -286,16 +286,34 @@ try {
   fail(`Migration file not found: supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql`);
 }
 
-// 9. API POST routes still return disabled pattern
-header("API Disabled Route Check");
+// 9. API route dry-run/disabled safety checks
+header("API Dry-Run Route Check");
 const apiDir = join(ROOT, "src", "app", "api", "token-rooms");
-const postRoutes = ["create", "confirm-deposit", "join-intent", "refund"];
-for (const route of postRoutes) {
+const dryRunRoutes = ["create", "join-intent"];
+for (const route of dryRunRoutes) {
+  const routePath = join(apiDir, route, "route.ts");
+  try {
+    const content = readFileSync(routePath, "utf-8");
+    const hasTestModeGate = content.includes("TOKEN_STAKE_ROOMS_TEST_MODE") && content.includes("tokenRoomDryRunUnavailableResponse");
+    const hasDryRunNotice = content.includes("No RACETE deposit was requested or transferred") || content.includes("dry-run");
+    const avoidsTokenDepositTable = !content.includes('.from("token_deposits")') && !content.includes(".from('token_deposits')");
+    if (hasTestModeGate && hasDryRunNotice && avoidsTokenDepositTable) {
+      pass(`POST /api/token-rooms/${route} is test-mode dry-run only`);
+    } else {
+      fail(`POST /api/token-rooms/${route} missing dry-run safety gate/notice or writes token_deposits`);
+    }
+  } catch {
+    fail(`Route file not found: src/app/api/token-rooms/${route}/route.ts`);
+  }
+}
+
+const disabledRoutes = ["confirm-deposit", "refund"];
+for (const route of disabledRoutes) {
   const routePath = join(apiDir, route, "route.ts");
   try {
     const content = readFileSync(routePath, "utf-8");
     if (content.includes("tokenRoomDisabledResponse")) {
-      pass(`POST /api/token-rooms/${route} returns tokenRoomDisabledResponse`);
+      pass(`POST /api/token-rooms/${route} remains disabled`);
     } else {
       fail(`POST /api/token-rooms/${route} does NOT use tokenRoomDisabledResponse`);
     }
@@ -303,6 +321,22 @@ for (const route of postRoutes) {
     fail(`Route file not found: src/app/api/token-rooms/${route}/route.ts`);
   }
 }
+
+header("No SPL Transaction Import Check");
+const tokenRoomApiDir = join(ROOT, "src", "app", "api", "token-rooms");
+const tokenRoomUiDir = join(ROOT, "src", "components", "token-rooms");
+let unsafeImportHits = 0;
+for (const dir of [tokenRoomApiDir, tokenRoomUiDir]) {
+  for (const file of listFilesRecursive(dir)) {
+    const rel = file.replace(ROOT + "/", "");
+    const content = readFileSync(file, "utf-8");
+    if (content.includes("@solana/spl-token") || content.includes("TransactionInstruction") || content.includes("VersionedTransaction")) {
+      unsafeImportHits++;
+      fail(`Potential transaction/SPL helper import found in ${rel}`);
+    }
+  }
+}
+if (unsafeImportHits === 0) pass("No SPL token transfer or transaction helper imports in token-room API/UI files");
 
 // 10. UI warning text present
 header("UI Warning Text Check");
