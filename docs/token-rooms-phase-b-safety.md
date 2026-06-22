@@ -1,17 +1,18 @@
-# Token Stake Rooms — Phase C.1 Safety Guardrails
+# Token Stake Rooms — Phase C.1.1 Safety Guardrails
 
-Status: **Phase C.1 — DB-backed dry-run lifecycle + safety validation**  
+Status: **Phase C.1.1 — DB-backed dry-run lifecycle + lightweight lobby metadata flow**  
 Last updated: 2026-06-22
 
 ## Current State
 
-Token Stake Rooms are in **Phase C.1** — read-only test token balance plus DB-backed dry-run create/list/join room lifecycle. Dry-run rooms validate product flow only; they do not request wallet signatures and do not move tokens.
+Token Stake Rooms are in **Phase C.1.1** — read-only test token balance, DB-backed dry-run create/list/join room lifecycle, and a lightweight dry-run lobby page that can hand off to existing multiplayer with `tokenRoomId` metadata. Dry-run rooms validate product flow only; they do not request wallet signatures and do not move tokens.
 
 ### What exists
 
 - Config: `src/config/token-rooms.ts` with feature flags, fee BPS, wallet addresses, stake presets, payout split functions
 - Types: `src/types/token-rooms.ts` with shared TypeScript types for room, player, deposit, payout, refund, and weekly snapshot entities
-- API dry-run lifecycle: `GET /api/token-rooms/available`, `POST /api/token-rooms/create`, and `POST /api/token-rooms/join-intent`
+- API dry-run lifecycle: `GET /api/token-rooms/available`, `GET /api/token-rooms/[id]`, `POST /api/token-rooms/create`, `POST /api/token-rooms/join-intent`, `POST /api/token-rooms/[id]/enter-lobby`, and `POST /api/token-rooms/[id]/start-dry-run`
+- Lightweight lobby UI: `/race/token-room/[roomId]` shows token room metadata, players, full/ready state, and no-deposit/no-transfer/no-payout warnings
 - Disabled real-token routes: `POST /api/token-rooms/confirm-deposit` and `POST /api/token-rooms/refund` remain fail-closed
 - UI: `TokenStakeRoomsPreview` component showing disabled state, read-only balance, and dry-run room controls on `/race/multiplayer`
 - Migration: `supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql` must be applied manually before DB-backed dry-run routes can work
@@ -51,13 +52,17 @@ The **Refresh balance** button in the Token Stake Rooms preview:
 - Creator fee: 0% (not implemented)
 - Refresh balance button: read-only RPC, zero on-chain writes
 
-### Phase C.1 dry-run DB behavior
+### Phase C.1.1 dry-run DB/lobby behavior
 
 - `available` reads `token_rooms` + `token_room_players` and returns only waiting/open dry-run test rooms.
+- `GET /api/token-rooms/[id]` returns full room state and joined players.
 - `create` inserts a `token_rooms` row plus creator `token_room_players` row.
 - `join-intent` inserts a `token_room_players` row for an existing waiting room.
-- No `token_deposits`, `token_payouts`, or `token_refunds` rows are created in C.1.
-- Existing schema values are used: room `status='created'`, player `status='ready'`, DB `deposit_status='intent_created'`; API/UI expose this as dry-run deposit not required.
+- `enter-lobby` marks the room as dry-run in-lobby with DB `status='depositing'` and player `status='ready'`.
+- `start-dry-run` marks the room as mock-racing with DB `status='racing'`, assigns a mock dry-run race id, and updates player `status='racing'`.
+- No `token_deposits`, `token_payouts`, or `token_refunds` rows are created in C.1.1.
+- Existing schema values are used: `created` = waiting/full, `depositing` = in-lobby, `racing` = racing_mock, player `deposit_status='intent_created'`; API/UI expose this as dry-run deposit not required.
+- `token_room_events` may receive audit-only dry-run lifecycle events (`dry_run_enter_lobby`, `dry_run_start_race`).
 
 ### UI warnings
 
@@ -77,7 +82,7 @@ Runs `check:token-rooms-safety && npx tsc --noEmit` — a single command that ve
 
 ### Safety script check sections
 
-Run with: `npm run check:token-rooms-safety` — 24 checks across 11 sections:
+Run with: `npm run check:token-rooms-safety` — 26 checks across 11 sections:
 
 1. **Feature Flags** (2 checks) — enabled=false, testMode=true
 2. **Fee Configuration** (5 checks) — creator 0, weekly 1500, treasury 500, payout 8000, sum 10000

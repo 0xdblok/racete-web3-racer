@@ -21,7 +21,7 @@ import {
 import type { TokenStakeAmount } from "@/types/token-rooms";
 
 export const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-export const DRY_RUN_ROOM_STATUSES = ["created", "depositing"] as const;
+export const DRY_RUN_ROOM_STATUSES = ["created", "depositing", "racing"] as const;
 const ROOM_TTL_HOURS = 2;
 
 type DbTokenRoomRow = {
@@ -69,10 +69,11 @@ export type DryRunTokenRoom = {
   stakeAmountBaseUnits: string;
   stakePreset: TokenStakeAmount;
   maxPlayers: number;
+  minPlayers: number;
   playerCount: number;
   confirmedPlayerCount: number;
   status: string;
-  dryRunStatus: "waiting" | "full" | "closed";
+  dryRunStatus: "waiting" | "full" | "in_lobby" | "racing_mock" | "closed";
   creatorWalletAddress: string;
   createdAt: string;
   updatedAt: string;
@@ -190,11 +191,12 @@ export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayer
   const playerCount = playerRows.length;
   const maxPlayers = Number(row.max_players);
   const status = String(row.status);
-  const dryRunStatus = !DRY_RUN_ROOM_STATUSES.includes(status as (typeof DRY_RUN_ROOM_STATUSES)[number])
-    ? "closed"
-    : playerCount >= maxPlayers
-      ? "full"
-      : "waiting";
+  const dryRunStatus = (() => {
+    if (!DRY_RUN_ROOM_STATUSES.includes(status as (typeof DRY_RUN_ROOM_STATUSES)[number])) return "closed";
+    if (status === "depositing") return "in_lobby";
+    if (status === "racing") return "racing_mock";
+    return playerCount >= maxPlayers ? "full" : "waiting";
+  })();
 
   return {
     id: row.id,
@@ -204,6 +206,7 @@ export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayer
     stakeAmountBaseUnits: toTokenBaseUnits(Number(row.stake_preset || row.stake_amount)),
     stakePreset: Number(row.stake_preset) as TokenStakeAmount,
     maxPlayers,
+    minPlayers: Number(row.min_players || 2),
     playerCount,
     confirmedPlayerCount: Number(row.confirmed_player_count || playerCount),
     status,
@@ -263,4 +266,39 @@ export async function fetchDryRunRooms(roomId?: string) {
   }
 
   return rooms.map((room) => mapDryRunRoom(room, playersByRoom.get(room.room_id) || []));
+}
+
+export async function fetchDryRunRoom(roomId: string): Promise<DryRunTokenRoom | null> {
+  const rooms = await fetchDryRunRooms(roomId);
+  return rooms[0] || null;
+}
+
+export function isWalletInRoom(room: DryRunTokenRoom, walletAddress: string): boolean {
+  return room.players.some((player) => player.walletAddress === walletAddress);
+}
+
+export async function writeTokenRoomEvent({
+  roomId,
+  walletAddress,
+  eventType,
+  payload = {},
+}: {
+  roomId: string;
+  walletAddress?: string;
+  eventType: string;
+  payload?: Record<string, unknown>;
+}) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.from("token_room_events").insert({
+    room_id: roomId,
+    wallet_address: walletAddress || null,
+    event_type: eventType,
+    event_source: "client_api",
+    severity: "info",
+    payload,
+  });
+
+  if (error && !isMissingTokenRoomTableError(error)) {
+    console.warn("[token-rooms] dry-run event write failed:", error.message);
+  }
 }

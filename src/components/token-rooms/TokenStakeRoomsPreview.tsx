@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
@@ -68,10 +69,11 @@ type DryRunTokenRoom = {
   stakeAmountBaseUnits: string;
   stakePreset: number;
   maxPlayers: number;
+  minPlayers: number;
   playerCount: number;
   confirmedPlayerCount: number;
   status: string;
-  dryRunStatus: "waiting" | "full" | "closed";
+  dryRunStatus: "waiting" | "full" | "in_lobby" | "racing_mock" | "closed";
   creatorWalletAddress: string;
   createdAt: string;
   expiresAt: string;
@@ -148,6 +150,9 @@ export function TokenStakeRoomsPreview() {
       }
 
       await refreshDryRunRooms();
+      if (payload.room) {
+        setRooms((current) => [payload.room, ...current.filter((room) => room.roomId !== payload.room.roomId)]);
+      }
       setRoomsMessage(payload.dryRunNotice || "Dry-run room created. No RACETE deposit was requested or transferred.");
     } catch (err) {
       console.warn("[TokenStakeRoomsPreview] dry-run room create failed:", err);
@@ -179,6 +184,9 @@ export function TokenStakeRoomsPreview() {
       }
 
       await refreshDryRunRooms();
+      if (payload.room) {
+        setRooms((current) => [payload.room, ...current.filter((room) => room.roomId !== payload.room.roomId)]);
+      }
       setRoomsMessage(payload.dryRunNotice || "Joined dry-run room. No RACETE deposit was requested or transferred.");
     } catch (err) {
       console.warn("[TokenStakeRoomsPreview] dry-run room join failed:", err);
@@ -475,13 +483,21 @@ export function TokenStakeRoomsPreview() {
                       Deposit: dry-run not required · no wallet signature · no token transfer
                     </p>
                   </div>
-                  <button
-                    onClick={() => void joinDryRunRoom(room.roomId)}
-                    disabled={!canJoin}
-                    className="rounded-full border border-cyan-200/30 bg-cyan-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {alreadyJoined ? "Already in dry-run room" : room.dryRunStatus === "full" ? "Room full" : "Join test dry-run — no deposit"}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/race/token-room/${encodeURIComponent(room.roomId)}`}
+                      className="rounded-full border border-fuchsia-200/30 bg-fuchsia-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-fuchsia-200"
+                    >
+                      Enter dry-run lobby
+                    </Link>
+                    <button
+                      onClick={() => void joinDryRunRoom(room.roomId)}
+                      disabled={!canJoin}
+                      className="rounded-full border border-cyan-200/30 bg-cyan-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {alreadyJoined ? "Already in dry-run room" : room.dryRunStatus === "full" ? "Room full — ready" : "Join test dry-run — no deposit"}
+                    </button>
+                  </div>
                 </div>
               </div>
             );

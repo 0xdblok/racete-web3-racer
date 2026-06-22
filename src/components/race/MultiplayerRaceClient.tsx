@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -70,6 +71,9 @@ export class MultiplayerErrorBoundary extends React.Component<
 
 function MultiplayerRaceClientInner() {
   const { publicKey, connected } = useWallet();
+  const searchParams = useSearchParams();
+  const tokenRoomId = searchParams.get("tokenRoomId") || "";
+  const dryRunRaceId = searchParams.get("dryRunRaceId") || "";
   const [playerState, setPlayerState] = useState<PlayerInitResponse | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -226,6 +230,7 @@ function MultiplayerRaceClientInner() {
             <h1 className="mt-3 text-4xl font-black">Connect wallet to race.</h1>
             <div className="mt-6 flex justify-center"><WalletMultiButton /></div>
           </div>
+          <TokenRoomDryRunMetadataBanner tokenRoomId={tokenRoomId} dryRunRaceId={dryRunRaceId} />
           <TokenStakeRoomsPreview />
         </div>
       </MultiplayerShell>
@@ -269,6 +274,7 @@ function MultiplayerRaceClientInner() {
     return (
       <MultiplayerShell>
         <div className="flex w-full max-w-4xl flex-col items-center gap-6">
+          <TokenRoomDryRunMetadataBanner tokenRoomId={tokenRoomId} dryRunRaceId={dryRunRaceId} />
           <MatchmakingPanel
             selectedCar={{ ...selectedCatalogCar, powerRating: playerState.selectedCar.power_rating ?? selectedCatalogCar.basePowerRating }}
             playerCar={playerState.selectedCar}
@@ -284,7 +290,10 @@ function MultiplayerRaceClientInner() {
   if (view === "lobby") {
     return (
       <MultiplayerShell>
-        <LobbyPanel walletAddress={walletAddress} onRaceStart={handleRaceStart} />
+        <div className="flex w-full max-w-4xl flex-col items-center gap-6">
+          <TokenRoomDryRunMetadataBanner tokenRoomId={tokenRoomId} dryRunRaceId={dryRunRaceId} />
+          <LobbyPanel walletAddress={walletAddress} onRaceStart={handleRaceStart} />
+        </div>
       </MultiplayerShell>
     );
   }
@@ -311,6 +320,11 @@ function MultiplayerRaceClientInner() {
           multiplayer
           raceProgress={raceProgress}
         />
+        {tokenRoomId && (
+          <div className="absolute left-4 top-24 z-20 w-[min(92vw,32rem)]">
+            <TokenRoomDryRunMetadataBanner tokenRoomId={tokenRoomId} dryRunRaceId={dryRunRaceId} />
+          </div>
+        )}
         <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-3">
           <span className="rounded-full border border-lime-300/20 bg-black/50 px-4 py-2 text-xs text-lime-200/70 backdrop-blur">
             Multiplayer sync active · Room: {multiplayerState.roomId?.slice(0, 12) ?? "—"} · Players: {players.length}/6 · Remote: {remotePlayers.length} · 15Hz
@@ -353,6 +367,27 @@ export function MultiplayerRaceClient() {
     <MultiplayerErrorBoundary>
       <MultiplayerRaceClientInner />
     </MultiplayerErrorBoundary>
+  );
+}
+
+function TokenRoomDryRunMetadataBanner({ tokenRoomId, dryRunRaceId }: { tokenRoomId: string; dryRunRaceId?: string }) {
+  if (!tokenRoomId) return null;
+
+  return (
+    <div className="w-full max-w-4xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-300/[0.08] p-4 text-sm text-fuchsia-50/80">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-fuchsia-200/70">
+            Dry-run token room race metadata
+          </p>
+          <p className="mt-1 font-mono text-xs text-white/65">tokenRoomId={tokenRoomId}</p>
+          {dryRunRaceId && <p className="mt-1 font-mono text-xs text-white/45">dryRunRaceId={dryRunRaceId}</p>}
+        </div>
+        <p className="max-w-xl text-xs text-amber-100/75">
+          Dry-run only. No RACETE deposit requested, no token transfer, no payout. Race Cash/free multiplayer rewards remain separate.
+        </p>
+      </div>
+    </div>
   );
 }
 

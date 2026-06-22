@@ -289,21 +289,27 @@ try {
 // 9. API route dry-run/disabled safety checks
 header("API Dry-Run Route Check");
 const apiDir = join(ROOT, "src", "app", "api", "token-rooms");
-const dryRunRoutes = ["create", "join-intent"];
+const dryRunRoutes = [
+  { label: "create", path: join(apiDir, "create", "route.ts") },
+  { label: "join-intent", path: join(apiDir, "join-intent", "route.ts") },
+  { label: "[id]/enter-lobby", path: join(apiDir, "[id]", "enter-lobby", "route.ts") },
+  { label: "[id]/start-dry-run", path: join(apiDir, "[id]", "start-dry-run", "route.ts") },
+];
 for (const route of dryRunRoutes) {
-  const routePath = join(apiDir, route, "route.ts");
+  const routePath = route.path;
   try {
     const content = readFileSync(routePath, "utf-8");
     const hasTestModeGate = content.includes("TOKEN_STAKE_ROOMS_TEST_MODE") && content.includes("tokenRoomDryRunUnavailableResponse");
-    const hasDryRunNotice = content.includes("No RACETE deposit was requested or transferred") || content.includes("dry-run");
+    const hasDryRunNotice = content.includes("No RACETE deposit") || content.includes("dry-run");
     const avoidsTokenDepositTable = !content.includes('.from("token_deposits")') && !content.includes(".from('token_deposits')");
-    if (hasTestModeGate && hasDryRunNotice && avoidsTokenDepositTable) {
-      pass(`POST /api/token-rooms/${route} is test-mode dry-run only`);
+    const avoidsPayoutRefundTables = !content.includes('.from("token_payouts")') && !content.includes(".from('token_payouts')") && !content.includes('.from("token_refunds")') && !content.includes(".from('token_refunds')");
+    if (hasTestModeGate && hasDryRunNotice && avoidsTokenDepositTable && avoidsPayoutRefundTables) {
+      pass(`POST /api/token-rooms/${route.label} is test-mode dry-run only`);
     } else {
-      fail(`POST /api/token-rooms/${route} missing dry-run safety gate/notice or writes token_deposits`);
+      fail(`POST /api/token-rooms/${route.label} missing dry-run safety gate/notice or writes token accounting tables`);
     }
   } catch {
-    fail(`Route file not found: src/app/api/token-rooms/${route}/route.ts`);
+    fail(`Route file not found: ${route.path.replace(ROOT + "/", "")}`);
   }
 }
 
