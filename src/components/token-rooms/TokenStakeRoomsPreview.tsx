@@ -177,7 +177,7 @@ export function TokenStakeRoomsPreview() {
               Coming Soon / Test Mode
             </span>
           </div>
-          <h2 className="mt-3 text-2xl font-black">SPL token stake races are disabled.</h2>
+          <h2 className="mt-3 text-2xl font-black">SPL token stake rooms are disabled.</h2>
           <p className="mt-2 max-w-2xl text-sm text-white/65">
             Token rooms are in test/spec mode. No real deposits are enabled. Free Multiplayer and Race Cash rewards stay
             separate.

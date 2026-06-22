@@ -36,7 +36,7 @@ For this architecture pass:
 - Minimum anti-cheat is active.
 - No on-chain token stake is involved.
 
-### Token Stake Race — Coming Soon
+### Token Stake Rooms — Coming Soon
 
 - Multiplayer room where each player stakes the same amount of the existing Pump.fun SPL token.
 - Server verifies deposits before allowing players into the token-stake race lobby.

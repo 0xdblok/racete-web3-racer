@@ -47,7 +47,7 @@ Personal best bonuses only trigger when the player beats a previous record. Firs
   - 5th: `+60 RC`
   - 6th: `+40 RC`
 
-### Token Stake Race — future, disabled in V1 UI
+### Token Stake Rooms — future, disabled/test mode in V1 UI
 
 Token mint config for Token Stake Rooms docs:
 
@@ -189,7 +189,8 @@ Future objectives will extend the `RaceRewardBreakdown.earnedBonuses` array and 
 - `src/config/rewards.ts`
   - solo Race Cash rewards (all bonus values, caps, target times)
   - multiplayer Race Cash placement rewards
-- `src/config/stake-races.ts`
-  - future token stake tiers
-  - future on-chain pot payout percentages
-  - platform fee percentage
+- `src/config/token-rooms.ts`
+  - Token Stake Rooms disabled/test-mode flags
+  - temporary test mint and final production mint placeholder
+  - V1 stake presets: `1,000 / 5,000 / 10,000 / 25,000 RACETE`
+  - V1 pool split: creator `0%`, weekly token reward pool `15%`, treasury `5%`, player payout pool `80%`

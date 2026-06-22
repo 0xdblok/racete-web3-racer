@@ -124,14 +124,16 @@ Errors: 400 (invalid), 403 (bad signature), 409 (already claimed), 410 (expired)
 
 ---
 
-## Token Stake Race (Future)
+## Token Stake Rooms (Future)
 
-Token Stake Race remains "Coming Soon" in the UI. When implemented:
+Token Stake Rooms remain **Coming Soon / Test Mode** and disabled. Current architecture rules:
 
-- On-chain escrow for token stakes
-- Platform takes a fee from the stake pool
-- Winner-takes-most payout
-- Still earns Race Cash by placement (off-chain)
-- Requires stronger anti-cheat than Free Race
+- Multiplayer-only token stake rooms.
+- No deposits, transfers, payouts, escrow, or signer logic is live.
+- No Race Cash payout in Token Stake Rooms V1 unless explicitly redesigned later.
+- Token accounting stays separate from Free Multiplayer Race Cash rewards.
+- Current V1 economy preview: creator `0%`, weekly token reward pool `15%`, treasury `5%`, player payout pool `80%`.
+- Supported V1 stake presets: `1,000 / 5,000 / 10,000 / 25,000 RACETE`.
+- Requires stronger anti-cheat and payout review before any Phase C+ implementation.
 
-No timeline set for token stake implementation.
+No timeline set for live token stake implementation.
