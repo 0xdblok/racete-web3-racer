@@ -46,7 +46,7 @@ Phase C adds **deposit verification on devnet/local only**. It does NOT add main
 
 ### 5. Token Mint Configuration Confirmed
 
-- [ ] `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8` in config
+- [ ] `RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump` in config
 - [ ] `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` placeholder in config
 - [ ] Test mint is a valid Solana base58 public key
 - [ ] No production mint set (placeholder remains)

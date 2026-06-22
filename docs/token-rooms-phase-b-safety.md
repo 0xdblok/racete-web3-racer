@@ -97,7 +97,7 @@ Scanned paths:
 
 | Variable | Value | Context |
 |---|---|---|
-| `RACETE_TEST_TOKEN_MINT` | `44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8` | Dev/test only |
+| `RACETE_TEST_TOKEN_MINT` | `26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump` | Dev/test only |
 | `RACETE_TOKEN_MINT` | `TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` | Production placeholder |
 
 The production mint remains a placeholder until the real Pump.fun SPL token mint address is provided. Dev/test token-room flows use `RACETE_TEST_TOKEN_MINT`. Production/mainnet flows must use `RACETE_TOKEN_MINT` only after the final mint is set.

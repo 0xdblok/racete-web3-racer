@@ -6,7 +6,7 @@ Token mint configuration:
 
 ```env
 # Temporary dev/test token mint only. Do not use as final production Pump.fun token.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
@@ -19,7 +19,7 @@ This document proposes the database tables needed for Token Stake Rooms V1. It i
 - Track rooms, players, deposits, payouts, refunds, and audit events separately.
 - Make every money movement idempotent.
 - Store token mint explicitly on every room/deposit/payout/refund row for auditability.
-- Dev/test rows may use `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8`; production/mainnet rows must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
+- Dev/test rows may use `RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump`; production/mainnet rows must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
 - Keep Race Cash tables separate from token stake accounting.
 - Avoid mixing free multiplayer rewards with token-room stake payouts.
 - Support manual review, refund, and failed payout workflows.

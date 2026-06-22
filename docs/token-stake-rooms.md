@@ -6,7 +6,7 @@ Token mint configuration:
 
 ```env
 # Temporary dev/test token mint only. Do not use as final production Pump.fun token.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
@@ -48,7 +48,7 @@ For this architecture pass:
 - Players per room: **2 to 6**.
 - Race type: multiplayer only.
 - Token: existing Pump.fun SPL token. Final production mint remains placeholder `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` until provided.
-- Dev/test flows should use temporary test mint `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8`.
+- Dev/test flows should use temporary test mint `RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump`.
 - Production/mainnet flows must not use `RACETE_TEST_TOKEN_MINT`; they must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.
 - Stake amount is selected by the room creator before the room opens.
 - Every player in the same room must stake the **exact same amount**.
@@ -944,7 +944,7 @@ Server/backend only — never `NEXT_PUBLIC_`:
 
 ```env
 # Temporary dev/test token mint only.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Must remain placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
@@ -1030,7 +1030,7 @@ Notes:
 
 ## What Must Be True Before Coding Starts
 
-- Temporary test mint recorded for dev/test flows: `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8`.
+- Temporary test mint recorded for dev/test flows: `RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump`.
 - Final production token mint confirmed: `RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` replaced with real Pump.fun mint before any production/mainnet flow.
 - Custody model selected and approved.
 - Fee wallets selected and secured.

@@ -1,6 +1,6 @@
 import type { TokenStakeAmount } from "@/types/token-rooms";
 
-export const RACETE_TEST_TOKEN_MINT = "44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8" as const;
+export const RACETE_TEST_TOKEN_MINT = "26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump" as const;
 export const RACETE_TOKEN_MINT = "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT" as const;
 
 export const TOKEN_WEEKLY_REWARD_WALLET = "4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw" as const;

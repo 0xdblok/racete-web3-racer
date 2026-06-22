@@ -232,8 +232,8 @@ header("Token Mint Configuration");
 const testMint = extractConst(configText, "RACETE_TEST_TOKEN_MINT");
 const prodMint = extractConst(configText, "RACETE_TOKEN_MINT");
 
-if (testMint === "44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8") {
-  pass("RACETE_TEST_TOKEN_MINT = 44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8");
+if (testMint === "26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump") {
+  pass("RACETE_TEST_TOKEN_MINT = 26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump");
 } else fail(`RACETE_TEST_TOKEN_MINT = ${testMint}`);
 
 if (prodMint === "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT") {

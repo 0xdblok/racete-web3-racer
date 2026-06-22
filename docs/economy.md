@@ -53,7 +53,7 @@ Token mint config for Token Stake Rooms docs:
 
 ```env
 # Temporary dev/test token mint only. Do not use as final production Pump.fun token.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
@@ -61,7 +61,7 @@ RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
 
 Implementation rule:
 
-- `RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8` is a temporary dev/test token mint only.
+- `RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump` is a temporary dev/test token mint only.
 - It is not the final production Pump.fun token.
 - Dev/test token room flows should use `RACETE_TEST_TOKEN_MINT`.
 - Production/mainnet flows must use `RACETE_TOKEN_MINT` only after the final Pump.fun mint is provided.

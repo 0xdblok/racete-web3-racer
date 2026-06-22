@@ -6,7 +6,7 @@ Token mint configuration:
 
 ```env
 # Temporary dev/test token mint only. Do not use as final production Pump.fun token.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
@@ -141,7 +141,7 @@ Server/backend only:
 
 ```env
 # Temporary dev/test token mint only.
-RACETE_TEST_TOKEN_MINT=44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8
+RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Must remain placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
