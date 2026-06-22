@@ -1,7 +1,10 @@
 const isExplicitlyTrue = (value: string | undefined) => value === "true";
 
+const DEFAULT_FRONTEND_SOLANA_RPC = "https://solana-rpc.publicnode.com";
+const solanaRpc = process.env.NEXT_PUBLIC_SOLANA_RPC?.trim() || DEFAULT_FRONTEND_SOLANA_RPC;
+
 export const publicEnv = {
-  solanaRpc: process.env.NEXT_PUBLIC_SOLANA_RPC || "https://api.mainnet-beta.solana.com",
+  solanaRpc,
   tokenMint: process.env.NEXT_PUBLIC_TOKEN_MINT || "",
   tokenDecimals: Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS || 6),
   treasuryWallet: process.env.NEXT_PUBLIC_TREASURY_WALLET || "",
