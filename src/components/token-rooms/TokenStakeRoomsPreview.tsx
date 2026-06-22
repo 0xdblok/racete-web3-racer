@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -17,6 +17,10 @@ import {
   TOKEN_WEEKLY_REWARD_WALLET,
   calculateTokenRoomPoolBreakdown,
 } from "@/config/token-rooms";
+
+const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const TOKEN_2022_PROGRAM_ID = new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+const BALANCE_FETCH_TIMEOUT_MS = 8_000;
 
 function formatRacete(amount: number): string {
   return `${amount.toLocaleString("en-US")} RACETE`;
@@ -55,15 +59,17 @@ export function TokenStakeRoomsPreview() {
   const [testTokenBalance, setTestTokenBalance] = useState(0);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const balanceReadIdRef = useRef(0);
 
   const exampleStake = 10_000;
   const examplePlayers = 6;
   const examplePool = exampleStake * examplePlayers;
   const breakdown = calculateTokenRoomPoolBreakdown(examplePool);
 
-  const testMint = useMemo(() => new PublicKey(RACETE_TEST_TOKEN_MINT), []);
-
   const readTestTokenBalance = useCallback(async () => {
+    const requestId = balanceReadIdRef.current + 1;
+    balanceReadIdRef.current = requestId;
+
     if (!connected || !publicKey) {
       setBalanceStatus("disconnected");
       setTestTokenBalance(0);
@@ -75,36 +81,86 @@ export function TokenStakeRoomsPreview() {
     setBalanceStatus("loading");
     setBalanceError(null);
 
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let nextStatus: BalanceStatus = "ready";
+
     try {
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        mint: testMint,
+      // Query both Tokenkeg and Token-2022 token programs.
+      // Token-2022 mints (owner=TokenzQ) are not returned by
+      // a Tokenkeg-only balance reader.
+      const fetchBoth = Promise.allSettled([
+        connection.getParsedTokenAccountsByOwner(publicKey, { programId: TOKEN_PROGRAM_ID }),
+        connection.getParsedTokenAccountsByOwner(publicKey, { programId: TOKEN_2022_PROGRAM_ID }),
+      ]);
+
+      const timeout = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error("Token balance RPC read timed out")), BALANCE_FETCH_TIMEOUT_MS);
       });
 
-      const balance = tokenAccounts.value.reduce((sum, account) => {
-        const parsedInfo = account.account.data.parsed.info as {
-          tokenAmount?: { uiAmount?: number | null };
-        };
-        return sum + (parsedInfo.tokenAmount?.uiAmount ?? 0);
-      }, 0);
+      const results = await Promise.race([fetchBoth, timeout]);
+      if (balanceReadIdRef.current !== requestId) return;
+
+      const rejectedResults = results.filter((result) => result.status === "rejected");
+      for (const result of rejectedResults) {
+        console.warn("[TokenStakeRoomsPreview] token account query rejected:", result.reason);
+      }
+      if (rejectedResults.length > 0) {
+        throw new Error("One or more token account RPC reads failed");
+      }
+
+      let balance = 0;
+
+      for (const result of results) {
+        if (result.status !== "fulfilled") continue;
+
+        const accounts = result.value.value as Array<{
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  mint?: string;
+                  tokenAmount?: { uiAmount?: number | null; amount?: string; decimals?: number };
+                };
+              };
+            };
+          };
+        }>;
+        if (!Array.isArray(accounts)) continue;
+
+        for (const account of accounts) {
+          const info = account.account.data.parsed.info;
+          if (info.mint !== RACETE_TEST_TOKEN_MINT) continue;
+
+          const tokenAmount = info.tokenAmount;
+          if (tokenAmount?.uiAmount != null) {
+            balance += tokenAmount.uiAmount;
+          } else if (tokenAmount?.amount != null && tokenAmount.decimals != null) {
+            balance += Number(tokenAmount.amount) / 10 ** tokenAmount.decimals;
+          }
+        }
+      }
 
       setTestTokenBalance(balance);
-      setBalanceStatus("ready");
       setLastChecked(new Date());
     } catch (err) {
+      if (balanceReadIdRef.current !== requestId) return;
+      console.warn("[TokenStakeRoomsPreview] balance fetch failed:", err);
       setTestTokenBalance(0);
-      setBalanceError(err instanceof Error ? err.message : "Unable to read test token balance.");
-      setBalanceStatus("error");
+      setBalanceError("Balance unavailable — RPC read failed.");
+      nextStatus = "error";
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (balanceReadIdRef.current === requestId) {
+        setBalanceStatus(nextStatus);
+      }
     }
-  }, [connected, connection, publicKey, testMint]);
+  }, [connected, connection, publicKey]);
 
-  // Auto-fetch on wallet connect / reconnect
+  // Auto-fetch on wallet connect / reconnect.
   useEffect(() => {
-    let cancelled = false;
-    if (!cancelled) {
-      void readTestTokenBalance();
-    }
+    void readTestTokenBalance();
     return () => {
-      cancelled = true;
+      balanceReadIdRef.current += 1;
     };
   }, [readTestTokenBalance]);
 
@@ -161,7 +217,7 @@ export function TokenStakeRoomsPreview() {
 
             {balanceStatus === "error" && (
               <p className="mt-2 rounded-xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-xs text-red-100/80">
-                {balanceError || "Unable to read test token balance."}
+                {balanceError || "Balance unavailable — RPC read failed."}
               </p>
             )}
 
@@ -240,7 +296,7 @@ export function TokenStakeRoomsPreview() {
       {/* Disabled safety state */}
       <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100/80">
         <strong className="text-amber-200">Disabled safety state:</strong> Create Token Room, Join Token Room, and Deposit
-        actions are intentionally unavailable. Phase B.2 only reads the connected wallet’s test token balance.
+        actions are intentionally unavailable. Phase B.2 only reads the connected wallet's test token balance.
       </div>
 
       {/* Disabled action buttons */}
