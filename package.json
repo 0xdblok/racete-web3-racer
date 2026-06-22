@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:token-rooms-safety": "node scripts/check-token-rooms-safety.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
