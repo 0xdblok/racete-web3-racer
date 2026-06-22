@@ -272,5 +272,71 @@ else fail(`TOKEN_ROOM_DECIMALS = ${decimals} (expected 6)`);
 header("Forbidden Keyword Scan");
 scanFiles();
 
-// 8. Done
+// 8. Migration file existence
+header("Migration File Check");
+const migrationPath = join(ROOT, "supabase", "migrations", "20260621150000_add_token_stake_rooms_phase_a.sql");
+try {
+  const migrationContent = readFileSync(migrationPath, "utf-8");
+  if (migrationContent.includes("create table if not exists token_rooms") || migrationContent.includes("CREATE TABLE IF NOT EXISTS token_rooms")) {
+    pass(`Migration file exists: supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql`);
+  } else {
+    fail("Migration file exists but does not contain expected token_rooms DDL");
+  }
+} catch {
+  fail(`Migration file not found: supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql`);
+}
+
+// 9. API POST routes still return disabled pattern
+header("API Disabled Route Check");
+const apiDir = join(ROOT, "src", "app", "api", "token-rooms");
+const postRoutes = ["create", "confirm-deposit", "join-intent", "refund"];
+for (const route of postRoutes) {
+  const routePath = join(apiDir, route, "route.ts");
+  try {
+    const content = readFileSync(routePath, "utf-8");
+    if (content.includes("tokenRoomDisabledResponse")) {
+      pass(`POST /api/token-rooms/${route} returns tokenRoomDisabledResponse`);
+    } else {
+      fail(`POST /api/token-rooms/${route} does NOT use tokenRoomDisabledResponse`);
+    }
+  } catch {
+    fail(`Route file not found: src/app/api/token-rooms/${route}/route.ts`);
+  }
+}
+
+// 10. UI warning text present
+header("UI Warning Text Check");
+const previewPath = join(ROOT, "src", "components", "token-rooms", "TokenStakeRoomsPreview.tsx");
+try {
+  const previewContent = readFileSync(previewPath, "utf-8");
+  if (previewContent.includes("Production token rooms are not live")) {
+    pass("TokenStakeRoomsPreview contains test-only warning text");
+  } else {
+    fail("TokenStakeRoomsPreview missing test-only warning text");
+  }
+} catch {
+  fail("TokenStakeRoomsPreview component not found");
+}
+
+// 11. Package scripts present
+header("Package Script Check");
+const pkgPath = join(ROOT, "package.json");
+try {
+  const pkgContent = readFileSync(pkgPath, "utf-8");
+  const pkg = JSON.parse(pkgContent);
+  if (pkg.scripts && pkg.scripts["check:token-rooms"]) {
+    pass('"check:token-rooms" script exists in package.json');
+  } else {
+    fail('"check:token-rooms" script missing from package.json');
+  }
+  if (pkg.scripts && pkg.scripts["check:token-rooms-safety"]) {
+    pass('"check:token-rooms-safety" script exists in package.json');
+  } else {
+    fail('"check:token-rooms-safety" script missing from package.json');
+  }
+} catch {
+  fail("Cannot read or parse package.json");
+}
+
+// 12. Done
 exit();

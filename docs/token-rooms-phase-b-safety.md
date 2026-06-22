@@ -1,21 +1,23 @@
 # Token Stake Rooms — Phase B Safety Guardrails
 
-Status: **Phase B.2 — read-only balance + UX polish + compound safety workflow**  
+Status: **Phase B.3 — pre-migration readiness + safety validation**  
 Last updated: 2026-06-21
 
 ## Current State
 
-Token Stake Rooms are in **Phase B.2** — read-only test token balance display with manual refresh, automated safety guardrails, and compound check workflow.
+Token Stake Rooms are in **Phase B.3** — read-only test token balance display with manual refresh, automated safety guardrails, compound check workflow, and pre-migration readiness docs.
 
 ### What exists
 
 - Config: `src/config/token-rooms.ts` with feature flags, fee BPS, wallet addresses, stake presets, payout split functions
 - Types: `src/types/token-rooms.ts` with shared TypeScript types for room, player, deposit, payout, refund, and weekly snapshot entities
 - API skeletons: 6 disabled routes under `src/app/api/token-rooms/` (all return 403 or 200-disabled)
-- UI: `TokenStakeRoomsPreview` component showing disabled state + connected wallet test token balance with **manual Refresh balance** button and **Last checked** timestamp on `/race/multiplayer`
+- UI: `TokenStakeRoomsPreview` component showing disabled state + connected wallet test token balance with manual Refresh balance button and Last checked timestamp on `/race/multiplayer`
 - Migration: `supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql` created but **not applied**
-- Safety script: `scripts/check-token-rooms-safety.mjs` runnable via `npm run check:token-rooms-safety`
+- Safety script: `scripts/check-token-rooms-safety.mjs` with 22 automated checks across 11 sections
 - Compound check: `npm run check:token-rooms` runs safety checks + TypeScript typecheck in one command
+- Pre-migration checklist: `docs/token-rooms-pre-migration-checklist.md`
+- Phase C prerequisites: `docs/token-rooms-phase-c-prerequisites.md`
 
 ### Manual refresh behavior
 
@@ -57,29 +59,22 @@ The Token Stake Rooms preview displays:
 npm run check:token-rooms
 ```
 
-Runs `check:token-rooms-safety && npx tsc --noEmit` — a single command that verifies all 14 safety checks pass AND TypeScript compiles. Fails fast if either step fails.
+Runs `check:token-rooms-safety && npx tsc --noEmit` — a single command that verifies all 22 safety checks pass AND TypeScript compiles. Fails fast if either step fails.
 
-### What the safety script checks
+### Safety script check sections
 
-Run with: `npm run check:token-rooms-safety`
+Run with: `npm run check:token-rooms-safety` — 22 checks across 11 sections:
 
-| Check | Expected |
-|---|---|
-| `TOKEN_STAKE_ROOMS_ENABLED` | `false` |
-| `TOKEN_STAKE_ROOMS_TEST_MODE` | `true` |
-| `creatorFeeBps` | `0` |
-| `weeklyRewardBps` | `1500` |
-| `treasuryFeeBps` | `500` |
-| `playerPayoutBps` | `8000` |
-| Fee BPS sum | `10000` |
-| `RACETE_TEST_TOKEN_MINT` | `44NFH6uvepYsCdqMBH8L7DKjgYYyoUmVsdksXXXLG1D8` |
-| `RACETE_TOKEN_MINT` | `TO_BE_PROVIDED_FINAL_PUMPFUN_MINT` (placeholder) |
-| `TOKEN_TREASURY_WALLET` | `ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG` |
-| `TOKEN_WEEKLY_REWARD_WALLET` | `4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw` |
-| `TOKEN_ROOM_MIN_PLAYERS` | `2` |
-| `TOKEN_ROOM_MAX_PLAYERS` | `6` |
-| `TOKEN_ROOM_DECIMALS` | `6` |
-| Forbidden keywords scan | 0 hits across 4 scanned paths |
+1. **Feature Flags** (2 checks) — enabled=false, testMode=true
+2. **Fee Configuration** (5 checks) — creator 0, weekly 1500, treasury 500, payout 8000, sum 10000
+3. **Token Mint Configuration** (2 checks) — test mint correct, production mint is placeholder
+4. **Wallet Configuration** (2 checks) — treasury + weekly reward wallets
+5. **Stake Configuration** (3 checks) — min players 2, max players 6, decimals 6
+6. **Forbidden Keyword Scan** (1 check) — 0 hits across 4 paths, 13 banned terms
+7. **Migration File Check** (1 check) — migration file exists and contains expected DDL
+8. **API Disabled Route Check** (4 checks) — create/confirm-deposit/join-intent/refund all use `tokenRoomDisabledResponse`
+9. **UI Warning Text Check** (1 check) — "Production token rooms are not live" text present
+10. **Package Script Check** (2 checks) — `check:token-rooms` and `check:token-rooms-safety` scripts exist
 
 ### Forbidden keywords scanned
 
@@ -111,20 +106,23 @@ The production mint remains a placeholder until the real Pump.fun SPL token mint
 
 Phase C adds deposit verification on devnet/local. Before Phase C code can be written:
 
-1. Safety script passes with 0 failures
+1. Safety script passes with 0 failures (22/22)
 2. TypeScript typecheck passes (`npx tsc --noEmit`)
 3. Production build passes (`npm run build`)
-4. Token room Supabase migration is reviewed and applied (or a dev-only DB is available)
-5. `TOKEN_STAKE_ROOMS_ENABLED` stays `false` for production builds
-6. `TOKEN_STAKE_ROOMS_TEST_MODE` stays `true` for devnet flows
-7. All deposit/transfer/payout code is gated behind the feature flag
-8. No private keys or signer material are committed to the repo
-9. Solana RPC endpoint is stable for devnet verification
+4. Token room Supabase migration is reviewed and applied
+5. Post-migration verification complete (tables visible, RLS enabled, indexes exist)
+6. `TOKEN_STAKE_ROOMS_ENABLED` stays `false` for production builds
+7. `TOKEN_STAKE_ROOMS_TEST_MODE` stays `true` for devnet flows
+8. All deposit/transfer/payout code is gated behind the feature flag
+9. No private keys or signer material are committed to the repo
+10. Solana RPC endpoint is stable for devnet verification
+
+See `docs/token-rooms-phase-c-prerequisites.md` for the full checklist.
 
 ## Running the Checks
 
 ```bash
-# Safety checks only
+# Safety checks only (22 checks across 11 sections)
 npm run check:token-rooms-safety
 
 # Safety checks + TypeScript typecheck
@@ -134,3 +132,50 @@ npm run check:token-rooms
 Expected output: all checks green, exit code 0.
 
 If any check fails, Token Stake Rooms MUST remain disabled and the violation MUST be resolved before proceeding to Phase C.
+
+## Post-Deploy Manual Verification
+
+After every deploy (including docs-only deploys), manually verify on the live deployed URL:
+
+### Token Stake Rooms Preview
+
+1. Open `/race/multiplayer`
+2. Confirm Token Stake Rooms section is visible
+3. Confirm "Coming Soon / Test Mode" badge is present
+4. With wallet disconnected: "Connect wallet to check" is shown
+5. Refresh balance button is disabled when wallet is off
+
+### With Connected Wallet
+
+6. Connect a Solana wallet
+7. Confirm "Test RACETE Balance" appears with a balance value (or "0 TEST RACETE")
+8. Click **Refresh balance**
+9. Confirm no wallet signature popup appears (read-only RPC call only)
+10. Confirm "Last checked" timestamp appears and updates
+11. Confirm test-only warning is visible: "Production token rooms are not live."
+
+### Disabled Action Buttons
+
+12. Confirm "Create Token Room" button is disabled
+13. Confirm "Join Token Room" button is disabled
+14. Confirm "Deposit Disabled" button is disabled
+
+### API Safety
+
+15. Run in terminal or browser console:
+    ```
+    curl -X POST https://<deployed-url>/api/token-rooms/create
+    ```
+16. Confirm response is HTTP 403 with disabled message
+17. Repeat for `/api/token-rooms/confirm-deposit`, `/join-intent`, `/refund`
+18. Confirm `/api/token-rooms/available` returns 200 with `enabled: false`
+
+### Console
+
+19. Open browser DevTools → Console
+20. Confirm zero errors on `/race/multiplayer`
+
+### Other Pages
+
+21. `/`, `/race`, `/garage`, `/missions`, `/leaderboard`, `/weekly` all load without errors
+22. Free Multiplayer matchmaking/lobby still works
