@@ -68,8 +68,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const enoughPlayers = room.playerCount >= room.minPlayers;
-    const readyForDryRun = room.dryRunStatus === "full" || room.dryRunStatus === "in_lobby";
-    if (!enoughPlayers || !readyForDryRun) {
+    const depositsReady = room.allDepositsConfirmed || room.dryRunStatus === "ready_to_race";
+    if (!enoughPlayers || !depositsReady) {
       return NextResponse.json(
         {
           ...tokenRoomBasePayload(),
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .from("token_rooms")
       .update({ status: "racing", race_id: mockRaceId, updated_at: now, started_at: now })
       .eq("room_id", room.roomId)
-      .in("status", ["created", "depositing", "racing"]);
+      .in("status", ["locked"]);
 
     if (roomError) throw roomError;
 
@@ -105,10 +105,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       eventType: "dry_run_start_race",
       payload: {
         mockRaceId,
-        noDepositRequested: true,
-        noTokenTransfer: true,
-        noPayout: true,
-        note: "Dry-run token room race. Results are for testing only. No RACETE payout.",
+        depositsRequired: true,
+        noAutomaticPayout: true,
+        note: "Token room race handoff. RACETE deposits are real and ledgered; payouts remain admin-reviewed/manual.",
       },
     });
 
@@ -119,7 +118,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       room: updatedRoom,
       mockRaceId,
       nextUrl: `/race/multiplayer?tokenRoomId=${encodeURIComponent(room.roomId)}&dryRunRaceId=${encodeURIComponent(mockRaceId)}`,
-      dryRunNotice: "Dry-run token room race started. Results are for testing only. No RACETE payout.",
+      dryRunNotice: "Token room race started. RACETE deposits are ledgered; results do not trigger automatic RACETE payout.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

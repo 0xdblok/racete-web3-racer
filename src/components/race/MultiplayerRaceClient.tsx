@@ -384,7 +384,7 @@ function TokenRoomDryRunMetadataBanner({ tokenRoomId, dryRunRaceId }: { tokenRoo
           {dryRunRaceId && <p className="mt-1 font-mono text-xs text-white/45">dryRunRaceId={dryRunRaceId}</p>}
         </div>
         <p className="max-w-xl text-xs text-amber-100/75">
-          Dry-run only. No RACETE deposit requested, no token transfer, no payout. Race Cash/free multiplayer rewards remain separate.
+          Phase C.2. RACETE deposits are real only after wallet-signed deposit. No automatic payout. Race Cash/free multiplayer rewards remain separate.
         </p>
       </div>
     </div>

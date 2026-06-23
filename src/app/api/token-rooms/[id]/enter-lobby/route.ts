@@ -89,22 +89,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (playerError) throw playerError;
 
-    const { error: roomError } = await supabase
-      .from("token_rooms")
-      .update({ status: "depositing", updated_at: now, locked_at: now })
-      .eq("room_id", room.roomId)
-      .in("status", ["created", "depositing"]);
-
-    if (roomError) throw roomError;
-
     await writeTokenRoomEvent({
       roomId: room.roomId,
       walletAddress,
       eventType: "dry_run_enter_lobby",
       payload: {
-        noDepositRequested: true,
-        noTokenTransfer: true,
-        noPayout: true,
+        realDepositFlow: true,
+        noAutomaticPayout: true,
       },
     });
 
@@ -113,7 +104,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({
       ...tokenRoomBasePayload(),
       room: updatedRoom,
-      dryRunNotice: "Entered dry-run token room lobby. No RACETE deposit, transfer, or payout will happen.",
+      dryRunNotice: "Entered token room lobby. Deposit RACETE from the lobby to become confirmed. Payouts remain admin-reviewed/manual.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

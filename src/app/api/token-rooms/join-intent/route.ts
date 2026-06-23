@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { TOKEN_STAKE_ROOMS_TEST_MODE, getActiveTokenMint, toTokenBaseUnits } from "@/config/token-rooms";
 import {
-  DRY_RUN_ROOM_STATUSES,
   ensureDryRunPlayer,
   fetchDryRunRooms,
   isMissingTokenRoomTableError,
@@ -39,8 +38,8 @@ export async function POST(request: NextRequest) {
     if (!room) {
       return NextResponse.json({ ...tokenRoomBasePayload(), error: "Token room not found" }, { status: 404 });
     }
-    if (!DRY_RUN_ROOM_STATUSES.includes(room.status as (typeof DRY_RUN_ROOM_STATUSES)[number])) {
-      return NextResponse.json({ ...tokenRoomBasePayload(), error: "Token room is not open for dry-run joins" }, { status: 409 });
+    if (room.status !== "created") {
+      return NextResponse.json({ ...tokenRoomBasePayload(), error: "Token room is not open for joins" }, { status: 409 });
     }
     if (room.token_mint !== getActiveTokenMint()) {
       return NextResponse.json({ ...tokenRoomBasePayload(), error: "Token room mint does not match active test mint" }, { status: 409 });
@@ -64,7 +63,7 @@ export async function POST(request: NextRequest) {
           ...tokenRoomBasePayload(),
           action: "join-intent",
           room: existingRoom,
-          dryRunNotice: "Wallet is already in this dry-run room. No RACETE deposit was requested or transferred.",
+          dryRunNotice: "Wallet is already in this token room. Deposit RACETE from the room lobby if not already confirmed.",
         },
         { status: 200 },
       );
@@ -93,10 +92,9 @@ export async function POST(request: NextRequest) {
 
     if (insertError) throw insertError;
 
-    const newPlayerCount = existingPlayers.length + 1;
     const { error: updateError } = await supabase
       .from("token_rooms")
-      .update({ confirmed_player_count: newPlayerCount, updated_at: now })
+      .update({ updated_at: now })
       .eq("room_id", roomId);
 
     if (updateError) throw updateError;
@@ -107,7 +105,7 @@ export async function POST(request: NextRequest) {
       ...tokenRoomBasePayload(),
       action: "join-intent",
       room: updatedRoom,
-      dryRunNotice: "Joined dry-run room. No RACETE deposit was requested or transferred.",
+      dryRunNotice: "Joined token room. Deposit RACETE from the room lobby. Payouts are admin-reviewed/manual in this MVP.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

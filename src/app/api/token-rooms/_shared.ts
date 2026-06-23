@@ -8,6 +8,7 @@ import {
   TOKEN_ROOM_FEE_BPS,
   TOKEN_ROOM_MAX_PLAYERS,
   TOKEN_ROOM_MIN_PLAYERS,
+  TOKEN_2022_PROGRAM_ID,
   TOKEN_STAKE_PRESET_CONFIGS,
   TOKEN_STAKE_PRESETS,
   TOKEN_STAKE_ROOMS_ENABLED,
@@ -15,13 +16,14 @@ import {
   TOKEN_TREASURY_WALLET,
   TOKEN_WEEKLY_REWARD_WALLET,
   getActiveTokenMint,
+  getTokenRoomDepositWallet,
   getTokenRoomMode,
   toTokenBaseUnits,
 } from "@/config/token-rooms";
 import type { TokenStakeAmount } from "@/types/token-rooms";
 
 export const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-export const DRY_RUN_ROOM_STATUSES = ["created", "depositing", "racing"] as const;
+export const DRY_RUN_ROOM_STATUSES = ["created", "depositing", "locked", "racing"] as const;
 const ROOM_TTL_HOURS = 2;
 
 type DbTokenRoomRow = {
@@ -35,6 +37,8 @@ type DbTokenRoomRow = {
   min_players: number;
   max_players: number;
   confirmed_player_count: number;
+  confirmed_pool_amount?: string | number;
+  vault_token_account?: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -48,6 +52,8 @@ type DbTokenRoomPlayerRow = {
   is_creator: boolean;
   status: string;
   deposit_status: string;
+  deposit_id?: string | null;
+  deposit_confirmed_at?: string | null;
   joined_at: string;
   created_at: string;
 };
@@ -56,8 +62,10 @@ export type DryRunTokenRoomPlayer = {
   walletAddress: string;
   isCreator: boolean;
   status: string;
-  dryRunDepositStatus: "not_required";
+  dryRunDepositStatus: "not_required" | "pending" | "submitted" | "confirmed" | "rejected";
   dbDepositStatus: string;
+  depositId?: string | null;
+  depositConfirmedAt?: string | null;
   joinedAt: string;
 };
 
@@ -72,8 +80,13 @@ export type DryRunTokenRoom = {
   minPlayers: number;
   playerCount: number;
   confirmedPlayerCount: number;
+  depositedPlayerCount: number;
+  allDepositsConfirmed: boolean;
+  confirmedPoolAmountBaseUnits: string;
+  depositWallet: string | null;
+  vaultTokenAccount?: string | null;
   status: string;
-  dryRunStatus: "waiting" | "full" | "in_lobby" | "racing_mock" | "closed";
+  dryRunStatus: "waiting" | "full" | "deposits_pending" | "deposits_confirmed" | "ready_to_race" | "in_lobby" | "racing_mock" | "closed";
   creatorWalletAddress: string;
   createdAt: string;
   updatedAt: string;
@@ -88,6 +101,8 @@ export function tokenRoomConfigPayload() {
     activeTokenMint: getActiveTokenMint(),
     treasuryWallet: TOKEN_TREASURY_WALLET,
     weeklyRewardWallet: TOKEN_WEEKLY_REWARD_WALLET,
+    depositWallet: getTokenRoomDepositWallet() || null,
+    tokenProgram: TOKEN_2022_PROGRAM_ID,
     stakePresets: TOKEN_STAKE_PRESET_CONFIGS,
     feeBps: TOKEN_ROOM_FEE_BPS,
     minPlayers: TOKEN_ROOM_MIN_PLAYERS,
@@ -95,8 +110,8 @@ export function tokenRoomConfigPayload() {
     decimals: TOKEN_ROOM_DECIMALS,
     dryRun: {
       enabled: TOKEN_STAKE_ROOMS_TEST_MODE,
-      realDepositsEnabled: false,
-      message: "Dry-run room only. No RACETE deposit will be requested or transferred.",
+      realDepositsEnabled: Boolean(getTokenRoomDepositWallet()),
+      message: "MVP token-room lifecycle. Deposits are real only in room lobby; automatic payouts remain disabled/manual.",
     },
   };
 }
@@ -107,9 +122,9 @@ export function tokenRoomBasePayload() {
     testMode: TOKEN_STAKE_ROOMS_TEST_MODE,
     mode: getTokenRoomMode(),
     dryRunEnabled: TOKEN_STAKE_ROOMS_TEST_MODE,
-    realDepositsEnabled: false,
+    realDepositsEnabled: Boolean(getTokenRoomDepositWallet()),
     message: TOKEN_ROOM_DISABLED_MESSAGE,
-    dryRunMessage: "Dry-run room only. No RACETE deposit will be requested or transferred.",
+    dryRunMessage: "MVP token-room lifecycle active. RACETE deposits are real only in room lobby; automatic payouts remain disabled/manual.",
     config: tokenRoomConfigPayload(),
   };
 }
@@ -187,13 +202,24 @@ export async function ensureDryRunPlayer(walletAddress: string) {
   if (error) throw error;
 }
 
+export function mapDepositStatusForUi(status: string): DryRunTokenRoomPlayer["dryRunDepositStatus"] {
+  if (status === "confirmed") return "confirmed";
+  if (status === "signature_submitted") return "submitted";
+  if (status === "rejected") return "rejected";
+  if (status === "intent_created" || status === "expired" || status === "manual_review") return "pending";
+  return "not_required";
+}
+
 export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayerRow[]): DryRunTokenRoom {
   const playerCount = playerRows.length;
   const maxPlayers = Number(row.max_players);
   const status = String(row.status);
+  const depositedPlayerCount = playerRows.filter((player) => player.deposit_status === "confirmed").length;
+  const allDepositsConfirmed = playerCount > 0 && depositedPlayerCount === playerCount;
   const dryRunStatus = (() => {
     if (!DRY_RUN_ROOM_STATUSES.includes(status as (typeof DRY_RUN_ROOM_STATUSES)[number])) return "closed";
-    if (status === "depositing") return "in_lobby";
+    if (status === "locked") return "ready_to_race";
+    if (status === "depositing") return allDepositsConfirmed ? "deposits_confirmed" : "deposits_pending";
     if (status === "racing") return "racing_mock";
     return playerCount >= maxPlayers ? "full" : "waiting";
   })();
@@ -208,7 +234,12 @@ export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayer
     maxPlayers,
     minPlayers: Number(row.min_players || 2),
     playerCount,
-    confirmedPlayerCount: Number(row.confirmed_player_count || playerCount),
+    confirmedPlayerCount: Number(row.confirmed_player_count || depositedPlayerCount),
+    depositedPlayerCount,
+    allDepositsConfirmed,
+    confirmedPoolAmountBaseUnits: String(row.confirmed_pool_amount || "0"),
+    depositWallet: getTokenRoomDepositWallet() || null,
+    vaultTokenAccount: row.vault_token_account || null,
     status,
     dryRunStatus,
     creatorWalletAddress: row.creator_wallet_address,
@@ -219,8 +250,10 @@ export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayer
       walletAddress: player.wallet_address,
       isCreator: Boolean(player.is_creator),
       status: player.status,
-      dryRunDepositStatus: "not_required",
+      dryRunDepositStatus: mapDepositStatusForUi(player.deposit_status),
       dbDepositStatus: player.deposit_status,
+      depositId: player.deposit_id || null,
+      depositConfirmedAt: player.deposit_confirmed_at || null,
       joinedAt: player.joined_at || player.created_at,
     })),
   };
@@ -233,7 +266,7 @@ export async function fetchDryRunRooms(roomId?: string) {
   let query = supabase
     .from("token_rooms")
     .select(
-      "id, room_id, token_mint, stake_amount, stake_decimals, stake_preset, creator_wallet_address, min_players, max_players, confirmed_player_count, status, created_at, updated_at, expires_at",
+      "id, room_id, token_mint, stake_amount, stake_decimals, stake_preset, creator_wallet_address, min_players, max_players, confirmed_player_count, confirmed_pool_amount, vault_token_account, status, created_at, updated_at, expires_at",
     )
     .in("status", [...DRY_RUN_ROOM_STATUSES])
     .eq("token_mint", getActiveTokenMint())
@@ -252,7 +285,7 @@ export async function fetchDryRunRooms(roomId?: string) {
   const roomIds = rooms.map((room) => room.room_id);
   const { data: playerRows, error: playerError } = await supabase
     .from("token_room_players")
-    .select("id, room_id, wallet_address, is_creator, status, deposit_status, joined_at, created_at")
+    .select("id, room_id, wallet_address, is_creator, status, deposit_status, deposit_id, deposit_confirmed_at, joined_at, created_at")
     .in("room_id", roomIds)
     .order("created_at", { ascending: true });
 

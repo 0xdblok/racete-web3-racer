@@ -5,6 +5,12 @@ export const RACETE_TOKEN_MINT = "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT" as const;
 
 export const TOKEN_WEEKLY_REWARD_WALLET = "4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw" as const;
 export const TOKEN_TREASURY_WALLET = "ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG" as const;
+export const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb" as const;
+export const CLASSIC_SPL_TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as const;
+
+export function getTokenRoomDepositWallet(): string {
+  return (process.env.TOKEN_ROOM_DEPOSIT_WALLET || process.env.NEXT_PUBLIC_TOKEN_ROOM_DEPOSIT_WALLET || "").trim();
+}
 
 export const TOKEN_STAKE_ROOMS_ENABLED = false as const;
 export const TOKEN_STAKE_ROOMS_TEST_MODE = true as const;

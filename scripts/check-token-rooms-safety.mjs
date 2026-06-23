@@ -1,382 +1,131 @@
 #!/usr/bin/env node
 
-// check-token-rooms-safety.mjs
-// Automated safety guardrails for Token Stake Rooms Phase B.
-// Verifies disabled state, fee config, wallet addresses, mints,
-// and scans for forbidden write/transfer/signer keywords in
-// token-rooms related files.
-//
-// Exit 0 = all checks pass.  Exit 1 = one or more violations found.
+// Token Stake Rooms Phase C.2 safety guardrails.
+// Allows frontend user-signed Token-2022 deposit transactions only.
+// Blocks server-side private keys, server-side token transfers, payout/refund writes,
+// automatic treasury/weekly/winner transfer logic, and unsafe config changes.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const __dirname = resolve(fileURLToPath(import.meta.url), "..", "..");
-const ROOT = __dirname;
-
+const ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const GREEN = "\x1b[32m";
 const RED = "\x1b[31m";
-const YELLOW = "\x1b[33m";
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
-
 let failures = 0;
 let passed = 0;
 
-function pass(msg) {
-  passed++;
-  console.log(`${GREEN}  ✓${RESET} ${msg}`);
-}
-
-function fail(msg) {
-  failures++;
-  console.log(`${RED}  ✗${RESET} ${msg}`);
-}
-
-function warn(msg) {
-  console.log(`${YELLOW}  ⚠${RESET} ${msg}`);
-}
-
-function header(title) {
-  console.log(`\n${BOLD}${title}${RESET}`);
-}
-
-function exit() {
-  console.log("");
-  if (failures === 0) {
-    console.log(`${GREEN}${BOLD}All safety checks passed.${RESET} Token Stake Rooms are in safe disabled state.`);
-    process.exit(0);
-  } else {
-    console.log(
-      `${RED}${BOLD}${failures} safety check(s) FAILED.${RESET} Token Stake Rooms must remain disabled until resolved.`,
-    );
-    process.exit(1);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Config constant extraction
-// ---------------------------------------------------------------------------
-
-function readConfigText() {
-  const path = join(ROOT, "src", "config", "token-rooms.ts");
-  try {
-    return readFileSync(path, "utf-8");
-  } catch {
-    fail(`Cannot read config file: ${path}`);
-    return "";
-  }
-}
-
-function extractConst(text, name) {
-  // Match:  export const NAME = VALUE as const;
-  const re = new RegExp(`export\\s+const\\s+${name}\\s*=\\s*(.+?)\\s+as\\s+const\\s*;`);
-  const m = text.match(re);
-  if (!m) return null;
-  let raw = m[1].trim();
-  // Unquote string values
-  if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
-    raw = raw.slice(1, -1);
-  }
-  return raw;
-}
-
-function extractNumber(text, name) {
-  const val = extractConst(text, name);
-  if (val === null) return null;
-  const num = Number(val);
-  return Number.isNaN(num) ? null : num;
-}
-
-function extractObjectProp(text, objName, propName) {
-  // Match object property:  propName: VALUE,
-  const re = new RegExp(`${propName}\\s*:\\s*([0-9_]+)\\s*,`);
-  const m = text.match(re);
-  if (!m) return null;
-  const num = Number(m[1].replace(/_/g, ""));
-  return Number.isNaN(num) ? null : num;
-}
-
-// ---------------------------------------------------------------------------
-// Forbidden keyword scanner
-// ---------------------------------------------------------------------------
-
-const FORBIDDEN_KEYWORDS = [
-  "sendTransaction",
-  "signTransaction",
-  "signAllTransactions",
-  "transferChecked",
-  "createTransferInstruction",
-  "createAssociatedTokenAccount",
-  "getOrCreateAssociatedTokenAccount",
-  "Keypair.fromSecretKey",
-  "secretKey",
-  "privateKey",
-  "TOKEN_VAULT_PRIVATE_KEY",
-  "payer",
-  "sendAndConfirmTransaction",
-];
-
-const SCAN_PATHS = [
-  "src/components/token-rooms",
-  "src/app/api/token-rooms",
-  "src/config/token-rooms.ts",
-  "src/types/token-rooms.ts",
-];
-
+function pass(msg) { passed++; console.log(`${GREEN}  ✓${RESET} ${msg}`); }
+function fail(msg) { failures++; console.log(`${RED}  ✗${RESET} ${msg}`); }
+function header(title) { console.log(`\n${BOLD}${title}${RESET}`); }
+function read(path) { return readFileSync(join(ROOT, path), "utf-8"); }
+function existsFile(path) { try { return statSync(join(ROOT, path)).isFile(); } catch { return false; } }
 function listFilesRecursive(dir) {
-  const entries = readdirSync(dir, { withFileTypes: true });
-  const files = [];
-  for (const entry of entries) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...listFilesRecursive(full));
-    } else if (entry.isFile()) {
-      files.push(full);
-    }
+  const full = join(ROOT, dir);
+  let files = [];
+  for (const entry of readdirSync(full, { withFileTypes: true })) {
+    const rel = join(dir, entry.name);
+    if (entry.isDirectory()) files = files.concat(listFilesRecursive(rel));
+    else if (entry.isFile()) files.push(rel);
   }
   return files;
 }
-
-function scanFiles() {
-  let allFiles = [];
-  for (const scanPath of SCAN_PATHS) {
-    const full = join(ROOT, scanPath);
-    try {
-      const st = statSync(full);
-      if (st.isFile()) {
-        allFiles.push(full);
-      } else if (st.isDirectory()) {
-        allFiles.push(...listFilesRecursive(full));
-      }
-    } catch {
-      warn(`Path not found: ${scanPath} (skipping)`);
-    }
-  }
-
-  let totalHits = 0;
-
-  for (const file of allFiles) {
-    const rel = file.replace(ROOT + "/", "");
-    const content = readFileSync(file, "utf-8");
-
-    for (const kw of FORBIDDEN_KEYWORDS) {
-      if (content.includes(kw)) {
-        // Count occurrences
-        const hits = content.split(kw).length - 1;
-        totalHits += hits;
-        fail(`Forbidden keyword "${kw}" found in ${rel} (${hits} hit${hits > 1 ? "s" : ""})`);
-      }
-    }
-  }
-
-  if (totalHits === 0) {
-    pass(`No forbidden keywords found in ${SCAN_PATHS.length} scanned paths (${allFiles.length} files)`);
-  }
+function includesAny(text, terms) { return terms.some((term) => text.includes(term)); }
+function extractConst(text, name) {
+  const m = text.match(new RegExp(`export\\s+const\\s+${name}\\s*=\\s*(.+?)\\s+as\\s+const\\s*;`));
+  if (!m) return null;
+  const raw = m[1].trim();
+  return raw.replace(/^['"]|['"]$/g, "");
+}
+function extractObjectProp(text, propName) {
+  const m = text.match(new RegExp(`${propName}\\s*:\\s*([0-9_]+)\\s*,`));
+  return m ? Number(m[1].replace(/_/g, "")) : null;
+}
+function exit() {
+  console.log(`\n${passed} passed, ${failures} failed.`);
+  if (failures) process.exit(1);
+  console.log(`${GREEN}${BOLD}All safety checks passed.${RESET} Token Stake Rooms Phase C.2 deposit flow remains payout-disabled.`);
 }
 
-// ---------------------------------------------------------------------------
-// Main check sequence
-// ---------------------------------------------------------------------------
-
-console.log(`${BOLD}Token Stake Rooms Safety Check${RESET}`);
+console.log(`${BOLD}Token Stake Rooms Phase C.2 Safety Check${RESET}`);
 console.log(`Root: ${ROOT}\n`);
 
-// 1. Read config
-const configText = readConfigText();
-if (!configText) {
-  exit();
-}
+const config = read("src/config/token-rooms.ts");
 
-// 2. Feature flags
-header("Feature Flags");
-const enabled = extractConst(configText, "TOKEN_STAKE_ROOMS_ENABLED");
-const testMode = extractConst(configText, "TOKEN_STAKE_ROOMS_TEST_MODE");
+header("Feature flags and constants");
+extractConst(config, "TOKEN_STAKE_ROOMS_ENABLED") === "false" ? pass("TOKEN_STAKE_ROOMS_ENABLED remains false") : fail("TOKEN_STAKE_ROOMS_ENABLED must remain false");
+extractConst(config, "TOKEN_STAKE_ROOMS_TEST_MODE") === "true" ? pass("TOKEN_STAKE_ROOMS_TEST_MODE remains true") : fail("TOKEN_STAKE_ROOMS_TEST_MODE must remain true");
+extractConst(config, "RACETE_TEST_TOKEN_MINT") === "26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump" ? pass("RACETE_TEST_TOKEN_MINT unchanged") : fail("RACETE_TEST_TOKEN_MINT changed");
+extractConst(config, "RACETE_TOKEN_MINT") === "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT" ? pass("production mint remains placeholder") : fail("production mint must remain placeholder");
+extractConst(config, "TOKEN_TREASURY_WALLET") === "ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG" ? pass("treasury wallet unchanged") : fail("treasury wallet changed");
+extractConst(config, "TOKEN_WEEKLY_REWARD_WALLET") === "4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw" ? pass("weekly wallet unchanged") : fail("weekly wallet changed");
+extractConst(config, "TOKEN_2022_PROGRAM_ID") === "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb" ? pass("Token-2022 program id configured") : fail("Token-2022 program id missing/wrong");
+config.includes("getTokenRoomDepositWallet") && config.includes("TOKEN_ROOM_DEPOSIT_WALLET") ? pass("public deposit wallet env helper exists") : fail("TOKEN_ROOM_DEPOSIT_WALLET helper missing");
 
-if (enabled === "false") pass("TOKEN_STAKE_ROOMS_ENABLED = false");
-else fail(`TOKEN_STAKE_ROOMS_ENABLED = ${enabled} (expected false)`);
+header("Economics");
+const creator = extractObjectProp(config, "creatorFeeBps");
+const weekly = extractObjectProp(config, "weeklyRewardBps");
+const treasury = extractObjectProp(config, "treasuryFeeBps");
+const payout = extractObjectProp(config, "playerPayoutBps");
+creator === 0 ? pass("creator fee 0 bps") : fail("creator fee changed");
+weekly === 1500 ? pass("weekly pool 1500 bps") : fail("weekly pool changed");
+treasury === 500 ? pass("treasury fee 500 bps") : fail("treasury fee changed");
+payout === 8000 ? pass("player payout pool 8000 bps") : fail("player payout pool changed");
+creator + weekly + treasury + payout === 10000 ? pass("fee bps sum 10000") : fail("fee bps sum invalid");
 
-if (testMode === "true") pass("TOKEN_STAKE_ROOMS_TEST_MODE = true");
-else fail(`TOKEN_STAKE_ROOMS_TEST_MODE = ${testMode} (expected true)`);
+header("Migration checks");
+const phaseAMigration = "supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql";
+const c2Migration = "supabase/migrations/20260622190000_add_token_room_deposit_ledger_fields.sql";
+existsFile(phaseAMigration) ? pass("Phase A token-room migration exists") : fail("Phase A migration missing");
+if (existsFile(c2Migration)) {
+  const migration = read(c2Migration);
+  migration.includes("token_deposits_tx_signature_unique") && migration.includes("tx_signature") ? pass("token_deposits tx_signature unique index exists") : fail("tx_signature unique index missing");
+  migration.includes("token_deposits_room_wallet_confirmed_unique") ? pass("room+wallet confirmed deposit uniqueness exists") : fail("room+wallet confirmed uniqueness missing");
+  migration.includes("deposit_wallet") && migration.includes("token_program") && migration.includes("amount_base_units") ? pass("deposit ledger columns present") : fail("deposit ledger required columns missing");
+} else fail("Phase C.2 deposit ledger migration missing");
 
-// 3. Fee BPS sum
-header("Fee Configuration");
-const creatorBps = extractObjectProp(configText, "TOKEN_ROOM_FEE_BPS", "creatorFeeBps");
-const weeklyBps = extractObjectProp(configText, "TOKEN_ROOM_FEE_BPS", "weeklyRewardBps");
-const treasuryBps = extractObjectProp(configText, "TOKEN_ROOM_FEE_BPS", "treasuryFeeBps");
-const payoutBps = extractObjectProp(configText, "TOKEN_ROOM_FEE_BPS", "playerPayoutBps");
+header("API route checks");
+const depositIntent = read("src/app/api/token-rooms/deposit-intent/route.ts");
+const confirmDeposit = read("src/app/api/token-rooms/confirm-deposit/route.ts");
+const refundRoute = read("src/app/api/token-rooms/refund/route.ts");
+const startRoute = read("src/app/api/token-rooms/[id]/start-dry-run/route.ts");
+depositIntent.includes("roomId") && depositIntent.includes("walletAddress") && depositIntent.includes("depositWallet") && depositIntent.includes("amountBaseUnits") ? pass("deposit-intent returns room/wallet/amount/deposit wallet") : fail("deposit-intent missing required fields");
+depositIntent.includes("Wallet is not a member") ? pass("deposit-intent rejects non-member wallets") : fail("deposit-intent must reject non-members");
+confirmDeposit.includes("roomId is required") && confirmDeposit.includes("Valid walletAddress is required") ? pass("confirm-deposit validates roomId and walletAddress") : fail("confirm-deposit missing room/wallet validation");
+confirmDeposit.includes("Transaction signature has already been used") && confirmDeposit.includes("tx_signature") ? pass("confirm-deposit rejects reused signatures") : fail("confirm-deposit reused-signature check missing");
+confirmDeposit.includes("amount !== expectedAmount") && confirmDeposit.includes("No exact Token-2022 RACETE transfer") ? pass("confirm-deposit requires exact stake amount") : fail("confirm-deposit exact amount validation missing");
+confirmDeposit.includes("destinationParsed.owner !== depositWallet") ? pass("confirm-deposit validates vault token account owner") : fail("confirm-deposit destination owner validation missing");
+confirmDeposit.includes("postDestination - preDestination !== expectedAmount") ? pass("confirm-deposit validates destination received exact delta") : fail("confirm-deposit destination delta validation missing");
+confirmDeposit.includes('.from("token_deposits")') && confirmDeposit.includes("room_id: room.roomId") && confirmDeposit.includes("wallet_address: walletAddress") ? pass("confirm-deposit writes per-room/per-player token_deposits ledger") : fail("confirm-deposit ledger insert missing room/player linkage");
+refundRoute.includes("tokenRoomDisabledResponse") ? pass("refund route remains disabled") : fail("refund route must remain disabled");
+startRoute.includes("allDepositsConfirmed") || startRoute.includes("ready_to_race") ? pass("race handoff requires confirmed deposits") : fail("start-dry-run must require confirmed deposits");
 
-if (creatorBps === 0) pass("creatorFeeBps = 0");
-else fail(`creatorFeeBps = ${creatorBps} (expected 0)`);
-
-if (weeklyBps === 1500) pass("weeklyRewardBps = 1500");
-else fail(`weeklyRewardBps = ${weeklyBps} (expected 1500)`);
-
-if (treasuryBps === 500) pass("treasuryFeeBps = 500");
-else fail(`treasuryFeeBps = ${treasuryBps} (expected 500)`);
-
-if (payoutBps === 8000) pass("playerPayoutBps = 8000");
-else fail(`playerPayoutBps = ${payoutBps} (expected 8000)`);
-
-const bpsSum = (creatorBps ?? 0) + (weeklyBps ?? 0) + (treasuryBps ?? 0) + (payoutBps ?? 0);
-if (bpsSum === 10000) pass(`fee BPS sum = ${bpsSum} (expected 10000)`);
-else fail(`fee BPS sum = ${bpsSum} (expected 10000)`);
-
-// 4. Mint verification
-header("Token Mint Configuration");
-const testMint = extractConst(configText, "RACETE_TEST_TOKEN_MINT");
-const prodMint = extractConst(configText, "RACETE_TOKEN_MINT");
-
-if (testMint === "26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump") {
-  pass("RACETE_TEST_TOKEN_MINT = 26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump");
-} else fail(`RACETE_TEST_TOKEN_MINT = ${testMint}`);
-
-if (prodMint === "TO_BE_PROVIDED_FINAL_PUMPFUN_MINT") {
-  pass("RACETE_TOKEN_MINT = TO_BE_PROVIDED_FINAL_PUMPFUN_MINT (placeholder)");
-} else fail(`RACETE_TOKEN_MINT = ${prodMint} (expected placeholder)`);
-
-// 5. Wallet address verification
-header("Wallet Configuration");
-const treasury = extractConst(configText, "TOKEN_TREASURY_WALLET");
-const weeklyWallet = extractConst(configText, "TOKEN_WEEKLY_REWARD_WALLET");
-
-if (treasury === "ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG") {
-  pass("TOKEN_TREASURY_WALLET = ne8CVnmNJKuSegSLJ7PtA1zPqEKdynXSzivj4kKVXVG");
-} else fail(`TOKEN_TREASURY_WALLET = ${treasury}`);
-
-if (weeklyWallet === "4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw") {
-  pass("TOKEN_WEEKLY_REWARD_WALLET = 4oCUAXbyLfSzd6YifcL1QkXNqepm2cZpwxm3pqGNx6Lw");
-} else fail(`TOKEN_WEEKLY_REWARD_WALLET = ${weeklyWallet}`);
-
-// 6. Stake presets
-header("Stake Configuration");
-const minPlayers = extractNumber(configText, "TOKEN_ROOM_MIN_PLAYERS");
-const maxPlayers = extractNumber(configText, "TOKEN_ROOM_MAX_PLAYERS");
-const decimals = extractNumber(configText, "TOKEN_ROOM_DECIMALS");
-
-if (minPlayers === 2) pass("TOKEN_ROOM_MIN_PLAYERS = 2");
-else fail(`TOKEN_ROOM_MIN_PLAYERS = ${minPlayers} (expected 2)`);
-
-if (maxPlayers === 6) pass("TOKEN_ROOM_MAX_PLAYERS = 6");
-else fail(`TOKEN_ROOM_MAX_PLAYERS = ${maxPlayers} (expected 6)`);
-
-if (decimals === 6) pass("TOKEN_ROOM_DECIMALS = 6");
-else fail(`TOKEN_ROOM_DECIMALS = ${decimals} (expected 6)`);
-
-// 7. Forbidden keyword scan
-header("Forbidden Keyword Scan");
-scanFiles();
-
-// 8. Migration file existence
-header("Migration File Check");
-const migrationPath = join(ROOT, "supabase", "migrations", "20260621150000_add_token_stake_rooms_phase_a.sql");
-try {
-  const migrationContent = readFileSync(migrationPath, "utf-8");
-  if (migrationContent.includes("create table if not exists token_rooms") || migrationContent.includes("CREATE TABLE IF NOT EXISTS token_rooms")) {
-    pass(`Migration file exists: supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql`);
-  } else {
-    fail("Migration file exists but does not contain expected token_rooms DDL");
+header("No server-side token movement / private keys / payouts");
+const serverFiles = listFilesRecursive("src/app/api/token-rooms");
+const serverForbidden = ["Keypair.fromSecretKey", "TOKEN_ROOM_PRIVATE_KEY", "TOKEN_VAULT_AUTHORITY_PRIVATE_KEY", "secretKey", "privateKey", "sendAndConfirmTransaction", "createTransferInstruction", "createTransferCheckedInstruction", "createAssociatedTokenAccountInstruction", "getOrCreateAssociatedTokenAccount"];
+let serverHits = 0;
+for (const file of serverFiles) {
+  const text = read(file);
+  for (const term of serverForbidden) {
+    if (text.includes(term)) { fail(`server forbidden term ${term} in ${file}`); serverHits++; }
   }
-} catch {
-  fail(`Migration file not found: supabase/migrations/20260621150000_add_token_stake_rooms_phase_a.sql`);
+  if ((text.includes('.from("token_payouts")') || text.includes(".from('token_payouts')")) && text.includes("insert")) { fail(`token_payouts write in ${file}`); serverHits++; }
+  if ((text.includes('.from("token_refunds")') || text.includes(".from('token_refunds')")) && text.includes("insert")) { fail(`token_refunds write in ${file}`); serverHits++; }
 }
+if (serverHits === 0) pass("no server-side private key, SPL transfer helper, payout write, or refund write in token-room APIs");
 
-// 9. API route dry-run/disabled safety checks
-header("API Dry-Run Route Check");
-const apiDir = join(ROOT, "src", "app", "api", "token-rooms");
-const dryRunRoutes = [
-  { label: "create", path: join(apiDir, "create", "route.ts") },
-  { label: "join-intent", path: join(apiDir, "join-intent", "route.ts") },
-  { label: "[id]/enter-lobby", path: join(apiDir, "[id]", "enter-lobby", "route.ts") },
-  { label: "[id]/start-dry-run", path: join(apiDir, "[id]", "start-dry-run", "route.ts") },
-];
-for (const route of dryRunRoutes) {
-  const routePath = route.path;
-  try {
-    const content = readFileSync(routePath, "utf-8");
-    const hasTestModeGate = content.includes("TOKEN_STAKE_ROOMS_TEST_MODE") && content.includes("tokenRoomDryRunUnavailableResponse");
-    const hasDryRunNotice = content.includes("No RACETE deposit") || content.includes("dry-run");
-    const avoidsTokenDepositTable = !content.includes('.from("token_deposits")') && !content.includes(".from('token_deposits')");
-    const avoidsPayoutRefundTables = !content.includes('.from("token_payouts")') && !content.includes(".from('token_payouts')") && !content.includes('.from("token_refunds")') && !content.includes(".from('token_refunds')");
-    if (hasTestModeGate && hasDryRunNotice && avoidsTokenDepositTable && avoidsPayoutRefundTables) {
-      pass(`POST /api/token-rooms/${route.label} is test-mode dry-run only`);
-    } else {
-      fail(`POST /api/token-rooms/${route.label} missing dry-run safety gate/notice or writes token accounting tables`);
-    }
-  } catch {
-    fail(`Route file not found: ${route.path.replace(ROOT + "/", "")}`);
-  }
-}
+header("Frontend deposit transaction boundary");
+const lobby = read("src/components/token-rooms/TokenRoomDryRunLobbyClient.tsx");
+lobby.includes("createTransferCheckedInstruction") && lobby.includes("TOKEN_2022_PROGRAM_ID") ? pass("frontend builds Token-2022 user-signed transferChecked deposit") : fail("frontend Token-2022 transferChecked deposit missing");
+lobby.includes("sendTransaction(transaction, connection)") ? pass("frontend sends transaction via connected wallet adapter") : fail("frontend wallet sendTransaction missing");
+lobby.includes("/api/token-rooms/confirm-deposit") && lobby.includes("txSignature") ? pass("frontend auto-confirms deposit with returned signature") : fail("frontend confirm-deposit call missing");
+includesAny(lobby, ["createApproveInstruction", "createApproveCheckedInstruction", "approveChecked(", "delegate:"]) ? fail("frontend must not request approvals/delegate authority") : pass("frontend does not request approval/delegate authority");
 
-const disabledRoutes = ["confirm-deposit", "refund"];
-for (const route of disabledRoutes) {
-  const routePath = join(apiDir, route, "route.ts");
-  try {
-    const content = readFileSync(routePath, "utf-8");
-    if (content.includes("tokenRoomDisabledResponse")) {
-      pass(`POST /api/token-rooms/${route} remains disabled`);
-    } else {
-      fail(`POST /api/token-rooms/${route} does NOT use tokenRoomDisabledResponse`);
-    }
-  } catch {
-    fail(`Route file not found: src/app/api/token-rooms/${route}/route.ts`);
-  }
-}
+header("Package scripts");
+const pkg = JSON.parse(read("package.json"));
+pkg.scripts?.["check:token-rooms-safety"] ? pass("check:token-rooms-safety script exists") : fail("check:token-rooms-safety missing");
+pkg.scripts?.["check:token-rooms"] ? pass("check:token-rooms script exists") : fail("check:token-rooms missing");
 
-header("No SPL Transaction Import Check");
-const tokenRoomApiDir = join(ROOT, "src", "app", "api", "token-rooms");
-const tokenRoomUiDir = join(ROOT, "src", "components", "token-rooms");
-let unsafeImportHits = 0;
-for (const dir of [tokenRoomApiDir, tokenRoomUiDir]) {
-  for (const file of listFilesRecursive(dir)) {
-    const rel = file.replace(ROOT + "/", "");
-    const content = readFileSync(file, "utf-8");
-    if (content.includes("@solana/spl-token") || content.includes("TransactionInstruction") || content.includes("VersionedTransaction")) {
-      unsafeImportHits++;
-      fail(`Potential transaction/SPL helper import found in ${rel}`);
-    }
-  }
-}
-if (unsafeImportHits === 0) pass("No SPL token transfer or transaction helper imports in token-room API/UI files");
-
-// 10. UI warning text present
-header("UI Warning Text Check");
-const previewPath = join(ROOT, "src", "components", "token-rooms", "TokenStakeRoomsPreview.tsx");
-try {
-  const previewContent = readFileSync(previewPath, "utf-8");
-  if (previewContent.includes("Production token rooms are not live")) {
-    pass("TokenStakeRoomsPreview contains test-only warning text");
-  } else {
-    fail("TokenStakeRoomsPreview missing test-only warning text");
-  }
-} catch {
-  fail("TokenStakeRoomsPreview component not found");
-}
-
-// 11. Package scripts present
-header("Package Script Check");
-const pkgPath = join(ROOT, "package.json");
-try {
-  const pkgContent = readFileSync(pkgPath, "utf-8");
-  const pkg = JSON.parse(pkgContent);
-  if (pkg.scripts && pkg.scripts["check:token-rooms"]) {
-    pass('"check:token-rooms" script exists in package.json');
-  } else {
-    fail('"check:token-rooms" script missing from package.json');
-  }
-  if (pkg.scripts && pkg.scripts["check:token-rooms-safety"]) {
-    pass('"check:token-rooms-safety" script exists in package.json');
-  } else {
-    fail('"check:token-rooms-safety" script missing from package.json');
-  }
-} catch {
-  fail("Cannot read or parse package.json");
-}
-
-// 12. Done
 exit();

@@ -57,7 +57,7 @@ type DryRunTokenRoomPlayer = {
   walletAddress: string;
   isCreator: boolean;
   status: string;
-  dryRunDepositStatus: "not_required";
+  dryRunDepositStatus: "not_required" | "pending" | "submitted" | "confirmed" | "rejected";
   dbDepositStatus: string;
   joinedAt: string;
 };
@@ -73,7 +73,7 @@ type DryRunTokenRoom = {
   playerCount: number;
   confirmedPlayerCount: number;
   status: string;
-  dryRunStatus: "waiting" | "full" | "in_lobby" | "racing_mock" | "closed";
+  dryRunStatus: "waiting" | "full" | "deposits_pending" | "deposits_confirmed" | "ready_to_race" | "in_lobby" | "racing_mock" | "closed";
   creatorWalletAddress: string;
   createdAt: string;
   expiresAt: string;
@@ -114,7 +114,7 @@ export function TokenStakeRoomsPreview() {
       }
 
       setRooms(Array.isArray(payload.rooms) ? payload.rooms : []);
-      setRoomsMessage(payload.dryRunMessage || "Dry-run room only. No RACETE deposit will be requested or transferred.");
+      setRoomsMessage(payload.dryRunMessage || "Token rooms are in MVP mode. Create/join/lobby are live; deposits happen in room lobby; payouts remain manual.");
       setRoomsStatus("ready");
     } catch (err) {
       console.warn("[TokenStakeRoomsPreview] dry-run room refresh failed:", err);
@@ -153,7 +153,7 @@ export function TokenStakeRoomsPreview() {
       if (payload.room) {
         setRooms((current) => [payload.room, ...current.filter((room) => room.roomId !== payload.room.roomId)]);
       }
-      setRoomsMessage(payload.dryRunNotice || "Dry-run room created. No RACETE deposit was requested or transferred.");
+      setRoomsMessage(payload.dryRunNotice || "Token room created. Deposit RACETE from the room lobby; payouts remain admin-reviewed/manual.");
     } catch (err) {
       console.warn("[TokenStakeRoomsPreview] dry-run room create failed:", err);
       setRoomsMessage(err instanceof Error ? err.message : "Dry-run room creation failed.");
@@ -187,7 +187,7 @@ export function TokenStakeRoomsPreview() {
       if (payload.room) {
         setRooms((current) => [payload.room, ...current.filter((room) => room.roomId !== payload.room.roomId)]);
       }
-      setRoomsMessage(payload.dryRunNotice || "Joined dry-run room. No RACETE deposit was requested or transferred.");
+      setRoomsMessage(payload.dryRunNotice || "Joined token room. Deposit RACETE from the room lobby; payouts remain admin-reviewed/manual.");
     } catch (err) {
       console.warn("[TokenStakeRoomsPreview] dry-run room join failed:", err);
       setRoomsMessage(err instanceof Error ? err.message : "Dry-run room join failed.");
@@ -312,10 +312,10 @@ export function TokenStakeRoomsPreview() {
               Coming Soon / Test Mode
             </span>
           </div>
-          <h2 className="mt-3 text-2xl font-black">SPL token stake rooms are disabled.</h2>
-          <p className="mt-2 max-w-2xl text-sm text-white/65">
-            Token rooms are in test/spec mode. No real deposits are enabled. Free Multiplayer and Race Cash rewards stay
-            separate.
+          <h2 className="mt-3 text-2xl font-black">SPL token stake rooms are in MVP deposit mode.</h2>
+          <p className="mt-2 text-white/55">
+            Create/join/lobby are live. RACETE deposits are real and per-room ledgered. Automatic payouts are not live;
+            payouts are admin-reviewed/manual. Free Multiplayer and Race Cash rewards stay separate.
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 p-4 text-xs text-white/60">
@@ -347,7 +347,7 @@ export function TokenStakeRoomsPreview() {
             )}
 
             <p className="mt-2 text-xs text-lime-50/55">
-              Read-only balance check. Token deposits are not enabled yet.
+              Read-only balance check. Deposits happen only inside a room lobby after create/join.
             </p>
 
             {balanceStatus === "error" && (
@@ -393,10 +393,9 @@ export function TokenStakeRoomsPreview() {
             <p className="text-xs font-black uppercase tracking-[0.25em] text-fuchsia-200/70">
               DB-backed dry-run rooms
             </p>
-            <h3 className="mt-1 text-xl font-black text-white">Create/list/join flow — no token movement</h3>
+            <h3 className="mt-1 text-xl font-black text-white">Create/list/join flow — payouts still manual</h3>
             <p className="mt-2 max-w-2xl text-xs text-fuchsia-50/60">
-              Dry-run room only. No RACETE deposit will be requested or transferred. This validates product flow before
-              real escrow, deposit verification, or payouts exist.
+              Create/join/lobby use the DB lifecycle. Deposit RACETE from the room lobby only. Payouts remain manual/admin-reviewed.
             </p>
           </div>
           <button
@@ -438,7 +437,7 @@ export function TokenStakeRoomsPreview() {
           </label>
           <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/55">
             <p className="font-bold text-white/80">Deposit mode</p>
-            <p>Dry-run only / not required</p>
+            <p>Real user-signed deposit in room lobby / payouts manual</p>
           </div>
           <button
             onClick={() => void createDryRunRoom()}
@@ -451,7 +450,7 @@ export function TokenStakeRoomsPreview() {
 
         {!connected && (
           <p className="mt-3 text-xs text-amber-200/75">
-            Connect wallet to create or join a dry-run room. No signature popup should appear for this phase.
+            Connect wallet to create or join a token room. Wallet signature is requested only when you click Deposit RACETE in the room lobby.
           </p>
         )}
         {roomsMessage && (
@@ -464,7 +463,7 @@ export function TokenStakeRoomsPreview() {
           {roomsStatus === "loading" && <p className="text-sm text-white/45">Loading available dry-run rooms…</p>}
           {roomsStatus !== "loading" && rooms.length === 0 && (
             <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/45">
-              No open dry-run token rooms yet.
+              No open token rooms yet.
             </p>
           )}
           {rooms.map((room) => {
@@ -475,12 +474,12 @@ export function TokenStakeRoomsPreview() {
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="font-mono text-xs text-white/35">{room.roomId}</p>
-                    <p className="mt-1 text-lg font-black text-white">{formatRacete(room.stakeAmount)} dry-run room</p>
+                    <p className="mt-1 text-lg font-black text-white">{formatRacete(room.stakeAmount)} token room</p>
                     <p className="mt-1 text-xs text-white/50">
                       Players {room.playerCount}/{room.maxPlayers} · Status {room.dryRunStatus} · DB {room.status}
                     </p>
                     <p className="mt-1 text-xs text-fuchsia-100/55">
-                      Deposit: dry-run not required · no wallet signature · no token transfer
+                      Deposit in room lobby · exact stake only · payouts manual
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -488,14 +487,14 @@ export function TokenStakeRoomsPreview() {
                       href={`/race/token-room/${encodeURIComponent(room.roomId)}`}
                       className="rounded-full border border-fuchsia-200/30 bg-fuchsia-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-fuchsia-200"
                     >
-                      Enter dry-run lobby
+                      Enter room lobby
                     </Link>
                     <button
                       onClick={() => void joinDryRunRoom(room.roomId)}
                       disabled={!canJoin}
                       className="rounded-full border border-cyan-200/30 bg-cyan-300/90 px-5 py-2 text-xs font-black text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      {alreadyJoined ? "Already in dry-run room" : room.dryRunStatus === "full" ? "Room full — ready" : "Join test dry-run — no deposit"}
+                      {alreadyJoined ? "Already in room" : room.dryRunStatus === "full" ? "Room full — deposit in lobby" : "Join token room"}
                     </button>
                   </div>
                 </div>
@@ -549,9 +548,7 @@ export function TokenStakeRoomsPreview() {
 
       {/* Disabled safety state */}
       <div className="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/10 p-4 text-sm text-amber-100/80">
-        <strong className="text-amber-200">Disabled safety state:</strong> Real token-room create, join, and deposit
-        actions are intentionally unavailable. Phase C.1 only allows DB-backed dry-run rooms with no wallet signature or
-        token movement.
+        <strong className="text-amber-200">MVP safety state:</strong> Deposits are real only after the user clicks Deposit RACETE in a room lobby and signs an exact Token-2022 transfer. Automatic payouts, refunds, treasury splits, weekly splits, and server-side token transfers remain disabled.
       </div>
 
       {/* Disabled action buttons */}
@@ -572,7 +569,7 @@ export function TokenStakeRoomsPreview() {
           disabled
           className="cursor-not-allowed rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-black text-white/35"
         >
-          Deposit Disabled
+          Real Payouts Disabled
         </button>
       </div>
     </section>

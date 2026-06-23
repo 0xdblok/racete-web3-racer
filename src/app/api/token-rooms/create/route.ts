@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       creator_wallet_address: walletAddress,
       min_players: TOKEN_ROOM_MIN_PLAYERS,
       max_players: maxPlayers,
-      confirmed_player_count: 1,
+      confirmed_player_count: 0,
       status: "created",
       vault_authority_type: "manual",
       creator_fee_bps: TOKEN_ROOM_FEE_BPS.creatorFeeBps,
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       ...tokenRoomBasePayload(),
       action: "create",
       room,
-      dryRunNotice: "Dry-run room created. No RACETE deposit was requested or transferred.",
+      dryRunNotice: "Token room created. Deposit RACETE from the room lobby. Payouts are admin-reviewed/manual in this MVP.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {
