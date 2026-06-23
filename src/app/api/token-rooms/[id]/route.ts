@@ -41,8 +41,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       needsDeposit,
       allDepositsConfirmed: room.allDepositsConfirmed,
       readyToRace,
-      warning: "RACETE deposits are real. Payouts are admin-reviewed/manual in this MVP.",
-      dryRunNotice: "Token room DB lifecycle active. RACETE deposits are real only after wallet-signed deposit; payouts remain manual/admin-reviewed.",
+      warning: "RACETE deposits are real. Automatic payouts execute only after verified valid results.",
+      dryRunNotice: "Token room DB lifecycle active. RACETE deposits are real only after wallet-signed deposit; automatic payouts require verified valid results.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       ...tokenRoomBasePayload(),
       action: "join-intent",
       room: updatedRoom,
-      dryRunNotice: "Joined token room. Deposit RACETE from the room lobby. Payouts are admin-reviewed/manual in this MVP.",
+      dryRunNotice: "Joined token room. Deposit RACETE from the room lobby. Automatic payouts execute only after verified valid results.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

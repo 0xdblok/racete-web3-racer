@@ -23,7 +23,7 @@ import {
 import type { TokenStakeAmount } from "@/types/token-rooms";
 
 export const WALLET_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-export const DRY_RUN_ROOM_STATUSES = ["created", "depositing", "locked", "racing"] as const;
+export const DRY_RUN_ROOM_STATUSES = ["created", "depositing", "locked", "racing", "results_recorded", "settlement_pending", "finalizing", "payout_pending", "paid", "paid_out", "completed", "manual_review", "payout_failed"] as const;
 const ROOM_TTL_HOURS = 2;
 
 type DbTokenRoomRow = {
@@ -86,7 +86,7 @@ export type DryRunTokenRoom = {
   depositWallet: string | null;
   vaultTokenAccount?: string | null;
   status: string;
-  dryRunStatus: "waiting" | "full" | "deposits_pending" | "deposits_confirmed" | "ready_to_race" | "in_lobby" | "racing_mock" | "closed";
+  dryRunStatus: "waiting" | "full" | "deposits_pending" | "deposits_confirmed" | "ready_to_race" | "in_lobby" | "racing_mock" | "results_recorded" | "settlement_pending" | "payout_pending" | "paid" | "manual_review" | "payout_failed" | "closed";
   creatorWalletAddress: string;
   createdAt: string;
   updatedAt: string;
@@ -111,7 +111,7 @@ export function tokenRoomConfigPayload() {
     dryRun: {
       enabled: TOKEN_STAKE_ROOMS_TEST_MODE,
       realDepositsEnabled: Boolean(getTokenRoomDepositWallet()),
-      message: "MVP token-room lifecycle. Deposits are real only in room lobby; automatic payouts remain disabled/manual.",
+      message: "MVP token-room lifecycle. Deposits are real in room lobby; automatic payouts run only after verified valid results.",
     },
   };
 }
@@ -124,7 +124,7 @@ export function tokenRoomBasePayload() {
     dryRunEnabled: TOKEN_STAKE_ROOMS_TEST_MODE,
     realDepositsEnabled: Boolean(getTokenRoomDepositWallet()),
     message: TOKEN_ROOM_DISABLED_MESSAGE,
-    dryRunMessage: "MVP token-room lifecycle active. RACETE deposits are real only in room lobby; automatic payouts remain disabled/manual.",
+    dryRunMessage: "MVP token-room lifecycle active. RACETE deposits are real in room lobby; automatic payouts execute only after verified valid results.",
     config: tokenRoomConfigPayload(),
   };
 }
@@ -219,6 +219,12 @@ export function mapDryRunRoom(row: DbTokenRoomRow, playerRows: DbTokenRoomPlayer
   const dryRunStatus = (() => {
     if (!DRY_RUN_ROOM_STATUSES.includes(status as (typeof DRY_RUN_ROOM_STATUSES)[number])) return "closed";
     if (status === "locked") return "ready_to_race";
+    if (status === "results_recorded") return "results_recorded";
+    if (status === "settlement_pending" || status === "finalizing") return "settlement_pending";
+    if (status === "payout_pending") return "payout_pending";
+    if (status === "paid" || status === "paid_out" || status === "completed") return "paid";
+    if (status === "manual_review") return "manual_review";
+    if (status === "payout_failed") return "payout_failed";
     if (status === "depositing") return allDepositsConfirmed ? "deposits_confirmed" : "deposits_pending";
     if (status === "racing") return "racing_mock";
     return playerCount >= maxPlayers ? "full" : "waiting";
@@ -312,22 +318,27 @@ export function isWalletInRoom(room: DryRunTokenRoom, walletAddress: string): bo
 
 export async function writeTokenRoomEvent({
   roomId,
+  raceId,
   walletAddress,
   eventType,
+  severity = "info",
   payload = {},
 }: {
   roomId: string;
+  raceId?: string | null;
   walletAddress?: string;
   eventType: string;
+  severity?: "debug" | "info" | "warning" | "error" | "critical";
   payload?: Record<string, unknown>;
 }) {
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from("token_room_events").insert({
     room_id: roomId,
+    race_id: raceId || null,
     wallet_address: walletAddress || null,
     event_type: eventType,
     event_source: "client_api",
-    severity: "info",
+    severity,
     payload,
   });
 

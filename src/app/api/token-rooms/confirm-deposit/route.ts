@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
       depositConfirmed: true,
       txSignature,
       allDepositsConfirmed,
-      warning: "RACETE deposits are real. Payouts are admin-reviewed/manual in this MVP.",
+      warning: "RACETE deposits are real. Automatic payouts execute only after verified valid results.",
       room: updatedRoom,
     });
   } catch (error) {

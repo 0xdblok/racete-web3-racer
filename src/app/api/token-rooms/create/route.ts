@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       ...tokenRoomBasePayload(),
       action: "create",
       room,
-      dryRunNotice: "Token room created. Deposit RACETE from the room lobby. Payouts are admin-reviewed/manual in this MVP.",
+      dryRunNotice: "Token room created. Deposit RACETE from the room lobby. Automatic payouts execute only after verified valid results.",
     });
   } catch (error) {
     if (isMissingTokenRoomTableError(error)) {

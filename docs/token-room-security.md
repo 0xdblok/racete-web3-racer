@@ -1,6 +1,6 @@
 # Token Stake Rooms V1 — Security Spec
 
-Status: **Security design only — not implemented, not enabled**
+Status: **Phase C.3 implementation — automatic settlement/payout MVP; Token Stake Rooms still disabled/test mode until production launch gates pass**
 
 Token mint configuration:
 
@@ -10,6 +10,21 @@ RACETE_TEST_TOKEN_MINT=26vpJsWJswDbztCoZBEskkqjMKeFn9ym7s72Hn3spump
 
 # Final production Pump.fun token mint. Still pending and must remain a placeholder until provided.
 RACETE_TOKEN_MINT=TO_BE_PROVIDED_FINAL_PUMPFUN_MINT
+
+# Phase C.3 custodial payout MVP. Server-only. Never NEXT_PUBLIC. Never commit a real value.
+TOKEN_ROOM_VAULT_PRIVATE_KEY_BASE64=<SERVER_ONLY_BASE64_ENCODED_VAULT_SECRET_KEY>
+```
+
+## Phase C.3 Custodial MVP Warning
+
+Automatic payout execution is custodial in Phase C.3:
+
+- The deposit vault wallet is `FxDUd2EgPDLtDgCeko18VyrLJ8eAviN96NHcyDbYt18`.
+- The server derives the vault public key from `TOKEN_ROOM_VAULT_PRIVATE_KEY_BASE64` and refuses payout if it does not match that vault wallet.
+- The private key must exist only in server runtime environment variables.
+- Do not expose the private key through `NEXT_PUBLIC_*`, browser code, API responses, logs, docs, commits, screenshots, or support tickets.
+- Settlement math must use only confirmed `token_deposits` filtered by `room_id`; the global vault balance is only an execution capacity check.
+- If signer validation, RPC confirmation, anti-cheat, or result validity is unclear, move the room to `manual_review` and do not auto-send payouts.
 ```
 
 This document defines the minimum security requirements, threat model, mitigations, and launch gates for RaceTE Token Stake Rooms.
